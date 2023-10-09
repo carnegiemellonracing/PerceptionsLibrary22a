@@ -1,0 +1,8 @@
+
+# ignore random cached files
+**/.DS_Store
+**/*.pyc
+
+# ignore all data files
+**/*.npz
+**/*.npy
