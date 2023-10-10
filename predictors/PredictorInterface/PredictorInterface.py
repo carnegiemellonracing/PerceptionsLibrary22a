@@ -11,6 +11,17 @@ CMR Perception's primary goal is taking sensor data and estimating the
 
 Subclasses of the [Predictor] interface will implement various computer-vision
 based algorithms to take sensor data and estimate 3D cone position.
+
+Usage of Predictor classes will be as follows
+
+>>> dl = DataLoader(<path>)
+>>> predictor = Predictor()
+>>> for i in range(len(dl)):
+>>>     data = dl[i]
+>>>     cones = predictor.predict(data) # note that cones is a 3-tuple
+>>>     predictor.display()
+
+
 """
 
 class Predictor:
@@ -74,3 +85,13 @@ class Predictor:
         yellow_cones = None
 
         return orange_cones, blue_cones, yellow_cones
+    
+    def display():
+        """this functions is purely for displaying visual information used in
+        the pipeline and primarily for debugging purposes.
+
+        Should be implemented to visualize images, point clouds, bounding boxes,
+        and more.
+
+        No arguments and no return values.
+        """
