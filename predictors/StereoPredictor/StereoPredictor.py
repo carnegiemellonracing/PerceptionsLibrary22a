@@ -26,11 +26,7 @@ class StereoPredictor(Predictor):
         pad = 5
 
         blue_cones, yellow_cones, orange_cones, self.predictions = [], [], [], []
-<<<<<<< HEAD
-        boxes_with_depth = []
-=======
         self.boxes_with_depth = []
->>>>>>> ff3fdde (initial commit)
 
         # model expects RGB, convert BGR to RGB
         boxes = self.model(self.left_img[:,:,[2,1,0]], size=640)
