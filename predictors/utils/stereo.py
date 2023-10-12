@@ -2,6 +2,7 @@ import statistics
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from enum import Enum
 
 def calc_box_center(box):
     """
@@ -71,18 +72,31 @@ def get_world_coords(coords):
 
     return world_x, world_y, world_z
 
-# def get_cone_color(left_frame, box, padding=2):
-#     # return config.COLORS.BLUE
-#     center_x, center_y = calc_box_center(box)
-#     min_x = max(center_x - padding, 0)
-#     max_x = min(center_x + padding, cfg_perceptions.IMAGE_HEIGHT)
 
-#     min_y = max(center_y - padding, 0)
-#     max_y = min(center_y + padding, cfg_perceptions.IMAGE_WIDTH)
+class CFG_PERCEPTIONS:
+    IMAGE_WIDTH = 1280
+    IMAGE_HEIGHT = 720
+    RED_THRESHOLD = 100
 
-#     rgbs = left_frame[min_x:max_x, min_y:max_y, :3].reshape(-1, 3)
-#     avg_rgbs = np.average(rgbs, axis=0)
-#     if avg_rgbs[2] < cfg_perceptions.RED_THRESHOLD:
-#         return cfg_perceptions.COLORS.BLUE
-#     else:
-#         return cfg_perceptions.COLORS.YELLOW
+class CFG_COLORS(Enum):
+    BLUE = 1
+    YELLOW = 2
+    ORANGE = 3
+    UNKNOWN = 4
+
+
+def get_cone_color(left_frame, box, padding=2):
+    # return config.COLORS.BLUE
+    center_x, center_y = calc_box_center(box)
+    min_x = max(center_x - padding, 0)
+    max_x = min(center_x + padding, CFG_PERCEPTIONS.IMAGE_HEIGHT)
+
+    min_y = max(center_y - padding, 0)
+    max_y = min(center_y + padding, CFG_PERCEPTIONS.IMAGE_WIDTH)
+
+    rgbs = left_frame[min_x:max_x, min_y:max_y, :3].reshape(-1, 3)
+    avg_rgbs = np.average(rgbs, axis=0)
+    if avg_rgbs[2] < CFG_PERCEPTIONS.RED_THRESHOLD:
+        return CFG_COLORS.COLORS.BLUE
+    else:
+        return CFG_COLORS.COLORS.YELLOW
