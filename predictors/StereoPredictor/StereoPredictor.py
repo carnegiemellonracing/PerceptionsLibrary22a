@@ -1,4 +1,7 @@
-from PredictorInterface import Predictor
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
+from ..PredictorInterface.PredictorInterface import Predictor
 from ..utils import stereo as utils
 
 import torch
