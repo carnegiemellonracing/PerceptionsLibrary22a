@@ -1,4 +1,7 @@
-from PredictorInterface import Predictor
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
+from ..PredictorInterface.PredictorInterface import Predictor
 from ..utils import stereo as utils
 
 import torch
@@ -91,6 +94,7 @@ class StereoPredictor(Predictor):
                 print(f"\t[PERCEPTIONS WARNING] (cone {i} of {num_cones}) detected cone but no depth; throwing away")
                 break
 
+            #use YOLO model color prediction
             color_str = pred_color_dict[color_id]
             if color_str == "yellow_cone":
                 color = CFG_COLORS.YELLOW
@@ -102,6 +106,7 @@ class StereoPredictor(Predictor):
                 print("stereo-vision YOLO: Found unknown cone -- ignoring")
                 color = COLORS.UNKNOWN
 
+            #overwrite YOLO model with RGB heuristic
             color = utils.get_cone_color(left_img, box, padding=2)
 
             prediction = [world_x,
