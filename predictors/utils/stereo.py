@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from enum import Enum
+from ..StereoPredictor import cfg
 
 def calc_box_center(box):
     """
@@ -97,6 +98,6 @@ def get_cone_color(left_frame, box, padding=2):
     rgbs = left_frame[min_x:max_x, min_y:max_y, :3].reshape(-1, 3)
     avg_rgbs = np.average(rgbs, axis=0)
     if avg_rgbs[2] < CFG_PERCEPTIONS.RED_THRESHOLD:
-        return CFG_COLORS.COLORS.BLUE
+        return cfg.COLORS.BLUE
     else:
-        return CFG_COLORS.COLORS.YELLOW
+        return cfg.COLORS.YELLOW
