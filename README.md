@@ -20,9 +20,9 @@ After doing this, exit your editor, source your 'rc' file, and echo `$PYTHONPATH
 source ~/.zshrc
 echo $PYTHONPATH
 ```
-You should now see your path to `PerceptionsLibrary22a` show up in the display.
+You should now see your path to `PerceptionsLibrary22a` show up in `$PYTHONPATH`.
 
-As a final check, from your `scripts/` directory in the repository run
+As a final check, run
 ```
 python3 scripts/test_setup.py
 ```
