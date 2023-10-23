@@ -4,5 +4,6 @@
 **/*.pyc
 
 # ignore all data files
+**/*.gz
 **/*.npz
 **/*.npy
