@@ -17,13 +17,18 @@ class LidarPredictor(Predictor):
         self.window = vis.init_visualizer_window()
         pass
 
+    def _transform_points(self, points):
+        points = points[:, :3]
+        points = points[:, [1, 0, 2]]
+        points[:,0] = -points[:,0]
+
+        return points
+
     def predict(self, data):
-        self.points = data["points"]
+        points = self._transform_points(data["points"])
+        self.points = points
+
         pass
 
     def display(self):
-        points = self.points[:, :3]
-        points = points[:, [1, 0, 2]]
-        points[:,0] = -points[:,0]
-        vis.update_visualizer_window(self.window, self.points[:,:3])
-        pass
+        vis.update_visualizer_window(self.window, self.points)
