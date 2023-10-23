@@ -186,6 +186,15 @@ def circle_range(pointcloud, return_mask=False, radiusmin=0, radiusmax=100):
         return points_filtered, mask
     else:
         return points_filtered
+    
+
+def random_subset(pointcloud, p):
+    '''return p% of the point cloud randomly selected'''
+    assert(0 < p <= 1)
+    n = pointcloud.shape[0]
+    n_select = int(p * n)
+    rand_idxs = np.random.choice(np.arange(n), n_select, replace=False)
+    return pointcloud[rand_idxs, :]
 
 
 def covered_centroid(pointcloud, centroids, radius=0.75, height=0.5, threshold=5):
