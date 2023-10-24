@@ -11,6 +11,7 @@ def main():
 
     for i in range(len(dl)):
         # load the i-th image from track testing run
+        print(dl)
         data = dl[i]
         img = data["left_color"]
 
