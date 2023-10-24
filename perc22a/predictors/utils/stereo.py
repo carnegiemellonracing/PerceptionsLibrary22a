@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from enum import Enum
-from ..StereoPredictor import cfg
+import perc22a.predictors.stereo.cfg as cfg
 
 def calc_box_center(box):
     """

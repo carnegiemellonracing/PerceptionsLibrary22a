@@ -1,8 +1,8 @@
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
-from ..PredictorInterface.PredictorInterface import Predictor
-from ..utils import stereo as utils
+from perc22a.predictors import Predictor
+import perc22a.predictors.utils.stereo as utils
 
 import torch
 import statistics
@@ -10,7 +10,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from enum import Enum
-from . import cfg
+from ..stereo import cfg
 
 #Hardcoded config info for now, potentially will pull from some constants.py in the future
 class CFG_COLORS(Enum):
