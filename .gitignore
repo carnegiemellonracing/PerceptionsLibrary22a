@@ -8,3 +8,4 @@
 **/*.npz
 **/*.npy
 predictors/StereoPredictor/model_params.pt
+perc22a/predictors/StereoPredictor/model_params.pt
