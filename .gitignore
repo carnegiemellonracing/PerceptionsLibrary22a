@@ -7,3 +7,4 @@
 **/*.gz
 **/*.npz
 **/*.npy
+predictors/StereoPredictor/model_params.pt
