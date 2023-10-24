@@ -1,5 +1,5 @@
 # perceptions specific imports
-from perc22a.data.utils.dataloader import DataLoader
+from data.utils.dataloader import DataLoader
 
 # general python imports
 import time
@@ -7,7 +7,7 @@ import cv2
 
 
 def main():
-    dl = DataLoader("perc22a/data/raw/track-testing-09-29")
+    dl = DataLoader("data/raw/track-testing-09-29")
 
     for i in range(len(dl)):
         # load the i-th image from track testing run

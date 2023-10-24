@@ -1,35 +1,5 @@
 # 22a's Perceptions Library
 
-## Setup
-
-After cloning the package to your local machine, you need to add the location (i.e. directory) of the `perc22a` folder to your `PYTHONPATH` environment variable. This is necessary so that any script that you write can simply call `import perc22a` and Python will be able to find it in your Python path.
-
-First, we have to get the absolute path of the `PerceptionsLibrary22a` repository. To do this, immediately after cloning, run
-```
-cd PerceptionsLibrary22a
-pwd
-```
-Copy the result of `pwd` (your absolute path to the library), open your `~/.zshrc` or `~/.bashrc` or equivalent (using `vim` or `nano`), and add the following line
-```
-export PYTHONPATH="<path to PerceptionsLibrary22a>:$PYTHONPATH"
-```
-Note that the result of `pwd` replaces <...>
-
-After doing this, exit your editor, source your 'rc' file, and echo `$PYTHONPATH` like so (assuming in `zsh`)
-```
-source ~/.zshrc
-echo $PYTHONPATH
-```
-You should now see your path to `PerceptionsLibrary22a` show up in `$PYTHONPATH`.
-
-As a final check, run
-```
-python3 scripts/test_setup.py
-```
-Note that you will that your current/present working directory will be inside of `PerceptionsLibrary22a`. If your setup is good, you should see `"Running 'import perc22a' successful"`.
-
-Now, you are ready to start using the perceptions library!
-
 ## Loading Data
 
 Go to [this Google Drive Link](https://drive.google.com/drive/folders/12l2DpvS4oEfl7_Noc7oUX4AcIDCfB8Zc?usp=drive_link) download any of the `<name>.tar.gz` files and move it to the `data/raw/` folder. Note that this file will be quite large and will be even larger when untar-ed (up to and more than 10GB). Inside of it, extract the contents by running

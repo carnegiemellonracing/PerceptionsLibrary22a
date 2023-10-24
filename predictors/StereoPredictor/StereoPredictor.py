@@ -12,6 +12,25 @@ import matplotlib.pyplot as plt
 from enum import Enum
 from . import cfg
 
+#Hardcoded config info for now, potentially will pull from some constants.py in the future
+class CFG_COLORS(Enum):
+    BLUE = 1
+    YELLOW = 2
+    ORANGE = 3
+    UNKNOWN = 4
+
+COLORS = {
+    1: (255, 191, 0),
+    0: (0, 150, 255),
+}
+
+CV2_COLORS = {
+    cfg.COLORS.BLUE: [255, 191, 0],
+    cfg.COLORS.YELLOW: [7, 238, 255],
+    cfg.COLORS.ORANGE: [0, 150, 255]
+}
+
+
 
 class StereoPredictor(Predictor):
 #Implements Predictor interface
