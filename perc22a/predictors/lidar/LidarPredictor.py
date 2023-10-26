@@ -7,7 +7,10 @@ that is solely dependent on raw LiDAR point clouds.
 # interface
 from perc22a.predictors import Predictor
 
-# visualization functions
+# predict output datatype
+from perc22a.predictors.utils.cones import Cones
+
+# visualization and core lidar algorithm functions
 import perc22a.predictors.utils.lidar.visualization as vis
 import perc22a.predictors.utils.lidar.filter as filter
 import perc22a.predictors.utils.lidar.cluster as cluster
@@ -28,7 +31,7 @@ class LidarPredictor(Predictor):
 
         return points
 
-    def predict(self, data):
+    def predict(self, data) -> Cones:
         points = self._transform_points(data["points"])
         self.points = points
 
@@ -65,12 +68,20 @@ class LidarPredictor(Predictor):
         # correct the positions of the cones to the center of mass of the car
         cone_output = cluster.correct_clusters(cone_output)
 
-        # TODO: delete
-        print(points_cluster.shape)
-        vis.update_visualizer_window(self.window, points=points_cluster, pred_cones=cone_centers)
-        print(cone_output)
+        # visualize points
+        vis.update_visualizer_window(self.window, points=points_cluster, pred_cones=cone_centers, colors_cones=cone_colors)
 
-        return cone_output
+        # create a Cones object to return
+        cones = Cones()
+        for i in range(cone_output.shape[0]):
+            x, y, c = cone_output[i, :]
+            z = cone_centers[i, 2]
+            if c == 1:
+                cones.add_yellow_cone(x, y, z)
+            elif c == 0:
+                cones.add_blue_cone(x, y, z)
+
+        return cones 
 
     def display(self):
         # vis.update_visualizer_window(self.window, self.points)
