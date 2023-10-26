@@ -3,6 +3,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 from perc22a.predictors import Predictor
 import perc22a.predictors.utils.stereo as utils
+from perc22a.predictors.utils.cones import Cones
 
 import torch
 import statistics
@@ -47,16 +48,17 @@ class StereoPredictor(Predictor):
         self.boxes_with_depth = []
         
 
-    def predict(self, data):
+    def predict(self, data) -> Cones:
+
+        # initialize return type for cones
+        cones = Cones()
+
         #access left_img and zed_pts from data dict(just hardcoded for now)
         self.left_img = data['left_color']
         self.zed_pts = data['xyz_image']
 
-        print(np.mean(self.left_img), np.std(self.left_img))
-
         pad = 5
 
-        blue_cones, yellow_cones, orange_cones = [], [], []
         #Resets predictions arr and boxes w/ depth arr for visualization
         self.predictions, self.boxes_with_depth = [], []
 
@@ -71,7 +73,6 @@ class StereoPredictor(Predictor):
             #depth_y = get_object_depth(box, padding=1) # removing get_object_depth because need depth map (not in DataFrame)
             # and also not as accurate of an indicator of position as the point cloud which is just some func(depth, cp)
             # where cp is the camera parameters
-            #print(box)
             center_x, center_z = utils.calc_box_center(box)
             color_id = int(box[-1].item())
 
@@ -109,9 +110,7 @@ class StereoPredictor(Predictor):
                 print("stereo-vision YOLO: Found unknown cone -- ignoring")
                 color = cfg.COLORS.UNKNOWN
 
-            #overwrite YOLO model with RGB heuristic
-            # color = utils.get_cone_color(self.left_img, box, padding=2)
-
+            # package information into a single prediction    
             prediction = [world_x,
                         world_y,
                         world_z,
@@ -121,20 +120,20 @@ class StereoPredictor(Predictor):
             self.boxes_with_depth.append(box)
             self.predictions.append(prediction)
 
-            if color == CFG_COLORS.YELLOW:
-                yellow_cones.append(prediction)
-            elif color == CFG_COLORS.BLUE:
-                blue_cones.append(prediction)
-            elif color == CFG_COLORS.ORANGE:
-                orange_cones.append(prediction)
+            x, y, z, c = prediction
+            if c == cfg.COLORS.YELLOW:
+                cones.add_yellow_cone(x, y, z)
+            elif c == cfg.COLORS.BLUE:
+                cones.add_blue_cone(x, y, z)
+            elif c == cfg.COLORS.ORANGE:
+                cones.add_orange_cone(x, y, z)
 
-        return orange_cones, blue_cones, yellow_cones
+        return cones
 
 
 
     def display(self):
         #code for visualizePrediction() in og
-        print("Number of boxes:", len(self.boxes_with_depth))
         image = self.left_img.copy()
         for i, box in enumerate(self.boxes_with_depth):
             _, _, depth_z, color = self.predictions[i]

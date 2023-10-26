@@ -18,11 +18,11 @@ Usage of Predictor classes will be as follows
 >>> predictor = Predictor()
 >>> for i in range(len(dl)):
 >>>     data = dl[i]
->>>     cones = predictor.predict(data) # note that cones is a 3-tuple
+>>>     cones = predictor.predict(data) 
 >>>     predictor.display()
-
-
 """
+
+from perc22a.predictors.utils.cones import Cones
 
 class Predictor:
     """interface for a [Predictor] that takes time-series data from various
@@ -66,26 +66,19 @@ class Predictor:
         """
         pass
     
-    def predict(data):
+    def predict(data) -> Cones:
         """will take the data and predict the 3D positions of cones
 
         Arguments:
             data - dictionary containing various sensor data used for prediction
 
-        Return: (orange_cones, blue_cones, yellow_cones)
-            - orange_cones = None if no orange cones, else (N, 3) array where
-            N is the number of orange cones and columns are [x, y, z] coords
-            in meters
-            - blue_cones = similar to orange_cones, but for blue cones
-            - yellow_cones = similar to blue_cones, but for yellow cones
+        Return:
+            cones - Cones class holding 3D positions of cones detected by algo
         """
+        cones = Cones()
 
-        orange_cones = None
-        blue_cones = None
-        yellow_cones = None
+        return cones
 
-        return orange_cones, blue_cones, yellow_cones
-    
     def display():
         """this functions is purely for displaying visual information used in
         the pipeline and primarily for debugging purposes.
