@@ -4,32 +4,40 @@
 
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/carnegiemellonracing/PerceptionsLibrary22a
+   git clone [repository-link]
    cd PerceptionsLibrary22a
    ```
 
-2. **Set PYTHONPATH:**
+2. **Setup Virtual Environment:**
+   Ensure you have Python 3.8 installed, then create a virtual environment:
+   ```bash
+   python3.8 -m venv env
+   source env/bin/activate
+   ```
+
+3. **Install Dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Set PYTHONPATH:**
    To ensure `import perc22a` works in any script, add the absolute path of the `PerceptionsLibrary22a` to your `PYTHONPATH`:
    ```bash
    echo "export PYTHONPATH=\"$(pwd):$PYTHONPATH\"" >> ~/.zshrc # or ~/.bashrc
    source ~/.zshrc # or ~/.bashrc
    ```
 
-3. **Verify Setup:**
+5. **Verify Setup:**
    Confirm the path was correctly added by echoing the `$PYTHONPATH`:
    ```bash
    echo $PYTHONPATH
    ```
    Test the setup:
    ```bash
-   python3 scripts/test_setup.py
+   python scripts/test_setup.py
    ```
    Successful output: `"Running 'import perc22a' successful"`.
 
-4. **Install Dependencies:**
-   ```bash
-   pip3 install -r requirements.txt
-   ```
 
 ## Loading Data
 
