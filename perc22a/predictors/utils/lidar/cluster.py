@@ -1,7 +1,7 @@
 '''
 All clustering functions directly called by the LiDAR pipline must adhere
 to the following specification
-    Input: pointcloud - numpy array of 3D point positions of filtered LiDAR pointcloud
+    Icput: pointcloud - numpy array of 3D point positions of filtered LiDAR pointcloud
     Output: centroids - numpy array of 3D point positions of cones
 
 NOTE: pipeline functions must be registered in the bottom of the file
@@ -10,11 +10,12 @@ NOTE: pipeline functions must be registered in the bottom of the file
 
 import hdbscan
 import math
+import cupy as cp
 import numpy as np
 import time
 from sklearn import cluster
 
-CORRECTION = np.array([0.0693728, 0.12893042])
+CORRECTION = cp.array([0.0693728, 0.12893042])
 
 ####################
 # HELPER FUNCTIONS #
@@ -28,14 +29,14 @@ def run_hdbscan(points, eps=1, min_samples=1):
             1. clusterer.labels_ = assigned cluster for each point
             2. clusterer.probabilities_  = probability each point in its cluster
 
-        Input: points - np.array of shape (N, 3) where the 3 columns are
+        Input: points - cp.array of shape (N, 3) where the 3 columns are
                         (x, y, z) coordinates representing a point cloud
                eps - the distance epsilon for creating new clusters (look at HDBSCAN documentation)
                min_samples - the minimum number of samples allowed to form a cluster
         Output: clusterer - hdbscan.HDBSCAN object that is fit on points
     '''
     clusterer = hdbscan.HDBSCAN(min_cluster_size=min_samples, gen_min_span_tree=True, cluster_selection_epsilon=eps)
-    clusterer.fit(points)
+    clusterer.fit(cp.asnumpy(points))
     return clusterer
 
 
@@ -43,17 +44,17 @@ def run_dbscan(points, eps=1, min_samples=1):
     '''
         identical to run_hdbscan but runs using DBSCAN from sklearn library
         Input:
-            points - np.array of shape (N, 3) where the 3 columns are
+            points - cp.array of shape (N, 3) where the 3 columns are
                      (x, y, z) coordinates representing a point cloud
             eps - the distance epsilon for creating new clusters (look at HDBSCAN documentation)
             min_samples - the minimum number of samples allowed to form a cluster
         Output: clusterer - cluster.DBSCAN object that is fit on points
     '''
     clusterer = cluster.DBSCAN(eps=eps, min_samples=min_samples)
-    clusterer.fit(points)
+    clusterer.fit(cp.asnumpy(points))
 
     # DBSCAN doesn't use probabilities so need to setting to one for now
-    clusterer.probabilities_ = np.ones(clusterer.labels_.shape)
+    clusterer.probabilities_ = cp.ones(clusterer.labels_.shape)
 
     return clusterer
 
@@ -62,30 +63,30 @@ def compute_centers(points, labels, probs):
     """ Computes the center of each of the clusters that are described by points and labels
 
     Args:
-        points (np.ndarray of shape (N,3)): array of points
-        labels (np.ndarray of shape (N,)): labels of cluster id for each point
-        probs (np.ndarray of shape (N,)): probability each point is in its cluster
+        points (cp.ndarray of shape (N,3)): array of points
+        labels (cp.ndarray of shape (N,)): labels of cluster id for each point
+        probs (cp.ndarray of shape (N,)): probability each point is in its cluster
 
     Returns:
-        centroids (np.ndarray of shape (C,3)): array of positions 
+        centroids (cp.ndarray of shape (C,3)): array of positions 
         that the clusters for each cluster, orderd from cluster 0 to cluster n-1
     """
     points = points[:, :3]
-    n_clusters = np.max(labels) + 1
+    n_clusters = cp.max(labels) + 1
     centroids = []
 
     for i in range(n_clusters):
         # for each cluster estimate its centroid from its points
-        idxs = np.where(labels == i)[0]
+        idxs = cp.where(labels == i)[0]
         cluster_points = points[idxs]
         cluster_probs = probs[idxs]
 
-        scale = np.sum(cluster_probs)
-        center = np.sum(cluster_points * cluster_probs, axis=0) / scale
+        scale = cp.sum(cluster_probs)
+        center = cp.sum(cluster_points * cluster_probs, axis=0) / scale
 
         centroids.append(center)
 
-    return np.array(centroids)
+    return cp.array(centroids)
 
 
 def filter_centers(all_points, clustering_points, centers, labels, probs):
@@ -98,14 +99,14 @@ def filter_centers(all_points, clustering_points, centers, labels, probs):
                  expectd number of points
 
     Args:
-        all_points (np.ndarray of shape (N,3)): matrix of points
-        clustering_points (np.ndarray of shape (N,3)): points used for clustering
-        centers (np.ndarray of shape (C,3)): estimated cluster centers
-        labels (np.ndarray of shape (N,)): cluster ids for each point
-        probs (np.ndarray of shape (N,)): probability each point is in cluster
+        all_points (cp.ndarray of shape (N,3)): matrix of points
+        clustering_points (cp.ndarray of shape (N,3)): points used for clustering
+        centers (cp.ndarray of shape (C,3)): estimated cluster centers
+        labels (cp.ndarray of shape (N,)): cluster ids for each point
+        probs (cp.ndarray of shape (N,)): probability each point is in cluster
 
     Returns:
-        filtered_centers (np.ndarray of shape (C,3)): subset of original
+        filtered_centers (cp.ndarray of shape (C,3)): subset of original
         cluster centers
     """
 
@@ -118,47 +119,47 @@ def filter_centers(all_points, clustering_points, centers, labels, probs):
     MAX_CONE_HEIGHT = 0.5   # SHOULD BE RELATIVE TO THE HEIGHT OF THE CONE W.R.T GROUND, NOT W.R.T. LIDAR
     LIDAR_VERT_RESOLUTION = 2
     LIDAR_HORIZ_RESOLUTION = 0.2
-    DEG_TO_RAD = np.pi / 180
-    NPOINTS_EPS = 50
+    DEG_TO_RAD = cp.pi / 180
+    cpOINTS_EPS = 50
 
     clustering_points = clustering_points[:, :3]
     all_points = all_points[:, :3]
-    n_clusters = np.max(labels) + 1
+    n_clusters = cp.max(labels) + 1
     filtered_centers = []
 
     for i in range(centers.shape[0]):
         # assumes that the ith cluster in clusters correspondes to label i
-        idxs = np.where(labels == i)[0]
+        idxs = cp.where(labels == i)[0]
         cluster_points = clustering_points[idxs]
         cluster_probs = probs[idxs].reshape(-1)
         cluster_center = centers[i]
 
         # condition 1: filter on average distance from center (should be small)
-        dists = np.sqrt(np.sum((cluster_points[:, :2] - cluster_center[:2]) ** 2, axis=1))
-        scale = np.sum(cluster_probs)
-        avg_dist = np.sum(dists * cluster_probs) / scale
+        dists = cp.sqrt(cp.sum((cluster_points[:, :2] - cluster_center[:2]) ** 2, axis=1))
+        scale = cp.sum(cluster_probs)
+        avg_dist = cp.sum(dists * cluster_probs) / scale
         if not (avg_dist < CONE_RADIUS + DIST_EPS):
             print("cluster to varying to be cone")
             continue
 
         # condition 2: filter on max point above the center
-        dists = np.sqrt(np.sum((all_points[:, :2] - cluster_center[:2]) ** 2, axis=1))
+        dists = cp.sqrt(cp.sum((all_points[:, :2] - cluster_center[:2]) ** 2, axis=1))
         close_points = all_points[dists < HIGH_POINT_RADIUS]
-        max_point_height = np.max(close_points[:, 2])
+        max_point_height = cp.max(close_points[:, 2])
         if not (max_point_height < MAX_CONE_HEIGHT):
             print("found high points")
             continue
 
         # condition 3: filter on expected number of points
-        dists = np.sqrt(np.sum((all_points[:, :2] - cluster_center[:2]) ** 2, axis=1))
-        cluster_dist = np.sqrt(np.sum(cluster_center ** 2))
+        dists = cp.sqrt(cp.sum((all_points[:, :2] - cluster_center[:2]) ** 2, axis=1))
+        cluster_dist = cp.sqrt(cp.sum(cluster_center ** 2))
         cone_points = all_points[dists < CONE_RADIUS]
         num_cone_points = cone_points.shape[0]
 
-        expected_height = CONE_HEIGHT / (2 * cluster_dist * np.tan((LIDAR_VERT_RESOLUTION * DEG_TO_RAD) / 2))
-        expected_width = CONE_WIDTH / (2 * cluster_dist * np.tan((LIDAR_HORIZ_RESOLUTION * DEG_TO_RAD) / 2))
+        expected_height = CONE_HEIGHT / (2 * cluster_dist * cp.tan((LIDAR_VERT_RESOLUTION * DEG_TO_RAD) / 2))
+        expected_width = CONE_WIDTH / (2 * cluster_dist * cp.tan((LIDAR_HORIZ_RESOLUTION * DEG_TO_RAD) / 2))
         num_points_expected = (1/2) * expected_height * expected_width
-        if not (abs(num_points_expected - num_cone_points) < NPOINTS_EPS):
+        if not (abs(num_points_expected - num_cone_points) < cpOINTS_EPS):
             print("incorrect number of points")
             continue
 
@@ -167,7 +168,7 @@ def filter_centers(all_points, clustering_points, centers, labels, probs):
 
         pass
 
-    return np.array(filtered_centers)
+    return cp.array(filtered_centers)
 
 
 def get_centroids(points, labels, probs=None, filter_distant=False, dist_threshold=0.2):
@@ -182,11 +183,11 @@ def get_centroids(points, labels, probs=None, filter_distant=False, dist_thresho
         PRE: labels are from 0 to K-1 where K is the number of clusters
         PRE: points are (N, M) where M >= 3 and the first 3 elems are X, Y, Z
 
-        Input: points - np.array of shape (N, M) where M >= 3 and first 3 cols
+        Icput: points - cp.array of shape (N, M) where M >= 3 and first 3 cols
                         are X, Y, Z coordinates of point cloud points
-               labels - np.array of shape (N,) where labels[i] is the assigned
+               labels - cp.array of shape (N,) where labels[i] is the assigned
                         cluster of the point represented by points[i]
-               probs  - np.array of shape (N,) if not None where probs[i]
+               probs  - cp.array of shape (N,) if not None where probs[i]
                         is the probability that points[i] is in the cluster
                         designated by labels[i]
                filter_distant - boolean if True, then if the average distance of
@@ -196,7 +197,7 @@ def get_centroids(points, labels, probs=None, filter_distant=False, dist_thresho
                dist_threshold - the max average distance of point from estimated
                                 cluster center to add the center to return array
 
-        Output: centroids - np.array of shape (K', 3) where K' = K if 
+        Output: centroids - cp.array of shape (K', 3) where K' = K if 
                             filter_distant is False, otherwise, K' <= K of
                             [X, Y, Z] points representing the centroids of
                             clusters calculated from the points and given labels
@@ -210,35 +211,35 @@ def get_centroids(points, labels, probs=None, filter_distant=False, dist_thresho
 
     # only need to consider (x, y, z) position for centroid calculations
     points = points[:, :3]
-    n_clusters = np.max(labels) + 1
+    n_clusters = cp.max(labels) + 1
     centroids = []
 
     if probs is None:
-        probs = np.ones((points.shape[0], 1))
+        probs = cp.ones((points.shape[0], 1))
 
     for i in range(n_clusters):
         # for each cluster estimate its centroid from its points
-        idxs = np.where(labels == i)[0]
+        idxs = cp.where(labels == i)[0]
         cluster_points = points[idxs]
 
         cluster_probs = probs[idxs]
-        scale = np.sum(cluster_probs)
-        center = np.sum(cluster_points * cluster_probs, axis=0) / scale
+        scale = cp.sum(cluster_probs)
+        center = cp.sum(cluster_points * cluster_probs, axis=0) / scale
 
         # do not add cone centroid if it is too far from its cluster
         if not filter_distant:
             centroids.append(center)
         else:
             # calculate the average distance of the cluster from centroid
-            dists = np.sqrt(np.sum((cluster_points - center) ** 2, axis=1))
+            dists = cp.sqrt(cp.sum((cluster_points - center) ** 2, axis=1))
             cluster_probs = probs[idxs].reshape(-1)
-            scale = np.sum(cluster_probs)
-            avg_dist = np.sum(dists * cluster_probs) / scale
+            scale = cp.sum(cluster_probs)
+            avg_dist = cp.sum(dists * cluster_probs) / scale
 
             if avg_dist <= dist_threshold:
                 centroids.append(center)
 
-    return np.array(centroids)
+    return cp.array(centroids)
 
 
 def get_centroids_z(points, labels, ground_planevals, probs=None, filter_distant=True, dist_threshold=0.2, x_threshold_scale=2, height_threshold=4, scalar=1, x_bound=10, x_dist=1):
@@ -253,14 +254,14 @@ def get_centroids_z(points, labels, ground_planevals, probs=None, filter_distant
         PRE: labels are from 0 to K-1 where K is the number of clusters
         PRE: points are (N, M) where M >= 3 and the first 3 elems are X, Y, Z
 
-        Input: points - np.array of shape (N, M) where M >= 3 and first 3 cols
+        Icput: points - cp.array of shape (N, M) where M >= 3 and first 3 cols
                         are X, Y, Z coordinates of point cloud points
-               labels - np.array of shape (N,) where labels[i] is the assigned
+               labels - cp.array of shape (N,) where labels[i] is the assigned
                         cluster of the point represented by points[i]
-                ground_planevals - np.array of shape 4 where the first 3 elements are
+                ground_planevals - cp.array of shape 4 where the first 3 elements are
                             vectors that make up the plane and the 4th element 
                             is the vertical translation on the z-axis
-               probs  - np.array of shape (N,) if not None where probs[i]
+               probs  - cp.array of shape (N,) if not None where probs[i]
                         is the probability that points[i] is in the cluster
                         designated by labels[i]
                filter_distant - boolean if True, then if the average distance of
@@ -279,7 +280,7 @@ def get_centroids_z(points, labels, ground_planevals, probs=None, filter_distant
                     cones
         x-dist - the distance within x_bound in which we remove centroids
 
-        Output: centroids - np.array of shape (K', 3) where K' = K if 
+        Output: centroids - cp.array of shape (K', 3) where K' = K if 
                             filter_distant is False, otherwise, K' <= K of
                             [X, Y, Z] points representing the centroids of
                             clusters calculated from the points and given labels
@@ -294,36 +295,36 @@ def get_centroids_z(points, labels, ground_planevals, probs=None, filter_distant
     # only need to consider (x, y, z) position for centroid calculations
     points = points[:, :3]
     points[:, 2] *= scalar
-    n_clusters = np.max(labels) + 1
+    n_clusters = cp.max(labels) + 1
     centroids = []
 
     if probs is None:
-        probs = np.ones((points.shape[0], 1))
+        probs = cp.ones((points.shape[0], 1))
 
     for i in range(n_clusters):
         s = time.time()
         # for each cluster estimate its centroid from its points
-        idxs = np.where(labels == i)[0]
+        idxs = cp.where(labels == i)[0]
         cluster_points = points[idxs]
 
         cluster_probs = probs[idxs]
-        scale = np.sum(cluster_probs)
-        center = np.sum(cluster_points * cluster_probs, axis=0) / scale
+        scale = cp.sum(cluster_probs)
+        center = cp.sum(cluster_points * cluster_probs, axis=0) / scale
 
         # do not add cone centroid if it is too far from its cluster
         if not filter_distant:
             centroids.append(center)
         else:
             # calculate the average distance of the cluster from centroid
-            dists = np.sqrt(np.sum((cluster_points - center) ** 2, axis=1))
+            dists = cp.sqrt(cp.sum((cluster_points - center) ** 2, axis=1))
             # outer_points are points that are some radial distance away from
             # centroid. We tried to use these points to detect lines rather
             # than cones exept ran into issues with cones doubling up close to
             # the lidar
-            # outer_points = np.sum(np.sum((cluster_points - center) ** 2, axis=1) > 0.1)
+            # outer_points = cp.sum(cp.sum((cluster_points - center) ** 2, axis=1) > 0.1)
             cluster_probs = probs[idxs].reshape(-1)
-            scale = np.sum(cluster_probs)
-            avg_dist = np.sum(dists * cluster_probs) / scale
+            scale = cp.sum(cluster_probs)
+            avg_dist = cp.sum(dists * cluster_probs) / scale
             # max_cluster_z = cluster_points[:, 2].max(axis=0)
 
             # find point heights based on projection from the ground plane
@@ -369,7 +370,7 @@ def get_centroids_z(points, labels, ground_planevals, probs=None, filter_distant
                 # print(" ---- dists: " + str(dist) + "\n")
                 centroids.append(center)
 
-    return np.array(centroids)
+    return cp.array(centroids)
 
 #####################################
 # PRIMARY CONE PREDICTION FUNCTIONS #
@@ -400,10 +401,10 @@ def predict_cones(points, hdbscan=False, get_colors=None):
         by running some clustering algorithm (in this implementation HDBSCAN)
         and then predicting the cone centers (using get_centroids)
 
-        Input: points - np.array of shape (N, M) where M >= 3 and the first 3
+        Icput: points - cp.array of shape (N, M) where M >= 3 and the first 3
                         columns of points represent X, Y, Z coordinates of
                         point cloud points of same units
-        Output: centroids - np.array of shape (C, 3) where there were C
+        Output: centroids - cp.array of shape (C, 3) where there were C
                             C predicted cone centers from the point cloud
                             represented by points
     '''
@@ -423,7 +424,7 @@ def predict_cones(points, hdbscan=False, get_colors=None):
     centroids = get_centroids(points, labels, probs)
 
     if get_colors:
-        colors = np.hstack([labels, labels, labels]) / np.max(labels)
+        colors = cp.hstack([labels, labels, labels]) / cp.max(labels)
         return centroids, colors
     else:
         return centroids
@@ -435,10 +436,10 @@ def predict_cones_z(points, ground_planevals, hdbscan=False, scalar=1, dist_thre
         by running some clustering algorithm (in this implementation HDBSCAN)
         and then predicting the cone centers (using get_centroids)
 
-        Input: points - np.array of shape (N, M) where M >= 3 and the first 3
+        Icput: points - cp.array of shape (N, M) where M >= 3 and the first 3
                         columns of points represent X, Y, Z coordinates of
                         point cloud points of same units
-        ground_planevals - np.array of shape 4 where the first 3 elements are
+        ground_planevals - cp.array of shape 4 where the first 3 elements are
                             vectors that make up the plane and the 4th element 
                             is the vertical translation on the z-axis
         scalar - the magnitude onto which the z dimension is compressed
@@ -453,7 +454,7 @@ def predict_cones_z(points, ground_planevals, hdbscan=False, scalar=1, dist_thre
                     cones
         x-dist - the distance within x_bound in which we remove centroids
 
-        Output: centroids - np.array of shape (C, 3) where there were C
+        Output: centroids - cp.array of shape (C, 3) where there were C
                             C predicted cone centers from the point cloud
                             represented by points
     '''
@@ -471,7 +472,7 @@ def predict_cones_z(points, ground_planevals, hdbscan=False, scalar=1, dist_thre
     points[:, 2] /= (endscal)
 
     # run HDBSCAN and get the resulting labels and probabilities
-    print(np.any(np.isnan(points)))
+    print(cp.any(cp.isnan(points)))
     if hdbscan:
         clusterer = run_hdbscan(points)
     else:
