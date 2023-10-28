@@ -69,6 +69,7 @@ class LidarPredictor(Predictor):
         cone_output = cluster.correct_clusters(cone_output)
 
         # visualize points
+        self.points_cluster = points_cluster
         vis.update_visualizer_window(self.window, points=points_cluster, pred_cones=cone_centers, colors_cones=cone_colors)
 
         # create a Cones object to return

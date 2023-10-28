@@ -115,17 +115,22 @@ def create_cylinder_vis(cylinder_centers, colors=[0, 1, 0], radius=0.3, height=0
     if n_centers > 0:
         colors = np.array(colors)
         if len(colors.shape) == 1:
+            # print(colors)
             colors = np.array([colors]*n_centers)
+            # print(colors)
 
     cylinders = []
+    # print(cylinder_centers)
+    # print(colors)
     for i in range(n_centers):
-        centroid = cylinder_centers[i, :]
+        centroid = cylinder_centers[i]
         color = colors[i, :]
 
         cylinder = o3d.geometry.TriangleMesh.create_cylinder(
             radius=radius, height=height, resolution=resolution, split=1)
         cylinder = o3d.geometry.LineSet.create_from_triangle_mesh(cylinder)
         cylinder = cylinder.translate(tuple(centroid))
+        #print(color)
         cylinder.paint_uniform_color(color)
         cylinders.append(cylinder)
 
@@ -155,7 +160,7 @@ def update_visualizer_perspective(vis, extrinsic):
     return
 
 
-def update_visualizer_window(window, points, pred_cones=[], colors=None, colors_cones=[0, 1, 0], plane=None):
+def update_visualizer_window(window, points, pred_cones, colors=None, colors_cones=[0, 1, 0], plane=None):
     # takes about 60-100ms to update the visualizer
     # calculate the new geometries
     objects = []

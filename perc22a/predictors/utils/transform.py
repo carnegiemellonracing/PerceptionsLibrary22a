@@ -10,6 +10,8 @@ import open3d as o3d
 from skspatial.objects import Plane
 import yaml
 import time
+import perc22a.predictors.utils.lidar.visualization as vis
+
 
 DEG_TO_RAD = np.pi / 180
 
@@ -63,14 +65,15 @@ class PoseTransformations:
     def __init__(self, path):
         with open(path, 'r') as file:
             self.config = yaml.safe_load(file)
+            self.TRdict = dict()
+            self.INVdict = dict()
             for sensor in self.config['sensors']:
-                self.TRdict[sensor['name']] = self.create_sensor_t(sensor)
-                
-                #inverse?
+                self.TRdict[list(sensor)[0]] = self.create_sensor_t(sensor[list(sensor)[0]])
 
-    def create_sensor_t(sensor):
+    def create_sensor_t(self, sensor):
         #construct homogeneous rotation matrices
-        #all angles and positions are given relative to origin from yaml
+        #all angles and positions are given relative to origin from yaml'
+        #print(sensor)
         rx = sensor['pose']['orientation']['theta'] * DEG_TO_RAD
         ry = sensor['pose']['orientation']['phi'] * DEG_TO_RAD
         rz= sensor['pose']['orientation']['psi'] * DEG_TO_RAD
@@ -84,9 +87,10 @@ class PoseTransformations:
 
         #make transformation matrix
         T = make_T(dx, dy, dz)
-        result = T @ RZ @ RY @ RX
+        res = T @ RZ @ RY @ RX
 
-        return result
+
+        return res
     
     #ripped from other classes
     def _homogenize(self, points):
@@ -99,10 +103,18 @@ class PoseTransformations:
         points[:, :3] /= points[:, 3].reshape((-1, 1))
         return points[:, :3]
 
-    def to_origin(self, sensor_name, points, inverse = False):
+    def to_origin(self, sensor_name, points, inverse):
         #homogenize points and get transformation matrix depending on sensor
         points_homogenous = self._homogenize(points)
-        M = self.TRdict[sensor_name] #if not inverse else self.TRdict[sensor_name]
+
+        #check if inverse, and if so if it isn'¬ already in dict add it
+        if not inverse:
+            M = self.TRdict[sensor_name] #if not inverse else self.TRdict[sensor_name]
+        elif not sensor_name in self.INVdict:
+            self.INVdict[sensor_name] = M = np.linalg.inv(self.TRdict[sensor_name])
+        else:
+            M = self.INVdict[sensor_name]
+
 
         #transform points and inhomegenize
         points_transformed = (M @ points_homogenous.T).T
@@ -110,20 +122,24 @@ class PoseTransformations:
 
         return result
     
-    def from_origin(self, sensor_name, points):
+    def from_origin(self, sensor_name, points, inverse = False):
         points_homogenous = self._homogenize(points)
-        start = time.time()
-        M = np.linalg.inv(self.TRdict[sensor_name])
-        end = time.time()
-        print(end - start)
+
+        #check if inverse, and if so if it isn'¬ already in dict add it
+        if not inverse:
+            M = self.TRdict[sensor_name] #if not inverse else self.TRdict[sensor_name]
+        elif not sensor_name in self.INVdict:
+            self.INVdict[sensor_name] = M = np.linalg.inv(self.TRdict[sensor_name])
+        else:
+            M = self.INVdict[sensor_name]
+        
 
         #transform points and inhomegenize
         points_transformed = (M @ points_homogenous.T).T
         result = self._inhomogenize(points_transformed)
 
         return result
-
-        
+           
         
         
 

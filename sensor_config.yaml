@@ -11,7 +11,7 @@ origin:
     #orientation?
   }
 sensors:
-  - stereo_camera:
+  - stereo:
       name: stereo,
       pose: {
         position: {
