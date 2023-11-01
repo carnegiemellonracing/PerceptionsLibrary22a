@@ -4,5 +4,8 @@
 **/*.pyc
 
 # ignore all data files
+**/*.gz
 **/*.npz
 **/*.npy
+predictors/StereoPredictor/model_params.pt
+perc22a/predictors/StereoPredictor/model_params.pt
