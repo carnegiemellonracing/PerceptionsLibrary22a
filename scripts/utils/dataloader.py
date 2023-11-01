@@ -32,7 +32,5 @@ if __name__ == "__main__":
     main()
     
     
-    
 # d = {"left": left, "right": right, "point": point}
 # np.savez("instance-{i}.npz", d)
-    
