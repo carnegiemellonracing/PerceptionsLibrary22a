@@ -14,13 +14,16 @@ import time
 
 class DataLoader():
     def __init__(self, data_dir):
+        '''initializes data loader pointing to directory'''
         self.data_dir = data_dir
         self.instances = os.listdir(data_dir)
     
     def __len__(self):
+        '''returns number of instances available from DataLoader'''
         return len(self.instances)
     
     def __getitem__(self, index):
+        '''returns index'th instance of data from directory'''
         filename = f"instance-{index}.npz"
         filepath = os.path.join(self.data_dir, filename)
 
