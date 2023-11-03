@@ -32,11 +32,11 @@ class DataInstance:
 
     def __getitem__(self, key: DataType):
         '''get a specific portion of the data'''
-        return self.data[key]
+        return self.data[key.value]
 
     def __setitem__(self, key: DataType, value: np.ndarray):
         '''set a specific data type'''
-        self.data[key] = value
+        self.data[key.value] = value
 
     def save(self, path):
         '''save the data as a numpy file at the appropriate path'''
