@@ -5,7 +5,7 @@ from a folder of numpy arrays created from the `FileNode` class defined in
 the `driverless` repository.
 '''
 
-from perc22a.data.utils import DataInstance
+from perc22a.data.utils.DataInstance import DataInstance
 
 import numpy as np
 import os

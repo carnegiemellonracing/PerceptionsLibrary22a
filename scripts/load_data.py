@@ -1,5 +1,5 @@
 # perceptions specific imports
-from perc22a.data.utils import DataLoader
+from perc22a.data.utils.DataLoader import DataLoader
 
 # general python imports
 import time
