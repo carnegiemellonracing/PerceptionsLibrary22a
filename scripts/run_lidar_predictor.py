@@ -1,6 +1,6 @@
 
 # perceptions specific imports
-from perc22a.data.utils.dataloader import DataLoader
+from perc22a.data.utils import DataLoader
 from perc22a.predictors import LidarPredictor
 
 # general python imports
