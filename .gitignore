@@ -2,10 +2,13 @@
 # ignore random cached files
 **/.DS_Store
 **/*.pyc
+env
 
 # ignore all data files
 **/*.gz
 **/*.npz
 **/*.npy
+
+# ignore parameter files
 predictors/StereoPredictor/model_params.pt
 perc22a/predictors/StereoPredictor/model_params.pt

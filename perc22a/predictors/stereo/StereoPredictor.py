@@ -1,9 +1,14 @@
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
-from perc22a.predictors import Predictor
-import perc22a.predictors.utils.stereo as utils
+# input and output datatypes for data and cones respectively
+from perc22a.data.utils.DataInstance import DataInstance
+from perc22a.data.utils.DataType import DataType
 from perc22a.predictors.utils.cones import Cones
+
+from perc22a.predictors import Predictor
+
+import perc22a.predictors.utils.stereo as utils
 
 import torch
 import statistics
@@ -32,7 +37,6 @@ CV2_COLORS = {
 }
 
 
-
 class StereoPredictor(Predictor):
 #Implements Predictor interface
 
@@ -48,14 +52,14 @@ class StereoPredictor(Predictor):
         self.boxes_with_depth = []
         
 
-    def predict(self, data) -> Cones:
+    def predict(self, data: DataInstance) -> Cones:
 
         # initialize return type for cones
         cones = Cones()
 
         #access left_img and zed_pts from data dict(just hardcoded for now)
-        self.left_img = data['left_color']
-        self.zed_pts = data['xyz_image']
+        self.left_img = data[DataType.ZED_LEFT_COLOR]
+        self.zed_pts = data[DataType.ZED_XYZ_IMG]
 
         pad = 5
 

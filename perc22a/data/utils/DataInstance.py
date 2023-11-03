@@ -4,7 +4,7 @@ Contains class-representation of an instance of data that perceptions algos
 can use to perform prediction on 
 '''
 
-from perc22a.data.utils.config import DataType
+from perc22a.data.utils.DataType import DataType
 
 import numpy as np
 
