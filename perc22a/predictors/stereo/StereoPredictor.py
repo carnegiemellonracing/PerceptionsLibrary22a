@@ -1,4 +1,5 @@
 import ssl
+from typing import List
 ssl._create_default_https_context = ssl._create_unverified_context
 
 # input and output datatypes for data and cones respectively
@@ -50,7 +51,9 @@ class StereoPredictor(Predictor):
         #Used for visualization in display()
         self.predictions = []
         self.boxes_with_depth = []
-        
+
+    def required_data() -> List[DataType]:
+        return [DataType.ZED_LEFT_COLOR, DataType.ZED_XYZ_IMG]
 
     def predict(self, data: DataInstance) -> Cones:
 

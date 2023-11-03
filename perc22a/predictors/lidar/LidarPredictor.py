@@ -5,6 +5,7 @@ that is solely dependent on raw LiDAR point clouds.
 """
 
 # interface
+from typing import List
 from perc22a.predictors import Predictor
 
 # data datatypes
@@ -27,6 +28,9 @@ class LidarPredictor(Predictor):
     def __init__(self):
         self.window = vis.init_visualizer_window()
         pass
+
+    def required_data() -> List[DataType]:
+        return [DataType.HESAI_POINTCLOUD]
 
     def _transform_points(self, points):
         points = points[:, :3]

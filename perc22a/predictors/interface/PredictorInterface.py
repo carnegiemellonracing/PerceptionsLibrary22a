@@ -24,6 +24,9 @@ Usage of Predictor classes will be as follows
 
 from perc22a.predictors.utils.cones import Cones
 from perc22a.data.utils.DataInstance import DataInstance
+from perc22a.data.utils.DataType import DataType
+
+from typing import List
 
 class Predictor:
     """interface for a [Predictor] that takes time-series data from various
@@ -66,6 +69,11 @@ class Predictor:
         and more
         """
         pass
+
+    def required_data() -> List[DataType]:
+        """Return list of DataTypes that predictor requires for processing"""
+        # return list of all types in DataType
+        return [t for t in DataType]
     
     def predict(data: DataInstance) -> Cones:
         """will take the data and predict the 3D positions of cones
