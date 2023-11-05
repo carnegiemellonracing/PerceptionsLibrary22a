@@ -18,11 +18,20 @@ import perc22a.predictors.utils.lidar.color as color
 
 import numpy as np
 
+import cProfile
+
 class LidarPredictor(Predictor):
 
     def __init__(self):
         self.window = vis.init_visualizer_window()
         pass
+
+    def profile_predict(self, data):
+        profiler = cProfile.Profile()
+        profiler.enable()
+        cones = self.predict(data)
+        profiler.disable()
+        return cones, profiler
 
     def _transform_points(self, points):
         points = points[:, :3]

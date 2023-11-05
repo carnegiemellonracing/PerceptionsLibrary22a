@@ -8,11 +8,12 @@ NOTE: pipeline functions must be registered in the bottom of the file
       to be used by overall pipeline in cluster_fns
 '''
 
-import hdbscan
+from cuml import cluster
+# from hdbscan import HDBSCAN
 import math
 import numpy as np
 import time
-from sklearn import cluster
+# from sklearn import cluster
 
 CORRECTION = np.array([0.0693728, 0.12893042])
 
@@ -34,7 +35,7 @@ def run_hdbscan(points, eps=1, min_samples=1):
                min_samples - the minimum number of samples allowed to form a cluster
         Output: clusterer - hdbscan.HDBSCAN object that is fit on points
     '''
-    clusterer = hdbscan.HDBSCAN(min_cluster_size=min_samples, gen_min_span_tree=True, cluster_selection_epsilon=eps)
+    clusterer = HDBSCAN(min_cluster_size=min_samples, gen_min_span_tree=True, cluster_selection_epsilon=eps)
     clusterer.fit(points)
     return clusterer
 
@@ -473,7 +474,7 @@ def predict_cones_z(points, ground_planevals, hdbscan=False, scalar=1, dist_thre
     # run HDBSCAN and get the resulting labels and probabilities
     print(np.any(np.isnan(points)))
     if hdbscan:
-        clusterer = run_hdbscan(points)
+        clusterer = run_hdbscan(points, min_samples=2)
     else:
         clusterer = run_dbscan(points)
     labels = clusterer.labels_.reshape((-1, 1))
