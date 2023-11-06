@@ -3,6 +3,9 @@
 **/.DS_Store
 **/*.pyc
 
+# ignore environment folders
+env
+
 # ignore all data files
 **/*.gz
 **/*.npz
