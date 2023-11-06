@@ -2,7 +2,7 @@ import sys
 import os
 import numpy as np
 
-from perc22a.predictors import StereoPredictor
+from perc22a.predictors.stereo.StereoPredictor import StereoPredictor
 from perc22a.data.utils.dataloader import DataLoader
 
 def main():

@@ -1,7 +1,7 @@
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
-from perc22a.predictors import Predictor
+from perc22a.predictors.interface.PredictorInterface import Predictor
 import perc22a.predictors.utils.stereo as utils
 from perc22a.predictors.utils.cones import Cones
 
