@@ -8,8 +8,16 @@ NOTE: pipeline functions must be registered in the bottom of the file
       to be used by overall pipeline in cluster_fns
 '''
 
-from cuml import cluster
-# from hdbscan import HDBSCAN
+# import gpu clustering algorithm if gpu available
+import torch
+if torch.cuda.is_available():
+    print("[cluster.py] using GPU-accelerated clustering")
+    from cuml import cluster
+else:
+    print("[cluster.py] using CPU-only clustering")
+    from sklearn import cluster
+
+from hdbscan import HDBSCAN
 import math
 import numpy as np
 import time
