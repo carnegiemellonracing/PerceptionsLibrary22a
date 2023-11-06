@@ -31,7 +31,7 @@ CV2_COLORS = {
     cfg.COLORS.ORANGE: [0, 150, 255]
 }
 
-
+DEBUG = False
 
 class StereoPredictor(Predictor):
 #Implements Predictor interface
@@ -93,9 +93,11 @@ class StereoPredictor(Predictor):
             # utils.get_world_coords(coords)
             try:
                 world_x, world_y, world_z = utils.get_world_coords(coords)
-                print(f"\t success in (cone {i} of {num_cones})")
+                if DEBUG:
+                    print(f"\t success in (cone {i} of {num_cones})")
             except Exception:
-                print(f"\t[PERCEPTIONS WARNING] (cone {i} of {num_cones}) detected cone but no depth; throwing away")
+                if DEBUG:
+                    print(f"\t[PERCEPTIONS WARNING] (cone {i} of {num_cones}) detected cone but no depth; throwing away")
                 break
 
             #use YOLO model color prediction
@@ -107,7 +109,8 @@ class StereoPredictor(Predictor):
             elif color_str == "orange_cone" or color_str == "large_orange_cone":
                 color = cfg.COLORS.ORANGE
             else:
-                print("stereo-vision YOLO: Found unknown cone -- ignoring")
+                if DEBUG:
+                    print("stereo-vision YOLO: Found unknown cone -- ignoring")
                 color = cfg.COLORS.UNKNOWN
 
             # package information into a single prediction    
