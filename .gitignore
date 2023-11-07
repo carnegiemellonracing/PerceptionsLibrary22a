@@ -4,6 +4,9 @@
 **/*.pyc
 env
 
+# ignore environment folders
+env
+
 # ignore all data files
 **/*.gz
 **/*.npz

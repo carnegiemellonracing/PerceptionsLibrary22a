@@ -5,8 +5,12 @@ that is solely dependent on raw LiDAR point clouds.
 """
 
 # interface
+<<<<<<< HEAD
 from typing import List
 from perc22a.predictors import Predictor
+=======
+from perc22a.predictors.interface.PredictorInterface import Predictor
+>>>>>>> main
 
 # data datatypes
 from perc22a.data.utils.DataInstance import DataInstance
