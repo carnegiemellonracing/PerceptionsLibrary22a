@@ -1,28 +1,30 @@
 import math
+
 import numpy as np
 from skspatial.objects import Plane
 
-def trim_cloud(points, return_mask=False):
-    '''
-        Trims a cloud of points to reduce to a point cloud of only cone points
-        by performing a naive implementation that goes as follows
-            1. mask out all points that exceed a specific radius from the center
-            2. mask out all points that are too close to the lidar (likely car)
-            3. mask out all points that are in the ground or too high
-                - this is done by measuring point distance from a
-                  pre-defined plane
-            4. mask out all points that are outside of a specific FOV angle
 
-        Input: points - np.array of shape (N, M) where N is the number of points
-                        and M is at least 3 and the first three columns
-                        correspond to the (X, Y, Z) coordinates of the point
-               return_mask - boolean whether to return the mask that filters out the points
-        Output: if return_mask False
-                    np.array of shape (N', M) where N' <= N and the resulting array
-                    is from the result of filtering points according to the algo
-                else (return_mask True)
-                    (np.array described in False case, and numpy mask of length N)
-    '''
+def trim_cloud(points, return_mask=False):
+    """
+    Trims a cloud of points to reduce to a point cloud of only cone points
+    by performing a naive implementation that goes as follows
+        1. mask out all points that exceed a specific radius from the center
+        2. mask out all points that are too close to the lidar (likely car)
+        3. mask out all points that are in the ground or too high
+            - this is done by measuring point distance from a
+              pre-defined plane
+        4. mask out all points that are outside of a specific FOV angle
+
+    Input: points - np.array of shape (N, M) where N is the number of points
+                    and M is at least 3 and the first three columns
+                    correspond to the (X, Y, Z) coordinates of the point
+           return_mask - boolean whether to return the mask that filters out the points
+    Output: if return_mask False
+                np.array of shape (N', M) where N' <= N and the resulting array
+                is from the result of filtering points according to the algo
+            else (return_mask True)
+                (np.array described in False case, and numpy mask of length N)
+    """
 
     # # hyperparameters for naive ground filtering
     max_height = 5
@@ -62,8 +64,9 @@ def trim_cloud(points, return_mask=False):
         return points[mask]
 
 
-def remove_ground(points, boxdim=0.5, height_threshold=0.01, xmin=-100, xmax=100, ymin=-100, ymax=100):
-
+def remove_ground(
+    points, boxdim=0.5, height_threshold=0.01, xmin=-100, xmax=100, ymin=-100, ymax=100
+):
     all_points = points
     points = box_range(points, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
 
@@ -74,12 +77,11 @@ def remove_ground(points, boxdim=0.5, height_threshold=0.01, xmin=-100, xmax=100
     grid_points = []
 
     # iterate over all cells in the 2D grid overlayed on the x and y dimensions
-    for i in range(int((xmax - xmin)//boxdim)):
-        for j in range(int((ymax - ymin)//boxdim)):
-
+    for i in range(int((xmax - xmin) // boxdim)):
+        for j in range(int((ymax - ymin) // boxdim)):
             # find all points within the grid cell
-            bxmin, bxmax = xmin + i*boxdim, xmin + (i+1)*boxdim
-            bymin, bymax = ymin + j*boxdim, ymin + (j+1)*boxdim
+            bxmin, bxmax = xmin + i * boxdim, xmin + (i + 1) * boxdim
+            bymin, bymax = ymin + j * boxdim, ymin + (j + 1) * boxdim
             mask_x = np.logical_and(points[:, 0] < bxmax, bxmin < points[:, 0])
             mask_y = np.logical_and(points[:, 1] < bymax, bymin < points[:, 1])
             mask = np.logical_and(mask_x, mask_y)
@@ -102,7 +104,9 @@ def remove_ground(points, boxdim=0.5, height_threshold=0.01, xmin=-100, xmax=100
         A, B, C = tuple([val for val in plane.vector])
         D = np.dot(plane.point, plane.vector)
 
-        dist_from_plane = A*all_points[:, 0] + B*all_points[:, 1] + C*all_points[:, 2] - D
+        dist_from_plane = (
+            A * all_points[:, 0] + B * all_points[:, 1] + C * all_points[:, 2] - D
+        )
 
         # store ground plane vals here
         pc_mask = height_threshold <= dist_from_plane
@@ -113,47 +117,53 @@ def remove_ground(points, boxdim=0.5, height_threshold=0.01, xmin=-100, xmax=100
     return all_points[pc_mask], plane
 
 
-def plane_fit(pointcloud, planecloud=None, return_mask=False, boxdim=0.5, height_threshold=0.01):
+def plane_fit(
+    pointcloud, planecloud=None, return_mask=False, boxdim=0.5, height_threshold=0.01
+):
     if planecloud is None:
         planecloud = pointcloud
 
-    xmax, ymax = planecloud[:, :2].max(axis=0)
+    # Precompute the ranges to avoid recomputing in each iteration
     xmin, ymin = planecloud[:, :2].min(axis=0)
-    # print(xmax, ymax, xmin, ymin)
+    xmax, ymax = planecloud[:, :2].max(axis=0)
+    xgrid, ygrid = np.mgrid[xmin:xmax:boxdim, ymin:ymax:boxdim]
+
+    # Flatten the grid for vectorized operations
+    xflat = xgrid.ravel()
+    yflat = ygrid.ravel()
+
     LPR = []
 
-    # iterate over all cells in the 2D grid overlayed on the x and y dimensions
-    for i in range(int((xmax - xmin)//boxdim)):
-        for j in range(int((ymax - ymin)//boxdim)):
+    # Vectorize the box computation using broadcasting
+    for bxmin, bymin in zip(xflat, yflat):
+        bxmax = bxmin + boxdim
+        bymax = bymin + boxdim
+        in_box = (
+            (planecloud[:, 0] >= bxmin)
+            & (planecloud[:, 0] < bxmax)
+            & (planecloud[:, 1] >= bymin)
+            & (planecloud[:, 1] < bymax)
+        )
 
-            # find all points within the grid cell
-            bxmin, bxmax = xmin + i*boxdim, xmin + (i+1)*boxdim
-            bymin, bymax = ymin + j*boxdim, ymin + (j+1)*boxdim
-            mask_x = np.logical_and(planecloud[:, 0] < bxmax, bxmin < planecloud[:, 0])
-            mask_y = np.logical_and(planecloud[:, 1] < bymax, bymin < planecloud[:, 1])
-            mask = np.logical_and(mask_x, mask_y)
-            box = planecloud[mask]
+        box = planecloud[in_box]
 
-            # find lowest point in cell if exists
-            if box.size != 0:
-                minrow = np.argmin(box[:, 2])
-                boxLP = box[minrow].tolist()
-                LPR.append(boxLP)
+        # Vectorize the min z computation
+        if box.size > 0:
+            min_z = box[:, 2].min()
+            boxLP = box[box[:, 2] == min_z][0].tolist()
+            LPR.append(boxLP)
 
+    # Now compute the plane from the LPR points
     plane_vals = np.array([1, 2, 3, 4])
+    pc_mask = np.ones(pointcloud.shape[0], dtype=bool)  # Default to all true
 
-    if len(LPR) > 0:
-        # fit lowest points to plane and use to classify ground points
+    if LPR:
         plane = Plane.best_fit(LPR)
-        A, B, C = tuple([val for val in plane.vector])
+        A, B, C = plane.vector
         D = np.dot(plane.point, plane.vector)
-        pc_compare = A*pointcloud[:, 0] + B*pointcloud[:, 1] + C*pointcloud[:, 2]
-        # store ground plane vals here
+        pc_compare = A * pointcloud[:, 0] + B * pointcloud[:, 1] + C * pointcloud[:, 2]
         plane_vals = np.array([A, B, C, D])
-        pc_mask = D + height_threshold < pc_compare
-        # pc_mask = np.logical_and(D + height_threshold < pc_compare, pc_compare < D+height_max)
-    else:
-        pc_mask = np.ones(pointcloud.shape[0], dtype=np.uint8)
+        pc_mask = (D + height_threshold) < pc_compare
 
     if return_mask:
         return pointcloud[pc_mask], pc_mask, plane_vals
@@ -161,8 +171,17 @@ def plane_fit(pointcloud, planecloud=None, return_mask=False, boxdim=0.5, height
         return pointcloud[pc_mask]
 
 
-def box_range(pointcloud, return_mask=False, xmin=-100, xmax=100, ymin=-100, ymax=100, zmin=-100, zmax=100):
-    '''return points that are within the boudning box specified by the optional input parameters'''
+def box_range(
+    pointcloud,
+    return_mask=False,
+    xmin=-100,
+    xmax=100,
+    ymin=-100,
+    ymax=100,
+    zmin=-100,
+    zmax=100,
+):
+    """return points that are within the boudning box specified by the optional input parameters"""
     xrange = np.logical_and(xmin <= pointcloud[:, 0], pointcloud[:, 0] <= xmax)
     yrange = np.logical_and(ymin <= pointcloud[:, 1], pointcloud[:, 1] <= ymax)
     zrange = np.logical_and(zmin <= pointcloud[:, 2], pointcloud[:, 2] <= zmax)
@@ -176,9 +195,9 @@ def box_range(pointcloud, return_mask=False, xmin=-100, xmax=100, ymin=-100, yma
 
 
 def circle_range(pointcloud, return_mask=False, radiusmin=0, radiusmax=100):
-    '''return points that are within the radius plane in the x-y dimensions only, not in the z dimension!'''
+    """return points that are within the radius plane in the x-y dimensions only, not in the z dimension!"""
     # get everything within radius
-    dists = np.sqrt(np.sum(pointcloud[:, :2]**2, axis=1))
+    dists = np.sqrt(np.sum(pointcloud[:, :2] ** 2, axis=1))
     mask = np.logical_and(radiusmin <= dists, dists <= radiusmax)
 
     points_filtered = pointcloud[mask]
@@ -186,11 +205,11 @@ def circle_range(pointcloud, return_mask=False, radiusmin=0, radiusmax=100):
         return points_filtered, mask
     else:
         return points_filtered
-    
+
 
 def random_subset(pointcloud, p):
-    '''return p% of the point cloud randomly selected'''
-    assert(0 < p <= 1)
+    """return p% of the point cloud randomly selected"""
+    assert 0 < p <= 1
     n = pointcloud.shape[0]
     n_select = int(p * n)
     rand_idxs = np.random.choice(np.arange(n), n_select, replace=False)
@@ -198,7 +217,7 @@ def random_subset(pointcloud, p):
 
 
 def covered_centroid(pointcloud, centroids, radius=0.75, height=0.5, threshold=5):
-    '''filters out CENTROIDS that have some points above them with some threshold'''
+    """filters out CENTROIDS that have some points above them with some threshold"""
 
     centroids_filtered = []
 
@@ -206,7 +225,7 @@ def covered_centroid(pointcloud, centroids, radius=0.75, height=0.5, threshold=5
         center = centroids[i, :]
 
         # get all points within a radius along x and y dimensions
-        dists = np.sqrt(np.sum((pointcloud[:, :2] - center[:2])**2, axis=-1))
+        dists = np.sqrt(np.sum((pointcloud[:, :2] - center[:2]) ** 2, axis=-1))
         cone_points = pointcloud[dists < radius]
         high_points = cone_points[cone_points[:, 2] > height]
 
