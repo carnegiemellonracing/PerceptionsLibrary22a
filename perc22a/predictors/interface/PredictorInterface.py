@@ -24,10 +24,11 @@ Usage of Predictor classes will be as follows
 
 from perc22a.predictors.utils.cones import Cones
 
+
 class Predictor:
     """interface for a [Predictor] that takes time-series data from various
     sensors and performs predictions using it
-    
+
     the current list of sensor data (in numpy arrays) that we have used are...
         - point clouds
             - (N, 6) where N is the number of points in the point cloud
@@ -54,7 +55,7 @@ class Predictor:
                 - color is a 32-bit datatype with 8-bit color values packed
                 inside (R, G, B, Alpha)
         - TODO: incorporate gps collected data
-    
+
     the goal of [Predictor] sub-classes is to take the sensor data and create
     the "best" predictor of 3D cone positions
     """
@@ -65,7 +66,7 @@ class Predictor:
         and more
         """
         pass
-    
+
     def predict(data) -> Cones:
         """will take the data and predict the 3D positions of cones
 

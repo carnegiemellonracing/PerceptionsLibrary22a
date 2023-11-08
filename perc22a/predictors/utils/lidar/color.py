@@ -2,32 +2,32 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 C2RGB = {
-    "blue": [7, 61, 237],       # cone color: Blue RYB
-    "yellow": [255, 209, 92],   # cone color: Maize Crayola
-    "nocolor": [0, 0, 0],       # undetermined cone color: Black
-    "white": [255, 255, 255],   # undetermined cone color: White
-    "red": [232, 49, 81]        # midline spline color: Amaranth
+    "blue": [7, 61, 237],  # cone color: Blue RYB
+    "yellow": [255, 209, 92],  # cone color: Maize Crayola
+    "nocolor": [0, 0, 0],  # undetermined cone color: Black
+    "white": [255, 255, 255],  # undetermined cone color: White
+    "red": [232, 49, 81],  # midline spline color: Amaranth
 }
 
 
 def split_by_y(points):
-    '''
-        assumes that points is N x 3 (idx, x, y)
-        returns left_arr and right_arr where left_arr is all points in points
-        with y < 0 and right_arr is all points in points with y >= 0
-    '''
+    """
+    assumes that points is N x 3 (idx, x, y)
+    returns left_arr and right_arr where left_arr is all points in points
+    with y < 0 and right_arr is all points in points with y >= 0
+    """
     right_idxs = points[:, 1] >= 0
     return points[np.logical_not(right_idxs)], points[right_idxs]
 
 
 def next_point_simple(curr_point, points, dir, max_angle_diff=np.pi / 3.5):
-    '''
-        assume that curr_point is (3,) and points is N x 3 (idx, x, y)
-        dir is an angle in radians
+    """
+    assume that curr_point is (3,) and points is N x 3 (idx, x, y)
+    dir is an angle in radians
 
-        looks for a point in from of the point at some max radius
-        and at some thresholded value of how far off of the radius to consider
-    '''
+    looks for a point in from of the point at some max radius
+    and at some thresholded value of how far off of the radius to consider
+    """
 
     max_dist = 6
 
@@ -61,24 +61,24 @@ def plot_dir(start, dir, scale=3):
 
 
 def plot(centers, colors):
-    '''
-        assumes that centers is N x 2
-        and colors is N x 1 and corresponds to centers
-    '''
+    """
+    assumes that centers is N x 2
+    and colors is N x 1 and corresponds to centers
+    """
     plt.scatter(centers[:, 0], centers[:, 1], c=colors)
     plt.scatter([0], [0], c="red")
     plt.xlim([-10, 10])
     plt.ylim([-5, 40])
-    plt.gca().set_aspect('equal')
+    plt.gca().set_aspect("equal")
 
 
 def color_cones(centers):
-    '''
-        assumes that centers is N x 3
+    """
+    assumes that centers is N x 3
 
-        algorithm should check track bounds so that we are not creating
-        incorrect predictions
-    '''
+    algorithm should check track bounds so that we are not creating
+    incorrect predictions
+    """
 
     # TODO: get a better algorithm for selecting the first point!!!
     # TODO: get a better algorithm for selecting the next point!!!
@@ -139,12 +139,13 @@ def color_cones(centers):
         else:
             return None, centers_remaining, colors
 
-    seed_yellow_point, centers_remaining, colors = get_seed(right_points, centers_remaining, colors, "yellow")
+    seed_yellow_point, centers_remaining, colors = get_seed(
+        right_points, centers_remaining, colors, "yellow"
+    )
 
     # YELLOW cone path
     # get closest, right point and update
     if seed_yellow_point is not None:
-
         # init path search
         point_curr = seed_yellow_point
         angle = np.pi / 2
@@ -152,7 +153,8 @@ def color_cones(centers):
         while True:
             # get new point
             point_new, angle_new = next_point_simple(
-                point_curr, centers_remaining, angle, max_angle_diff=max_angle_diff)
+                point_curr, centers_remaining, angle, max_angle_diff=max_angle_diff
+            )
             if point_new is None:
                 break
 
@@ -168,9 +170,10 @@ def color_cones(centers):
 
     # BLUE cone path
     left_points, _ = split_by_y(centers_remaining)
-    seed_blue_point, centers_remaining, colors = get_seed(left_points, centers_remaining, colors, "blue")
+    seed_blue_point, centers_remaining, colors = get_seed(
+        left_points, centers_remaining, colors, "blue"
+    )
     if seed_blue_point is not None:
-
         # init path search
         point_curr = seed_blue_point
         angle = np.pi / 2
@@ -178,7 +181,8 @@ def color_cones(centers):
         while True:
             # get new point
             point_new, angle_new = next_point_simple(
-                point_curr, centers_remaining, angle, max_angle_diff=max_angle_diff)
+                point_curr, centers_remaining, angle, max_angle_diff=max_angle_diff
+            )
             if point_new is None:
                 break
 

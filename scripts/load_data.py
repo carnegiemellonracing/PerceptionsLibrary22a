@@ -19,5 +19,6 @@ def main():
         cv2.imshow(f"left image (idx: {i})", img)
         cv2.waitKey(0)
 
+
 if __name__ == "__main__":
     main()
