@@ -16,7 +16,7 @@ def main():
     dl = DataLoader("perc22a/data/raw/track-testing-09-29")
     lp = LidarPredictor()
 
-    for i in range(30):
+    for i in range(len(dl)):
         # load the i-th image from track testing run
         cones = lp.predict(dl[i])
         print(cones)
