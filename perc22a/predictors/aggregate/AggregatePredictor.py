@@ -40,7 +40,7 @@ class AggregatePredictor(Predictor):
         self.transformed_stereo = Cones()
 
         # self.points_cluster = self.calc_point_cluster(data)
-        self.points_cluster = self.Lidar.points_cluster
+        self.points_cluster = self.transformer.to_origin('lidar', self.Lidar.points_cluster, False)
 
         #PoseTransformations takes in numpy arr
         lidar_blue, lidar_yellow, lidar_orange = lidar_cones.get_cones()
