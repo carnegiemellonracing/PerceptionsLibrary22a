@@ -117,21 +117,23 @@ def remove_ground(
     return all_points[pc_mask], plane
 
 
-def plane_fit(
-    pointcloud, planecloud=None, return_mask=False, boxdim=0.5, height_threshold=0.01
-):
-    if planecloud is None:
-        planecloud = pointcloud
+import cupy as cp
+from skspatial.objects import Plane
+
+def plane_fit(pointcloud, planecloud=None, return_mask=False, boxdim=0.5, height_threshold=0.01):
+    # Convert the pointclouds to GPU arrays
+    pointcloud = cp.asarray(pointcloud)
+    planecloud = cp.asarray(planecloud) if planecloud is not None else pointcloud
 
     # Precompute the ranges to avoid recomputing in each iteration
-    xmin, ymin = planecloud[:, :2].min(axis=0)
-    xmax, ymax = planecloud[:, :2].max(axis=0)
+    xmin, ymin = cp.min(planecloud[:, :2], axis=0)
+    xmax, ymax = cp.max(planecloud[:, :2], axis=0)
 
     # Create grid points for each box
-    xgrid = np.arange(xmin, xmax, boxdim)
-    ygrid = np.arange(ymin, ymax, boxdim)
-    xgrid, ygrid = np.meshgrid(xgrid, ygrid)
-
+    xgrid = cp.arange(xmin, xmax, boxdim)
+    ygrid = cp.arange(ymin, ymax, boxdim)
+    xgrid, ygrid = cp.meshgrid(xgrid, ygrid)
+    
     # Flatten the grid for vectorized operations
     xflat = xgrid.ravel()
     yflat = ygrid.ravel()
@@ -153,26 +155,29 @@ def plane_fit(
 
         # Vectorize the min z computation
         if box.size > 0:
-            min_z = box[:, 2].min()
+            min_z = cp.min(box[:, 2])
             boxLP = box[box[:, 2] == min_z][0].tolist()
             LPR.append(boxLP)
 
     # Compute the plane from the LPR points
-    plane_vals = np.array([1, 2, 3, 4])
-    pc_mask = np.ones(pointcloud.shape[0], dtype=bool)  # Default to all true
+    plane_vals = cp.array([1, 2, 3, 4])
+    pc_mask = cp.ones(pointcloud.shape[0], dtype=bool)  # Default to all true
 
     if LPR:
+        # Convert LPR back to a NumPy array for Plane fitting (skspatial not GPU compatible)
+        LPR = cp.asnumpy(cp.array(LPR))
         plane = Plane.best_fit(LPR)
         A, B, C = plane.vector
-        D = np.dot(plane.point, plane.vector)
+        D = cp.dot(plane.point, plane.vector)
         pc_compare = A * pointcloud[:, 0] + B * pointcloud[:, 1] + C * pointcloud[:, 2]
-        plane_vals = np.array([A, B, C, D])
+        plane_vals = cp.array([A, B, C, D])
         pc_mask = (D + height_threshold) < pc_compare
 
     if return_mask:
-        return pointcloud[pc_mask], pc_mask, plane_vals
+        return cp.asnumpy(pointcloud[pc_mask]), cp.asnumpy(pc_mask), cp.asnumpy(plane_vals)
     else:
-        return pointcloud[pc_mask]
+        return cp.asnumpy(pointcloud[pc_mask])
+
 
 
 def box_range(
