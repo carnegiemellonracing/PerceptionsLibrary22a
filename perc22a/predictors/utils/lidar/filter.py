@@ -130,11 +130,15 @@ def plane_fit(
     xmin, ymin = cp.min(planecloud[:, :2], axis=0)
     xmax, ymax = cp.max(planecloud[:, :2], axis=0)
 
+    # Ensure boxdim is CuPy compatible
+    boxdim_cp = cp.asarray(boxdim)
+
+    # Create grids using CuPy compatible ranges
     xgrid, ygrid = cp.meshgrid(
-        cp.arange(xmin, xmax, boxdim), cp.arange(ymin, ymax, boxdim)
+        cp.arange(xmin, xmax, boxdim_cp), cp.arange(ymin, ymax, boxdim_cp)
     )
     xflat, yflat = xgrid.ravel(), ygrid.ravel()
-    bxmax, bymax = xflat + boxdim, yflat + boxdim
+    bxmax, bymax = xflat + boxdim_cp, yflat + boxdim_cp
 
     LPR = []
 
