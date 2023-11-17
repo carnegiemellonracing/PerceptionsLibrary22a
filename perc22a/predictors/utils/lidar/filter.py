@@ -128,9 +128,10 @@ def plane_fit(
     pointcloud = cp.asarray(pointcloud)
     planecloud = cp.asarray(planecloud) if planecloud is not None else pointcloud
 
-    # Precompute the ranges to avoid recomputing in each iteration
-    xmin, ymin = cp.min(planecloud[:, :2], axis=0)
-    xmax, ymax = cp.max(planecloud[:, :2], axis=0)
+    # Ensure xmin, xmax, ymin, ymax, and boxdim are CuPy compatible
+    xmin, ymin = cp.min(planecloud[:, :2], axis=0).get()
+    xmax, ymax = cp.max(planecloud[:, :2], axis=0).get()
+    boxdim = cp.asarray(boxdim)
 
     # Create grid points for each box
     xgrid = cp.arange(xmin, xmax, boxdim)
