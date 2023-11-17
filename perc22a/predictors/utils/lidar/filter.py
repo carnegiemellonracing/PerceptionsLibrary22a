@@ -171,10 +171,13 @@ def plane_fit(
         # Convert LPR back to a NumPy array for Plane fitting (skspatial not GPU compatible)
         LPR = cp.array(LPR).get()
         plane = Plane.best_fit(LPR)
-        A, B, C = plane.vector
-        D = cp.dot(cp.asarray(plane.point), cp.asarray(plane.vector))
+
+        # Convert plane vector components to CuPy compatible types
+        A, B, C = cp.asarray(plane.vector)
+        D = cp.asarray(np.dot(plane.point, plane.vector))
+
         pc_compare = A * pointcloud[:, 0] + B * pointcloud[:, 1] + C * pointcloud[:, 2]
-        plane_vals = cp.array([A, B, C, D])
+        plane_vals = cp.array([A.get(), B.get(), C.get(), D.get()])
         pc_mask = (D + height_threshold) < pc_compare
 
     if return_mask:
