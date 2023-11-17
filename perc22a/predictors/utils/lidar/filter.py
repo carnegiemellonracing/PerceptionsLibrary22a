@@ -117,7 +117,7 @@ def remove_ground(
     return all_points[pc_mask], plane
 
 
-def plane_fit_optimized(
+def plane_fit(
     pointcloud, planecloud=None, return_mask=False, boxdim=0.5, height_threshold=0.01
 ):
     if planecloud is None:
