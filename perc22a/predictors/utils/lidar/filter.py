@@ -120,7 +120,10 @@ def remove_ground(
 import cupy as cp
 from skspatial.objects import Plane
 
-def plane_fit(pointcloud, planecloud=None, return_mask=False, boxdim=0.5, height_threshold=0.01):
+
+def plane_fit(
+    pointcloud, planecloud=None, return_mask=False, boxdim=0.5, height_threshold=0.01
+):
     # Convert the pointclouds to GPU arrays
     pointcloud = cp.asarray(pointcloud)
     planecloud = cp.asarray(planecloud) if planecloud is not None else pointcloud
@@ -133,7 +136,7 @@ def plane_fit(pointcloud, planecloud=None, return_mask=False, boxdim=0.5, height
     xgrid = cp.arange(xmin, xmax, boxdim)
     ygrid = cp.arange(ymin, ymax, boxdim)
     xgrid, ygrid = cp.meshgrid(xgrid, ygrid)
-    
+
     # Flatten the grid for vectorized operations
     xflat = xgrid.ravel()
     yflat = ygrid.ravel()
@@ -165,19 +168,18 @@ def plane_fit(pointcloud, planecloud=None, return_mask=False, boxdim=0.5, height
 
     if LPR:
         # Convert LPR back to a NumPy array for Plane fitting (skspatial not GPU compatible)
-        LPR = cp.asnumpy(cp.array(LPR))
+        LPR = cp.array(LPR).get()
         plane = Plane.best_fit(LPR)
         A, B, C = plane.vector
-        D = cp.dot(plane.point, plane.vector)
+        D = cp.dot(cp.asarray(plane.point), cp.asarray(plane.vector))
         pc_compare = A * pointcloud[:, 0] + B * pointcloud[:, 1] + C * pointcloud[:, 2]
         plane_vals = cp.array([A, B, C, D])
         pc_mask = (D + height_threshold) < pc_compare
 
     if return_mask:
-        return cp.asnumpy(pointcloud[pc_mask]), cp.asnumpy(pc_mask), cp.asnumpy(plane_vals)
+        return pointcloud[pc_mask].get(), pc_mask.get(), plane_vals.get()
     else:
-        return cp.asnumpy(pointcloud[pc_mask])
-
+        return pointcloud[pc_mask].get()
 
 
 def box_range(
