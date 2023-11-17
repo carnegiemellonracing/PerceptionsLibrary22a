@@ -117,7 +117,7 @@ def remove_ground(
     return all_points[pc_mask], plane
 
 
-def plane_fit(
+def plane_fit_optimized(
     pointcloud, planecloud=None, return_mask=False, boxdim=0.5, height_threshold=0.01
 ):
     if planecloud is None:
@@ -126,18 +126,22 @@ def plane_fit(
     # Precompute the ranges to avoid recomputing in each iteration
     xmin, ymin = planecloud[:, :2].min(axis=0)
     xmax, ymax = planecloud[:, :2].max(axis=0)
-    xgrid, ygrid = np.mgrid[xmin:xmax:boxdim, ymin:ymax:boxdim]
+
+    # Create grid points for each box
+    xgrid = np.arange(xmin, xmax, boxdim)
+    ygrid = np.arange(ymin, ymax, boxdim)
+    xgrid, ygrid = np.meshgrid(xgrid, ygrid)
 
     # Flatten the grid for vectorized operations
     xflat = xgrid.ravel()
     yflat = ygrid.ravel()
+    bxmax = xflat + boxdim
+    bymax = yflat + boxdim
 
     LPR = []
 
     # Vectorize the box computation using broadcasting
-    for bxmin, bymin in zip(xflat, yflat):
-        bxmax = bxmin + boxdim
-        bymax = bymin + boxdim
+    for bxmin, bymin, bxmax, bymax in zip(xflat, yflat, bxmax, bymax):
         in_box = (
             (planecloud[:, 0] >= bxmin)
             & (planecloud[:, 0] < bxmax)
@@ -153,7 +157,7 @@ def plane_fit(
             boxLP = box[box[:, 2] == min_z][0].tolist()
             LPR.append(boxLP)
 
-    # Now compute the plane from the LPR points
+    # Compute the plane from the LPR points
     plane_vals = np.array([1, 2, 3, 4])
     pc_mask = np.ones(pointcloud.shape[0], dtype=bool)  # Default to all true
 
