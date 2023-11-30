@@ -7,6 +7,10 @@ that is solely dependent on raw LiDAR point clouds.
 # interface
 from perc22a.predictors.interface.PredictorInterface import Predictor
 
+# data datatypes
+from perc22a.data.utils.DataInstance import DataInstance
+from perc22a.data.utils.DataType import DataType
+
 # predict output datatype
 from perc22a.predictors.utils.cones import Cones
 
@@ -17,12 +21,16 @@ import perc22a.predictors.utils.lidar.cluster as cluster
 import perc22a.predictors.utils.lidar.color as color
 
 import numpy as np
+from typing import List
 
 class LidarPredictor(Predictor):
 
     def __init__(self):
         self.window = vis.init_visualizer_window()
         pass
+
+    def required_data():
+        return [DataType.HESAI_POINTCLOUD]
 
     def _transform_points(self, points):
         points = points[:, :3]
@@ -31,8 +39,8 @@ class LidarPredictor(Predictor):
 
         return points
 
-    def predict(self, data) -> Cones:
-        points = self._transform_points(data["points"])
+    def predict(self, data: DataInstance) -> Cones:
+        points = self._transform_points(data[DataType.HESAI_POINTCLOUD])
         self.points = points
 
         # remove all points with nan values

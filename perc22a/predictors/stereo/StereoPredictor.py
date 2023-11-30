@@ -1,9 +1,14 @@
 import ssl
+from typing import List
 ssl._create_default_https_context = ssl._create_unverified_context
+
+# input and output datatypes for data and cones respectively
+from perc22a.data.utils.DataInstance import DataInstance
+from perc22a.data.utils.DataType import DataType
+from perc22a.predictors.utils.cones import Cones
 
 from perc22a.predictors.interface.PredictorInterface import Predictor
 import perc22a.predictors.utils.stereo as utils
-from perc22a.predictors.utils.cones import Cones
 
 import torch
 import statistics
@@ -46,16 +51,18 @@ class StereoPredictor(Predictor):
         #Used for visualization in display()
         self.predictions = []
         self.boxes_with_depth = []
-        
 
-    def predict(self, data) -> Cones:
+    def required_data() -> List[DataType]:
+        return [DataType.ZED_LEFT_COLOR, DataType.ZED_XYZ_IMG]
+
+    def predict(self, data: DataInstance) -> Cones:
 
         # initialize return type for cones
         cones = Cones()
 
         #access left_img and zed_pts from data dict(just hardcoded for now)
-        self.left_img = data['left_color']
-        self.zed_pts = data['xyz_image']
+        self.left_img = data[DataType.ZED_LEFT_COLOR]
+        self.zed_pts = data[DataType.ZED_XYZ_IMG]
 
         pad = 5
 
