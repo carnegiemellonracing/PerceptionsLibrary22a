@@ -29,7 +29,7 @@ class LidarPredictor(Predictor):
         self.window = vis.init_visualizer_window()
         pass
 
-    def required_data():
+    def required_data(self):
         return [DataType.HESAI_POINTCLOUD]
 
     def _transform_points(self, points):

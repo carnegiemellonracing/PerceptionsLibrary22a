@@ -52,7 +52,7 @@ class StereoPredictor(Predictor):
         self.predictions = []
         self.boxes_with_depth = []
 
-    def required_data() -> List[DataType]:
+    def required_data(self) -> List[DataType]:
         return [DataType.ZED_LEFT_COLOR, DataType.ZED_XYZ_IMG]
 
     def predict(self, data: DataInstance) -> Cones:
