@@ -4,21 +4,22 @@ This file contains the implementation of the perceptions predictions algorithm
 that is solely dependent on raw LiDAR point clouds.
 """
 
+import cProfile
+
+import numpy as np
+
+import perc22a.predictors.utils.lidar.cluster as cluster
+import perc22a.predictors.utils.lidar.color as color
+import perc22a.predictors.utils.lidar.filter as filter
+
+# visualization and core lidar algorithm functions
+import perc22a.predictors.utils.lidar.visualization as vis
+
 # interface
 from perc22a.predictors.interface.PredictorInterface import Predictor
 
 # predict output datatype
 from perc22a.predictors.utils.cones import Cones
-
-# visualization and core lidar algorithm functions
-import perc22a.predictors.utils.lidar.visualization as vis
-import perc22a.predictors.utils.lidar.filter as filter
-import perc22a.predictors.utils.lidar.cluster as cluster
-import perc22a.predictors.utils.lidar.color as color
-
-import numpy as np
-
-import cProfile
 
 
 class LidarPredictor(Predictor):
@@ -76,8 +77,11 @@ class LidarPredictor(Predictor):
             return_mask=True,
         )
 
-        # still over 200K points, so take subset to make DBSCAN faster
-        points_cluster_subset = filter.random_subset(points_cluster, 0.03)
+        # Original call using random_subset
+        # points_cluster_subset = filter.random_subset(points_cluster, 0.03)
+
+        voxel_size = 0.1  # Example voxel size
+        points_cluster_subset = filter.voxel_downsample(points, voxel_size)
 
         # predict cones using a squashed point cloud and then unsquash
         cone_centers = cluster.predict_cones_z(

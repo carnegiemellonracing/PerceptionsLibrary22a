@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+import open3d as o3d
 from skspatial.objects import Plane
 
 
@@ -251,3 +252,23 @@ def covered_centroid(pointcloud, centroids, radius=0.75, height=0.5, threshold=5
         centroids_filtered = np.vstack(centroids_filtered)
     centroids_filtered = np.array(centroids_filtered)
     return centroids_filtered
+
+
+#! The new function — still in testing
+def voxel_downsample(points, voxel_size=0.1):
+    """
+    Downsamples a point cloud using voxelization.
+    :param points: numpy array of points (shape: N x 3)
+    :param voxel_size: the voxel size for downsampling
+    :return: numpy array of downsampled points
+    """
+    # Convert numpy points to Open3D point cloud
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(points)
+
+    # Perform voxel downsampling
+    pcd_downsampled = pcd.voxel_down_sample(voxel_size)
+
+    # Convert back to numpy array
+    points_downsampled = np.asarray(pcd_downsampled.points)
+    return points_downsampled
