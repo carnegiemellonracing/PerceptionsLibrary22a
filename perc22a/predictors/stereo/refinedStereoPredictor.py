@@ -1,13 +1,9 @@
 import cv2
 import numpy as np
 import time
-import os
-import csv
+from perc22a.predictors.utils.cones import Cones
 
-
-cones = list()
-
-def triangleOptimization(cone_contours, image, coneRange, shownCounter, counter, color, depth_img):
+def triangleOptimization(self, cone_contours, coneRange, shownCounter, counter, color, depth_img):
     while shownCounter < coneRange:
         cnt = cone_contours[counter]
 
@@ -15,8 +11,6 @@ def triangleOptimization(cone_contours, image, coneRange, shownCounter, counter,
         if len(approx) >= 2.95 or len(approx) <= 3.05:
             shownCounter += 1
             counter += 1
-
-            drawColor = (0, 0, 0)
 
             M = cv2.moments(cnt)
             if M["m00"] == 0:
@@ -26,23 +20,11 @@ def triangleOptimization(cone_contours, image, coneRange, shownCounter, counter,
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
             depth = depth_img[cY][cX]
-
-            if color == "blue":
-                showColor = (255, 0, 0)
-            elif color == "yellow":
-                showColor = (0, 255, 255)
-            elif color == "orange":
-                showColor = (0, 165, 255)
             
             if not (depth == float("inf") or depth ==float("-inf") or np.isnan(depth)):
                 if depth < 20:
-                    image = cv2.drawContours(image, [cnt], -1, showColor, 20)
                     cone = [cX, cY, depth, color]
-                    cones.append(cone)
-
-                    cv2.putText(image, str(depth), (cX - 20, cY - 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-                    print("Center: " + str(cX) + ", " + str(cY) + ", " + str(depth))
+                    self.cones.append(cone)
         if counter == len(cone_contours):
             break
 
@@ -79,12 +61,8 @@ def getBrightnessDelta(image):
     # import pdb; pdb.set_trace()
     return int(125 - np.average(v).item())
 
-def getCones(actual_mask, image, color, depth_img):
+def getCones(self, actual_mask, image, color, depth_img):
     actual_mask = cv2.blur(actual_mask, (1, 1), 0)
-
-
-    # cv2.imshow("blueee", img_hsv)
-    # cv2.waitKey(0)
 
     cone_contours, _ = cv2.findContours(actual_mask,
     cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -100,14 +78,13 @@ def getCones(actual_mask, image, color, depth_img):
     if len(cone_contours) < 20: coneRange = len(cone_contours)
     shownCounter = 0
     counter = 0
-    cv2.drawContours(image, cone_contours, -1, 255, 2)
-    triangleOptimization(cone_contours, image, coneRange, shownCounter, counter, color, depth_img)
+    triangleOptimization(self, cone_contours, coneRange, shownCounter, counter, color, depth_img)
 
     # import pdb; pdb.set_trace()
 
     print("Drawing Bounding Boxes: " + str((time.time_ns() - start) / 1000000))
 
-def detectCones(image, depth_img):
+def detectCones(self, image, depth_img):
     overallStart = time.time_ns()
     start = time.time_ns()
 
@@ -136,52 +113,32 @@ def detectCones(image, depth_img):
     orange_mask = cv2.vconcat([black_mask[:int(len(black_mask)*0.55)], orange_mask])
 
     actual_mask = black_mask + yellow_mask + blue_mask + orange_mask
-    
-    getCones(blue_mask, image, "blue", depth_img)
-    getCones(yellow_mask, image, "yellow", depth_img)
-    getCones(orange_mask, image, "orange", depth_img)
+
+
+    getCones(self, blue_mask, image, "blue", depth_img)
+    getCones(self, yellow_mask, image, "yellow", depth_img)
+    getCones(self, orange_mask, image, "orange", depth_img)
 
     start = time.time_ns()
-
-    cv2.imshow("Saket Is Genius?????????????????????", image)
-    cv2.waitKey(0)
     # cv2.imshow("blue??", actual_mask)
     # cv2.waitKey(0)
 
     print("Showing Image: " + str((time.time_ns() - start) / 1000000))
     start = time.time_ns()
     print("Final Image: " + str((time.time_ns() - overallStart) / 1000000))
-    add_cones_to_file(cones)
 
-def add_cones_to_file(cones):
-    with open('output.csv', mode='a') as output_file:
-        output_writer = csv.writer(output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        for cone in cones:
-            output_writer.writerow(cone)
+    return Cones()
     
 
-for i in range(23, 155):
-    array = np.load(f"track-testing-09-29/instance-{i}.npz")
-    left_img = array['left_color'] 
-    depth_img = array['depth_image']
+# for i in range(23, 155):
+#     array = np.load(f"track-testing-09-29/instance-{i}.npz")
+#     left_img = array['left_color'] 
+#     depth_img = array['depth_image']
 
-# for i in range(30):
-#     array = np.load(f"np-data/instance-{i}.npz")
-#     left_img = array['left']
 
-# for i in range(30):
-#     array = np.load(f"9-30/instance-{i}.npz")
-#     left_img = array['left']
-
-# for i in range(82):
-#     array = np.load(f"arthur/instance-{i}.npz")
-#     left_img = array['left_color']
-
-# directory = "FSOCO-MIT/test/images"
-# for filename in os.listdir(directory):
-#     if filename.endswith(".jpg" or ".npz"):
-#         left_img = cv2.imread(os.path.join(directory, filename))
-    detectCones(left_img, depth_img)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-cv2.destroyAllWindows()
+def getConeCoords(self, data) -> Cones:
+    self.left_img = data['left_color']
+    self.depth_img = data['depth_image']
+    self.cones = Cones()
+    detectCones(self, self.left_img, self.depth_img)
+    return self.cones
