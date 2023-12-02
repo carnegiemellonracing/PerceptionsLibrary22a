@@ -4,14 +4,13 @@ from perc22a.predictors.stereo.ThresholdPredictor import ThresholdPredictor
 from perc22a.data.utils.dataloader import DataLoader
 
 def main():
-    tp = ThresholdPredictor('ultralytics/yolov5', 'perc22a/predictors/stereo/model_params.pt')
-    dl = DataLoader("perc22a/data/raw/track-testing-09-29")
+    tp = ThresholdPredictor()
 
-    for i in range(len(dl)):
-        cones = tp.predict(dl[i])
+    for i in range(23, 155):
+        array = np.load(f"perc22a/data/raw/track-testing-09-29/instance-{i}.npz")
+        cones = tp.predict(array)
         print(cones)
-        tp.display()
-
+        tp.visualize(array)
 
 if __name__ == "__main__":
     main()
