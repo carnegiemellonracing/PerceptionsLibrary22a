@@ -3,6 +3,22 @@ import numpy as np
 import time
 from perc22a.predictors.utils.cones import Cones
 
+class ThresholdPredictor:
+    def __init__(self, data):
+        self.left_img = data['left_color']
+        self.depth_img = data['depth_image']
+        self.cones = Cones()
+
+    def predict(self):
+        detectCones(self, self.left_img, self.depth_img)
+        return self.cones
+    
+    def visualize(self, image):
+        for cone in self.cones:
+            cv2.circle(image, (cone[0], cone[1]), 5, (0, 255, 0), -1)
+        return image
+
+
 def triangleOptimization(self, cone_contours, coneRange, shownCounter, counter, color, depth_img):
     while shownCounter < coneRange:
         cnt = cone_contours[counter]
@@ -61,28 +77,6 @@ def getBrightnessDelta(image):
     # import pdb; pdb.set_trace()
     return int(125 - np.average(v).item())
 
-def getCones(self, actual_mask, image, color, depth_img):
-    actual_mask = cv2.blur(actual_mask, (1, 1), 0)
-
-    cone_contours, _ = cv2.findContours(actual_mask,
-    cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    start = time.time_ns()
-    # cone_contours_yellow = sorted(cone_contours_yellow, key = cv2.contourArea, reverse=True)
-    cone_contours = sorted(cone_contours, key = cv2.contourArea, reverse=True)
-    print("Sorting Contours: " + str((time.time_ns() - start) / 1000000))
-    start = time.time_ns()
-    # if contours have been detected, draw them
-    coneRange = 0
-    if len(cone_contours) >= 20: coneRange = 20
-    if len(cone_contours) < 20: coneRange = len(cone_contours)
-    shownCounter = 0
-    counter = 0
-    triangleOptimization(self, cone_contours, coneRange, shownCounter, counter, color, depth_img)
-
-    # import pdb; pdb.set_trace()
-
-    print("Drawing Bounding Boxes: " + str((time.time_ns() - start) / 1000000))
 
 def detectCones(self, image, depth_img):
     overallStart = time.time_ns()
@@ -128,17 +122,3 @@ def detectCones(self, image, depth_img):
     print("Final Image: " + str((time.time_ns() - overallStart) / 1000000))
 
     return Cones()
-    
-
-# for i in range(23, 155):
-#     array = np.load(f"track-testing-09-29/instance-{i}.npz")
-#     left_img = array['left_color'] 
-#     depth_img = array['depth_image']
-
-
-def getConeCoords(self, data) -> Cones:
-    self.left_img = data['left_color']
-    self.depth_img = data['depth_image']
-    self.cones = Cones()
-    detectCones(self, self.left_img, self.depth_img)
-    return self.cones
