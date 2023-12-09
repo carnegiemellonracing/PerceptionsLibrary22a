@@ -2,48 +2,59 @@
 
 ## Setup
 
-After cloning the package to your local machine, you need to add the location (i.e. directory) of the `perc22a` folder to your `PYTHONPATH` environment variable. This is necessary so that any script that you write can simply call `import perc22a` and Python will be able to find it in your Python path.
+1. **Clone the Repository:**
+   ```bash
+   git clone [repository-link]
+   cd PerceptionsLibrary22a
+   ```
 
-First, we have to get the absolute path of the `PerceptionsLibrary22a` repository. To do this, immediately after cloning, run
-```
-cd PerceptionsLibrary22a
-pwd
-```
-Copy the result of `pwd` (your absolute path to the library), open your `~/.zshrc` or `~/.bashrc` or equivalent (using `vim` or `nano`), and add the following line
-```
-export PYTHONPATH="<path to PerceptionsLibrary22a>:$PYTHONPATH"
-```
-Note that the result of `pwd` replaces <...>
+2. **Setup Virtual Environment:**
+   Ensure you have Python 3.8 installed, then create a virtual environment:
+   ```bash
+   python3.8 -m venv env
+   source env/bin/activate
+   ```
 
-After doing this, exit your editor, source your 'rc' file, and echo `$PYTHONPATH` like so (assuming in `zsh`)
-```
-source ~/.zshrc
-echo $PYTHONPATH
-```
-You should now see your path to `PerceptionsLibrary22a` show up in `$PYTHONPATH`.
+3. **Install Dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-As a final check, run
-```
-python3 scripts/test_setup.py
-```
-Note that you will that your current/present working directory will be inside of `PerceptionsLibrary22a`. If your setup is good, you should see `"Running 'import perc22a' successful"`.
+4. **Set PYTHONPATH:**
+   To ensure `import perc22a` works in any script, add the absolute path of the `PerceptionsLibrary22a` to your `PYTHONPATH`:
+   ```bash
+   echo "export PYTHONPATH=\"$(pwd):$PYTHONPATH\"" >> ~/.zshrc # or ~/.bashrc
+   source ~/.zshrc # or ~/.bashrc
+   ```
 
-Now, you are ready to start using the perceptions library!
+5. **Verify Setup:**
+   Confirm the path was correctly added by echoing the `$PYTHONPATH`:
+   ```bash
+   echo $PYTHONPATH
+   ```
+   Test the setup:
+   ```bash
+   python scripts/test_setup.py
+   ```
+   Successful output: `"Running 'import perc22a' successful"`.
+
 
 ## Loading Data
 
-Go to [this Google Drive Link](https://drive.google.com/drive/folders/12l2DpvS4oEfl7_Noc7oUX4AcIDCfB8Zc?usp=drive_link) download any of the `<name>.tar.gz` files and move it to the `data/raw/` folder. Note that this file will be quite large and will be even larger when untar-ed (up to and more than 10GB). Inside of it, extract the contents by running
-```
-tar -zxvf <name>.tar.gz
-```
-This will create a folder labeled as `data/raw/<name>`. Inside of the folder, you will find multiple files labeled `instance-<n>.npz`. Each of these files are a snapshot of the sensor data while the car was driving during track testing and areordered by number.
+1. **Download Data:** 
+   Fetch the data from [this Google Drive Link](https://drive.google.com/drive/folders/12l2DpvS4oEfl7_Noc7oUX4AcIDCfB8Zc?usp=drive_link) and place the `<name>.tar.gz` files in the `data/raw/` directory. Note: The files are large and can expand to more than 10GB when extracted.
 
-We've implemented a Python class for loading the data in a nice way called the `DataLoader` loacted in `data/utils/dataloader.py`. 
+2. **Extract Data:**
+   ```bash
+   tar -zxvf data/raw/<name>.tar.gz
+   ```
+   This creates a `data/raw/<name>` directory containing numerous `instance-<n>.npz` files, which represent snapshots of sensor data during track testing.
 
-A sample script using the data loader can be found at `scripts/load_data.py`. To run it, go to the root of the repository, and run
-```
-python3 scripts/load_data.py
-```
-This program will display a `cv2` window (`cv2` is a great library for displaying images and doing computer vision operations on them too). Click on the image and press any key some number of times. This will tab through the data in the track testing. 
-
-If you would like to quit the program, go to the terminal containing the running code, press `<Ctrl-C>`, and then, click on the `cv2` window and press a key. Then, the process should exit and you can run commands on your terminal. If that doesn't work, you can keep pressing keys until all images are looped through.
+3. **Use DataLoader:**
+   The `DataLoader` class, found in `data/utils/dataloader.py`, provides a convenient method for data access.
+   
+   To demonstrate its use:
+   ```bash
+   python3 scripts/load_data.py
+   ```
+   This displays a `cv2` window. Click on the image and press any key to navigate through the data. To exit, either hit `<Ctrl-C>` in the terminal and press a key in the `cv2` window or continue pressing keys until all images are cycled through.
