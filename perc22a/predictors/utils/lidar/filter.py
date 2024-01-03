@@ -118,26 +118,26 @@ def remove_ground(
     return all_points[pc_mask], plane
 
 
-import cupy as cp
+import numpy as np
 from skspatial.objects import Plane
 
 
 def plane_fit(
     pointcloud, planecloud=None, return_mask=False, boxdim=0.5, height_threshold=0.01
 ):
-    # Convert the pointclouds to GPU arrays
-    pointcloud = cp.asarray(pointcloud)
-    planecloud = cp.asarray(planecloud) if planecloud is not None else pointcloud
+    # Convert the pointclouds to NumPy arrays
+    pointcloud = np.asarray(pointcloud)
+    planecloud = np.asarray(planecloud) if planecloud is not None else pointcloud
 
-    # Ensure xmin, xmax, ymin, ymax, and boxdim are CuPy compatible
-    xmin, ymin = cp.min(planecloud[:, :2], axis=0).get()
-    xmax, ymax = cp.max(planecloud[:, :2], axis=0).get()
-    boxdim = cp.asarray(boxdim)
+    # Ensure xmin, xmax, ymin, ymax, and boxdim are NumPy compatible
+    xmin, ymin = np.min(planecloud[:, :2], axis=0)
+    xmax, ymax = np.max(planecloud[:, :2], axis=0)
+    boxdim = np.asarray(boxdim)
 
     # Create grid points for each box
-    xgrid = cp.arange(xmin, xmax, boxdim)
-    ygrid = cp.arange(ymin, ymax, boxdim)
-    xgrid, ygrid = cp.meshgrid(xgrid, ygrid)
+    xgrid = np.arange(xmin, xmax, boxdim)
+    ygrid = np.arange(ymin, ymax, boxdim)
+    xgrid, ygrid = np.meshgrid(xgrid, ygrid)
 
     # Flatten the grid for vectorized operations
     xflat = xgrid.ravel()
@@ -160,31 +160,31 @@ def plane_fit(
 
         # Vectorize the min z computation
         if box.size > 0:
-            min_z = cp.min(box[:, 2])
+            min_z = np.min(box[:, 2])
             boxLP = box[box[:, 2] == min_z][0].tolist()
             LPR.append(boxLP)
 
     # Compute the plane from the LPR points
-    plane_vals = cp.array([1, 2, 3, 4])
-    pc_mask = cp.ones(pointcloud.shape[0], dtype=bool)  # Default to all true
+    plane_vals = np.array([1, 2, 3, 4])
+    pc_mask = np.ones(pointcloud.shape[0], dtype=bool)  # Default to all true
 
     if LPR:
         # Convert LPR back to a NumPy array for Plane fitting (skspatial not GPU compatible)
-        LPR = cp.array(LPR).get()
+        LPR = np.array(LPR)
         plane = Plane.best_fit(LPR)
 
-        # Convert plane vector components to CuPy compatible types
-        A, B, C = cp.asarray(plane.vector)
-        D = cp.asarray(np.dot(plane.point, plane.vector))
+        # Convert plane vector components to NumPy compatible types
+        A, B, C = plane.vector
+        D = np.dot(plane.point, plane.vector)
 
         pc_compare = A * pointcloud[:, 0] + B * pointcloud[:, 1] + C * pointcloud[:, 2]
-        plane_vals = cp.array([A.get(), B.get(), C.get(), D.get()])
+        plane_vals = np.array([A, B, C, D])
         pc_mask = (D + height_threshold) < pc_compare
 
     if return_mask:
-        return pointcloud[pc_mask].get(), pc_mask.get(), plane_vals.get()
+        return pointcloud[pc_mask], pc_mask, plane_vals
     else:
-        return pointcloud[pc_mask].get()
+        return pointcloud[pc_mask]
 
 
 def box_range(
