@@ -56,9 +56,7 @@ class AggregatePredictor(Predictor):
         self.transformed_stereo_list += self.transformed_stereo.add_yellow_points_cone(self.transformer.to_origin('stereo', stereo_yellow, inverse=False))
         self.transformed_stereo_list += self.transformed_stereo.add_orange_points_cone(self.transformer.to_origin('stereo', stereo_orange, inverse=False))
 
-        # print(self.all_cones)
-        self.display()
-        #self.display()
+        # TODO: return cones from here as a Cone datatype
 
         return self.transformed_lidar, self.transformed_stereo
     
@@ -94,6 +92,8 @@ class AggregatePredictor(Predictor):
 
 
     def display(self):
+            self.Stereo.display()
+
             lidar_color = [1, 0, 0]
             stereo_color = [1, 0, 1]
 
@@ -113,4 +113,4 @@ class AggregatePredictor(Predictor):
             # create cone array
             cones = np.vstack([lidar_list, stereo_list])
             
-            vis.update_visualizer_window(self.window, points=self.points_cluster, pred_cones=cones, colors_cones=cone_colors)
+            vis.update_visualizer_window(None, points=self.points_cluster, pred_cones=cones, colors_cones=cone_colors)

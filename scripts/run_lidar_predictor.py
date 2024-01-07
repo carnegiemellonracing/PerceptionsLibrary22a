@@ -10,7 +10,7 @@ import cv2
 
 def main():
     # initialize data loader and lidar predictor
-    dl = DataLoader("perc22a/data/raw/track-testing-09-29")
+    dl = DataLoader("perc22a/data/raw/12-02-ecg-track-test")
     lp = LidarPredictor()
 
     for i in range(len(dl)):

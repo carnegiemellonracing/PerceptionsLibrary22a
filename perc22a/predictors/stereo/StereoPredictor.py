@@ -133,7 +133,7 @@ class StereoPredictor(Predictor):
 
 
     def display(self):
-        #code for visualizePrediction() in og
+        # code for visualizePrediction() in og
         image = self.left_img.copy()
         for i, box in enumerate(self.boxes_with_depth):
             _, _, depth_z, color = self.predictions[i]
