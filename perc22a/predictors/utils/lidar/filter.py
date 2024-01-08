@@ -3,7 +3,7 @@ import math
 import numpy as np
 import open3d as o3d
 from skspatial.objects import Plane
-
+import time
 
 def trim_cloud(points, return_mask=False):
     """
@@ -148,7 +148,10 @@ def plane_fit(
     LPR = []
 
     # Vectorize the box computation using broadcasting
-    for bxmin, bymin, bxmax, bymax in zip(xflat, yflat, bxmax, bymax):
+    start = time.time()
+    a = list(zip(xflat, yflat, bxmax, bymax))
+    print(f"Loop executed {len(a)} times")
+    for bxmin, bymin, bxmax, bymax in a:
         in_box = (
             (planecloud[:, 0] >= bxmin)
             & (planecloud[:, 0] < bxmax)
@@ -163,7 +166,8 @@ def plane_fit(
             min_z = cp.min(box[:, 2])
             boxLP = box[box[:, 2] == min_z][0].tolist()
             LPR.append(boxLP)
-
+    end = time.time()
+    print(f"Plane Fit Loop: {end-start}")
     # Compute the plane from the LPR points
     plane_vals = cp.array([1, 2, 3, 4])
     pc_mask = cp.ones(pointcloud.shape[0], dtype=bool)  # Default to all true
@@ -197,6 +201,7 @@ def box_range(
     zmin=-100,
     zmax=100,
 ):
+    start = time.time()
     """return points that are within the boudning box specified by the optional input parameters"""
     xrange = np.logical_and(xmin <= pointcloud[:, 0], pointcloud[:, 0] <= xmax)
     yrange = np.logical_and(ymin <= pointcloud[:, 1], pointcloud[:, 1] <= ymax)
@@ -204,6 +209,8 @@ def box_range(
     mask = np.logical_and(np.logical_and(xrange, yrange), zrange)
 
     points_filtered = pointcloud[mask]
+    end = time.time()
+    print(f"Box_Range: {end-start}")
     if return_mask:
         return points_filtered, mask
     else:

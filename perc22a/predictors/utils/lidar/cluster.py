@@ -22,7 +22,7 @@ import math
 import time
 
 import numpy as np
-from hdbscan import HDBSCAN
+# from hdbscan import HDBSCAN
 
 # from sklearn import cluster
 
@@ -46,7 +46,7 @@ def run_hdbscan(points, eps=1, min_samples=1):
            min_samples - the minimum number of samples allowed to form a cluster
     Output: clusterer - hdbscan.HDBSCAN object that is fit on points
     """
-    clusterer = HDBSCAN(
+    clusterer = cluster.HDBSCAN(
         min_cluster_size=min_samples,
         gen_min_span_tree=True,
         cluster_selection_epsilon=eps,

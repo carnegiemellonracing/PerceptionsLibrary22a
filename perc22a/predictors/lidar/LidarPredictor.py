@@ -61,7 +61,7 @@ class LidarPredictor(Predictor):
             points,
             points_ground_plane,
             return_mask=True,
-            boxdim=2,
+            boxdim=5,
             height_threshold=0.1,
         )
 
@@ -76,12 +76,12 @@ class LidarPredictor(Predictor):
             zmax=100,
             return_mask=True,
         )
-
-        # Original call using random_subset
+        
+        # # Original call using random_subset
         # points_cluster_subset = filter.random_subset(points_cluster, 0.03)
 
         voxel_size = 0.1  # Example voxel size
-        points_cluster_subset = filter.voxel_downsample(points, voxel_size)
+        points_cluster_subset = filter.voxel_downsample(points_cluster, voxel_size)
 
         # predict cones using a squashed point cloud and then unsquash
         cone_centers = cluster.predict_cones_z(
@@ -107,7 +107,7 @@ class LidarPredictor(Predictor):
         # visualize points
         vis.update_visualizer_window(
             self.window,
-            points=points_cluster,
+            points=points_cluster_subset,
             pred_cones=cone_centers,
             colors_cones=cone_colors,
         )
