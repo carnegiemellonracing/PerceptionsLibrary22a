@@ -21,7 +21,7 @@ from perc22a.predictors.interface.PredictorInterface import Predictor
 
 # predict output datatype
 from perc22a.predictors.utils.cones import Cones
-
+import time
 
 class LidarPredictor(Predictor):
     def __init__(self):
@@ -58,14 +58,16 @@ class LidarPredictor(Predictor):
 
         # perform a plane fit and remove ground points
         xbound = 10
+        start = time.time()
         points_filtered_ground, _, ground_planevals = filter.plane_fit(
             points,
             points_ground_plane,
             return_mask=True,
-            boxdim=6,
+            boxdim=5,
             height_threshold=0.1,
         )
-
+        end = time.time()
+        print(f"plane_fit: {end-start}")
         # perform another filtering algorithm to dissect boxed-region
         points_cluster, mask_cluster = filter.box_range(
             points_filtered_ground,

@@ -19,7 +19,7 @@ def main():
     # Create a profiler object
     profiler = cProfile.Profile()
 
-    for i in range(len(dl)):
+    for i in range(500):
         # load the i-th image from track testing run
         # profiler.enable()
         # cones = lp.predict(dl[i])
