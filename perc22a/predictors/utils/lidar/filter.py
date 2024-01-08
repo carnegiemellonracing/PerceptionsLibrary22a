@@ -134,40 +134,71 @@ def plane_fit(
     xmax, ymax = cp.max(planecloud[:, :2], axis=0).get()
     boxdim = cp.asarray(boxdim)
 
-    # Create grid points for each box
-    xgrid = cp.arange(xmin, xmax, boxdim)
-    ygrid = cp.arange(ymin, ymax, boxdim)
-    xgrid, ygrid = cp.meshgrid(xgrid, ygrid)
+    # # Create grid points for each box
+    # xgrid = cp.arange(xmin, xmax, boxdim)
+    # ygrid = cp.arange(ymin, ymax, boxdim)
+    # xgrid, ygrid = cp.meshgrid(xgrid, ygrid)
 
-    # Flatten the grid for vectorized operations
-    xflat = xgrid.ravel()
-    yflat = ygrid.ravel()
-    bxmax = xflat + boxdim
-    bymax = yflat + boxdim
+    # # Flatten the grid for vectorized operations
+    # xflat = xgrid.ravel()
+    # yflat = ygrid.ravel()
+    # bxmax = xflat + boxdim
+    # bymax = yflat + boxdim
+    xbins = cp.arange(xmin, xmax, boxdim)
+    ybins = cp.arange(ymin, ymax, boxdim)
+    print(len(xbins), len(ybins))
+    M, N = len(xbins), len(ybins)
+
+    start = time.time()
+    # Use digitize to assign each point to a bin
+    x_bin_indices = cp.digitize(planecloud[:, 0], xbins) - 1
+    y_bin_indices = cp.digitize(planecloud[:, 1], ybins) - 1
+    # print(x_bin_indices)
+    # print(planecloud.shape, x_bin_indices.shape, y_bin_indices.shape)
+
+    # Calculate the grid cell indices for each point
+    grid_cell_indices = x_bin_indices * N + y_bin_indices
 
     LPR = []
 
-    # Vectorize the box computation using broadcasting
-    start = time.time()
-    a = list(zip(xflat, yflat, bxmax, bymax))
-    print(f"Loop executed {len(a)} times")
-    for bxmin, bymin, bxmax, bymax in a:
-        in_box = (
-            (planecloud[:, 0] >= bxmin)
-            & (planecloud[:, 0] < bxmax)
-            & (planecloud[:, 1] >= bymin)
-            & (planecloud[:, 1] < bymax)
-        )
-
-        box = planecloud[in_box]
-
-        # Vectorize the min z computation
-        if box.size > 0:
-            min_z = cp.min(box[:, 2])
-            boxLP = box[box[:, 2] == min_z][0].tolist()
-            LPR.append(boxLP)
+    for bin_idx in range(M*N):
+        idxs = cp.where(grid_cell_indices == bin_idx)
+        bin = planecloud[idxs, :][0]
+        if bin.size > 0:
+            # print(f"{planecloud[idxs, :].shape} -> {bin.shape}")
+            min_z = cp.min(bin[:, 2])
+            binLP = bin[bin[:, 2] == min_z][0].tolist()
+            LPR.append(binLP)
+    
     end = time.time()
-    print(f"Plane Fit Loop: {end-start}")
+    print(f"total: {end-start}")
+
+    # # Vectorize the box computation using broadcasting
+    # start = time.time()
+    # a = list(zip(xflat, yflat, bxmax, bymax))
+    # print(f"Loop executed {len(a)} times")
+    # for bxmin, bymin, bxmax, bymax in a:
+    #     print(bxmin, bymin)
+    #     print(bxmax, bymax)
+    #     print("--------------")
+    #     in_box = (
+    #         (planecloud[:, 0] >= bxmin)
+    #         & (planecloud[:, 0] < bxmax)
+    #         & (planecloud[:, 1] >= bymin)
+    #         & (planecloud[:, 1] < bymax)
+    #     )
+
+    #     box = planecloud[in_box]
+
+    #     # Vectorize the min z computation
+    #     if box.size > 0:
+    #         min_z = cp.min(box[:, 2])
+    #         boxLP = box[box[:, 2] == min_z][0].tolist()
+    #         LPR.append(boxLP)
+    # end = time.time()
+    # print(f"Plane Fit Loop: {end-start}")
+
+
     # Compute the plane from the LPR points
     plane_vals = cp.array([1, 2, 3, 4])
     pc_mask = cp.ones(pointcloud.shape[0], dtype=bool)  # Default to all true
@@ -190,6 +221,73 @@ def plane_fit(
     else:
         return pointcloud[pc_mask].get()
 
+# def plane_fit(
+#     pointcloud, planecloud=None, return_mask=False, boxdim=0.5, height_threshold=0.01
+# ):
+#     # Convert the pointclouds to GPU arrays
+#     pointcloud = cp.asarray(pointcloud)
+#     planecloud = cp.asarray(planecloud) if planecloud is not None else pointcloud
+
+#     # Ensure xmin, xmax, ymin, ymax, and boxdim are CuPy compatible
+#     xmin, ymin = cp.min(planecloud[:, :2], axis=0).get()
+#     xmax, ymax = cp.max(planecloud[:, :2], axis=0).get()
+#     boxdim = cp.asarray(boxdim)
+
+#     # Create grid points for each box
+#     xgrid = cp.arange(xmin, xmax, boxdim)
+#     ygrid = cp.arange(ymin, ymax, boxdim)
+#     xgrid, ygrid = cp.meshgrid(xgrid, ygrid)
+
+#     # Flatten the grid for vectorized operations
+#     xflat = xgrid.ravel()
+#     yflat = ygrid.ravel()
+#     bxmax = xflat + boxdim
+#     bymax = yflat + boxdim
+
+#     LPR = []
+
+#     # Vectorize the box computation using broadcasting
+#     start = time.time()
+#     a = list(zip(xflat, yflat, bxmax, bymax))
+#     print(f"Loop executed {len(a)} times")
+#     for bxmin, bymin, bxmax, bymax in a:
+#         in_box = (
+#             (planecloud[:, 0] >= bxmin)
+#             & (planecloud[:, 0] < bxmax)
+#             & (planecloud[:, 1] >= bymin)
+#             & (planecloud[:, 1] < bymax)
+#         )
+
+#         box = planecloud[in_box]
+
+#         # Vectorize the min z computation
+#         if box.size > 0:
+#             min_z = cp.min(box[:, 2])
+#             boxLP = box[box[:, 2] == min_z][0].tolist()
+#             LPR.append(boxLP)
+#     end = time.time()
+#     print(f"Plane Fit Loop: {end-start}")
+#     # Compute the plane from the LPR points
+#     plane_vals = cp.array([1, 2, 3, 4])
+#     pc_mask = cp.ones(pointcloud.shape[0], dtype=bool)  # Default to all true
+
+#     if LPR:
+#         # Convert LPR back to a NumPy array for Plane fitting (skspatial not GPU compatible)
+#         LPR = cp.array(LPR).get()
+#         plane = Plane.best_fit(LPR)
+
+#         # Convert plane vector components to CuPy compatible types
+#         A, B, C = cp.asarray(plane.vector)
+#         D = cp.asarray(np.dot(plane.point, plane.vector))
+
+#         pc_compare = A * pointcloud[:, 0] + B * pointcloud[:, 1] + C * pointcloud[:, 2]
+#         plane_vals = cp.array([A.get(), B.get(), C.get(), D.get()])
+#         pc_mask = (D + height_threshold) < pc_compare
+
+#     if return_mask:
+#         return pointcloud[pc_mask].get(), pc_mask.get(), plane_vals.get()
+#     else:
+#         return pointcloud[pc_mask].get()
 
 def box_range(
     pointcloud,

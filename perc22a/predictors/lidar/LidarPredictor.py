@@ -7,6 +7,7 @@ that is solely dependent on raw LiDAR point clouds.
 import cProfile
 
 import numpy as np
+np.set_printoptions(threshold=np.inf)
 
 import perc22a.predictors.utils.lidar.cluster as cluster
 import perc22a.predictors.utils.lidar.color as color
@@ -61,7 +62,7 @@ class LidarPredictor(Predictor):
             points,
             points_ground_plane,
             return_mask=True,
-            boxdim=5,
+            boxdim=6,
             height_threshold=0.1,
         )
 
