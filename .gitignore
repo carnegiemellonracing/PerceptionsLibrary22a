@@ -2,7 +2,6 @@
 # ignore random cached files
 **/.DS_Store
 **/*.pyc
-env
 
 # ignore environment folders
 env
