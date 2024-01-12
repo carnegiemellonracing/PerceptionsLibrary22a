@@ -45,7 +45,7 @@ class LidarPredictor(Predictor):
         fullStart = time.time()
         start = time.time()
 
-        points = self._transform_points(data["points"])
+        points = self._transform_points(data[DataType.HESAI_POINTCLOUD])
         self.points = points
 
         print("transform time: ", (time.time() - start) * 1000)
