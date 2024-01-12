@@ -21,7 +21,7 @@ class ThresholdPredictor:
         self.depth_img = data['depth_image']
         detectCones(self, self.left_img, self.depth_img)
         cv2.imshow("Saket Is Genius?????????????????????", self.image)
-        cv2.waitKey(0)
+        cv2.waitKey(1)
         return
 
 
