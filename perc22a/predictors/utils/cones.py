@@ -49,34 +49,18 @@ class Cones:
         """(x, y, z) are cone position in meters"""
         self.blue_cones.append([x, y, z])
         return self.blue_cones
-    
-    def add_blue_points_cone(self, points):
-        for point in points:
-            self.blue_cones.append(point)
-        return self.blue_cones
 
     def add_yellow_cone(self, x, y, z):
         """(x, y, z) are cone position in meters"""
         self.yellow_cones.append([x, y, z])
-        return self.yellow_cones
-    
-    def add_yellow_points_cone(self, points):
-        for point in points:
-            self.yellow_cones.append(point)
         return self.yellow_cones
 
     def add_orange_cone(self, x, y, z):
         """(x, y, z) are cone position in meters"""
         self.orange_cones.append([x, y, z])
         return self.orange_cones
-    
-    def add_orange_points_cone(self, points):
-        for point in points:
-            self.orange_cones.append(point)
-        return self.orange_cones
-    
 
-    def get_cones(self):
+    def to_numpy(self):
         """Returns all cones added to Cones objet
 
         Columns of all arrays are x, y, and z in that order
@@ -85,8 +69,38 @@ class Cones:
             yellow_cones_arr: (N_y, 3) array
             orange_cones_arr: (N_o, 3) array
         """
-        blue_cones_arr = np.array(self.blue_cones)
-        yellow_cones_arr = np.array(self.yellow_cones)
-        orange_cones_arr = np.array(self.orange_cones)
+        blue_cones_arr = np.array(self.blue_cones).reshape(-1, 3)
+        yellow_cones_arr = np.array(self.yellow_cones).reshape(-1, 3)
+        orange_cones_arr = np.array(self.orange_cones).reshape(-1, 3)
 
         return blue_cones_arr, yellow_cones_arr, orange_cones_arr
+
+    @classmethod    
+    def from_numpy(cls, blue_cones_arr, yellow_cones_arr, orange_cones_arr):
+        """Converts numpy array of points to Cone object
+
+        Class method so call directly from class `Cones.from_numpy(...)
+        
+        Arguments:
+            blue_cones_arr: (N_b, 3) numpy array
+            yellow_cones_arr: (N_y, 3) numpy array
+            orange_cones_arr: (N_o, 3) numpy array
+        Returns:
+
+        """
+        cones = cls()
+
+        for i in range(blue_cones_arr.shape[0]):
+            cones.add_blue_cone(
+                blue_cones_arr[i, 0], blue_cones_arr[i, 1], blue_cones_arr[i, 2]
+            )
+        for i in range(yellow_cones_arr.shape[0]):
+            cones.add_yellow_cone(
+                yellow_cones_arr[i, 0], yellow_cones_arr[i, 1], yellow_cones_arr[i, 2]
+            )
+        for i in range(orange_cones_arr.shape[0]):
+            cones.add_orange_cone(
+                orange_cones_arr[i, 0], orange_cones_arr[i, 1], orange_cones_arr[i, 2]
+            )
+
+        return cones

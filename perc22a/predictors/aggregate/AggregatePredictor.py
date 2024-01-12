@@ -15,6 +15,7 @@ import perc22a.predictors.utils.lidar.visualization as vis
 import open3d as o3d
 import numpy as np
 
+# TODO: implement required_data function for AggregatePredictor
 
 class AggregatePredictor(Predictor):
     def __init__(self, path):
@@ -40,25 +41,25 @@ class AggregatePredictor(Predictor):
         self.transformed_stereo = Cones()
 
         # self.points_cluster = self.calc_point_cluster(data)
-        self.points_cluster = self.transformer.to_origin('lidar', self.Lidar.points_cluster, False)
+        # self.points_cluster = self.transformer.to_origin('lidar', self.Lidar.points_cluster, False)
 
         #PoseTransformations takes in numpy arr
-        lidar_blue, lidar_yellow, lidar_orange = lidar_cones.get_cones()
-        stereo_blue, stereo_yellow, stereo_orange = stereo_cones.get_cones()
-        
-        
-        self.transformed_lidar_list += self.transformed_lidar.add_blue_points_cone(self.transformer.to_origin('lidar', lidar_blue, inverse=False))
-        #print(self.all_cones)
-        self.transformed_lidar_list += self.transformed_lidar.add_yellow_points_cone(self.transformer.to_origin('lidar', lidar_yellow, inverse=False))
-        self.transformed_lidar_list += self.transformed_lidar.add_orange_points_cone(self.transformer.to_origin('lidar', lidar_orange, inverse=False))
+        lidar_blue, lidar_yellow, lidar_orange = lidar_cones.to_numpy()
+        stereo_blue, stereo_yellow, stereo_orange = stereo_cones.to_numpy()
 
-        self.transformed_stereo_list += self.transformed_stereo.add_blue_points_cone(self.transformer.to_origin('stereo', stereo_blue, inverse=False))
-        self.transformed_stereo_list += self.transformed_stereo.add_yellow_points_cone(self.transformer.to_origin('stereo', stereo_yellow, inverse=False))
-        self.transformed_stereo_list += self.transformed_stereo.add_orange_points_cone(self.transformer.to_origin('stereo', stereo_orange, inverse=False))
+        self.transformed_lidar = Cones.from_numpy(
+            self.transformer.to_origin('lidar', lidar_blue, inverse=False),
+            self.transformer.to_origin('lidar', lidar_yellow, inverse=False),
+            self.transformer.to_origin('lidar', lidar_orange, inverse=False)
+        )
 
-        # TODO: return cones from here as a Cone datatype
+        self.transformed_stereo = Cones.from_numpy(
+            self.transformer.to_origin('stereo', stereo_blue, inverse=False),
+            self.transformer.to_origin('stereo', stereo_yellow, inverse=False),
+            self.transformer.to_origin('stereo', stereo_orange, inverse=False),
+        )
 
-        return self.transformed_lidar, self.transformed_stereo
+        return self.transformed_lidar, self.transformed_stereo 
     
     def _transform_points(self, points):
             points = points[:, :3]

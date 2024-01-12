@@ -1,10 +1,4 @@
-import ssl
-<<<<<<< HEAD
-
-=======
 from typing import List
->>>>>>> main
-ssl._create_default_https_context = ssl._create_unverified_context
 
 # input and output datatypes for data and cones respectively
 from perc22a.data.utils.DataInstance import DataInstance
