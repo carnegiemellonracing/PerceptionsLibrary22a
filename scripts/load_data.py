@@ -1,5 +1,7 @@
 # perceptions specific imports
 from perc22a.data.utils.dataloader import DataLoader
+from perc22a.data.utils.DataType import DataType
+
 import perc22a.predictors.utils.lidar.visualization as vis
 
 # general python imports
@@ -14,8 +16,8 @@ def main():
     i = 745
     print(i)
     data = dl[i]
-    img = data["left_color"]
-    pointcloud = data["points"]
+    img = data[DataType.ZED_LEFT_COLOR]
+    pointcloud = data[DataType.HESAI_POINTCLOUD]
 
     vis.update_visualizer_window(None, points=pointcloud, pred_cones=[])
 

@@ -1,9 +1,14 @@
 import ssl
+from typing import List
 ssl._create_default_https_context = ssl._create_unverified_context
+
+# input and output datatypes for data and cones respectively
+from perc22a.data.utils.DataInstance import DataInstance
+from perc22a.data.utils.DataType import DataType
+from perc22a.predictors.utils.cones import Cones
 
 from perc22a.predictors.interface.PredictorInterface import Predictor
 import perc22a.predictors.utils.stereo as utils
-from perc22a.predictors.utils.cones import Cones
 
 import torch
 import statistics
@@ -31,7 +36,7 @@ CV2_COLORS = {
     cfg.COLORS.ORANGE: [0, 150, 255]
 }
 
-
+DEBUG = False
 
 class StereoPredictor(Predictor):
 #Implements Predictor interface
@@ -46,16 +51,18 @@ class StereoPredictor(Predictor):
         #Used for visualization in display()
         self.predictions = []
         self.boxes_with_depth = []
-        
 
-    def predict(self, data) -> Cones:
+    def required_data(self) -> List[DataType]:
+        return [DataType.ZED_LEFT_COLOR, DataType.ZED_XYZ_IMG]
+
+    def predict(self, data: DataInstance) -> Cones:
 
         # initialize return type for cones
         cones = Cones()
 
         #access left_img and zed_pts from data dict(just hardcoded for now)
-        self.left_img = data['left_color']
-        self.zed_pts = data['xyz_image']
+        self.left_img = data[DataType.ZED_LEFT_COLOR]
+        self.zed_pts = data[DataType.ZED_XYZ_IMG]
 
         pad = 5
 
@@ -93,9 +100,11 @@ class StereoPredictor(Predictor):
             # utils.get_world_coords(coords)
             try:
                 world_x, world_y, world_z = utils.get_world_coords(coords)
-                print(f"\t success in (cone {i} of {num_cones})")
+                if DEBUG:
+                    print(f"\t success in (cone {i} of {num_cones})")
             except Exception:
-                print(f"\t[PERCEPTIONS WARNING] (cone {i} of {num_cones}) detected cone but no depth; throwing away")
+                if DEBUG:
+                    print(f"\t[PERCEPTIONS WARNING] (cone {i} of {num_cones}) detected cone but no depth; throwing away")
                 break
 
             #use YOLO model color prediction
@@ -107,7 +116,8 @@ class StereoPredictor(Predictor):
             elif color_str == "orange_cone" or color_str == "large_orange_cone":
                 color = cfg.COLORS.ORANGE
             else:
-                print("stereo-vision YOLO: Found unknown cone -- ignoring")
+                if DEBUG:
+                    print("stereo-vision YOLO: Found unknown cone -- ignoring")
                 color = cfg.COLORS.UNKNOWN
 
             # package information into a single prediction    
