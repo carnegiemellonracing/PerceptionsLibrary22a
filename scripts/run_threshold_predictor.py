@@ -5,12 +5,12 @@ from perc22a.data.utils.dataloader import DataLoader
 
 def main():
     tp = ThresholdPredictor()
+    dl = DataLoader("perc22a/data/raw/track-testing-09-29")
 
-    for i in range(23, 155):
-        array = np.load(f"perc22a/data/raw/track-testing-09-29/instance-{i}.npz")
-        cones = tp.predict(array)
+    for i in range(len(dl)):
+        cones = tp.predict(dl[i])
         print(cones)
-        tp.visualize(array)
+        tp.display(dl[i])
 
 if __name__ == "__main__":
     main()

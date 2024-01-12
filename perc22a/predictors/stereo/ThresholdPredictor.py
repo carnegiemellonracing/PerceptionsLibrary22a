@@ -1,24 +1,35 @@
 import cv2
 import numpy as np
 import time
+from typing import List
+
 from perc22a.predictors.utils.cones import Cones
+from perc22a.data.utils.DataType import DataType
+
+# TODO: display()shouldn't re-do prediction!
+# TODO: detectCones involves extra work on image visualization
+# TODO: currently outputs cones as (cx, cy, depth), need to make it (x, y, z)
 
 class ThresholdPredictor:
     def __init__(self):
         self.left_img = None
         self.depth_img =  None
         self.image = None
-        self.cones = Cones()
+
+    def required_data(self) -> List[DataType]:
+        return [DataType.ZED_LEFT_COLOR, DataType.ZED_DEPTH_IMG]
 
     def predict(self, data):
-        self.left_img = data['left_color']
-        self.depth_img = data['depth_image']
+        self.cones = Cones()
+
+        self.left_img = data[DataType.ZED_LEFT_COLOR]
+        self.depth_img = data[DataType.ZED_DEPTH_IMG]
         detectCones(self, self.left_img, self.depth_img)
         return self.cones
     
-    def visualize(self, data):
-        self.left_img = data['left_color']
-        self.depth_img = data['depth_image']
+    def display(self, data):
+        self.left_img = data[DataType.ZED_LEFT_COLOR]
+        self.depth_img = data[DataType.ZED_DEPTH_IMG]
         detectCones(self, self.left_img, self.depth_img)
         cv2.imshow("Saket Is Genius?????????????????????", self.image)
         cv2.waitKey(1)
