@@ -10,7 +10,6 @@ def main():
     for i in range(len(dl)):
         cones = tp.predict(dl[i])
         print(cones)
-        tp.display(dl[i])
 
 if __name__ == "__main__":
     main()
