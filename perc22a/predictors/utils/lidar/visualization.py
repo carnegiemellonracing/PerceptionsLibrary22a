@@ -160,7 +160,7 @@ def update_visualizer_perspective(vis, extrinsic):
     return
 
 
-def update_visualizer_window(window, points, pred_cones, colors=None, colors_cones=[0, 1, 0], plane=None):
+def update_visualizer_window(window, points, pred_cones=None, colors=None, colors_cones=[0, 1, 0], plane=None):
     # takes about 60-100ms to update the visualizer
     # calculate the new geometries
     objects = []
@@ -170,8 +170,9 @@ def update_visualizer_window(window, points, pred_cones, colors=None, colors_con
     if plane is not None:
         objects.append(create_plane_vis(plane, ymin=0))
 
-    pred_cylinders = create_cylinder_vis(pred_cones, colors=colors_cones)
-    [objects.append(cyl) for cyl in pred_cylinders]
+    if pred_cones is not None:
+        pred_cylinders = create_cylinder_vis(pred_cones, colors=colors_cones)
+        [objects.append(cyl) for cyl in pred_cylinders]
     if window is not None:
         # reset the geometries
         window.clear_geometries()
