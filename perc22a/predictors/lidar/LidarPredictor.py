@@ -9,19 +9,28 @@ import cProfile
 import numpy as np
 np.set_printoptions(threshold=np.inf)
 
-import perc22a.predictors.utils.lidar.cluster as cluster
-import perc22a.predictors.utils.lidar.color as color
-import perc22a.predictors.utils.lidar.filter as filter
-
-# visualization and core lidar algorithm functions
-import perc22a.predictors.utils.lidar.visualization as vis
-
 # interface
 from perc22a.predictors.interface.PredictorInterface import Predictor
 
+# data datatypes
+from perc22a.data.utils.DataInstance import DataInstance
+from perc22a.data.utils.DataType import DataType
+
 # predict output datatype
 from perc22a.predictors.utils.cones import Cones
+
+# visualization and core lidar algorithm functions
+import perc22a.predictors.utils.lidar.visualization as vis
+import perc22a.predictors.utils.lidar.filter as filter
+import perc22a.predictors.utils.lidar.cluster as cluster
+import perc22a.predictors.utils.lidar.color as color
+
+import numpy as np
+from typing import List
+
 import time
+
+# TODO: move visualization to display function
 
 class LidarPredictor(Predictor):
     def __init__(self):
@@ -34,6 +43,8 @@ class LidarPredictor(Predictor):
         cones = self.predict(data)
         profiler.disable()
         return cones, profiler
+    def required_data(self):
+        return [DataType.HESAI_POINTCLOUD]
 
     def _transform_points(self, points):
         points = points[:, :3]
@@ -43,11 +54,20 @@ class LidarPredictor(Predictor):
         return points
 
     def predict(self, data) -> Cones:
-        points = self._transform_points(data["points"])
+        fullStart = time.time()
+        start = time.time()
+
+        points = self._transform_points(data[DataType.HESAI_POINTCLOUD])
         self.points = points
+
+        print("transform time: ", (time.time() - start) * 1000)
+        start = time.time()
 
         # remove all points with nan values
         points = points[~np.any(np.isnan(points), axis=-1)]
+
+        print("nan time: ", (time.time() - start) * 1000)
+        start = time.time()
 
         # perform a box range on the data
         points_ground_plane = filter.box_range(
@@ -86,6 +106,9 @@ class LidarPredictor(Predictor):
         voxel_size = 0.1  # Example voxel size
         points_cluster_subset = filter.voxel_downsample(points_cluster, voxel_size)
 
+        print("Random Subset: ", (time.time() - start) * 1000)
+        start = time.time()
+
         # predict cones using a squashed point cloud and then unsquash
         cone_centers = cluster.predict_cones_z(
             points_cluster_subset,
@@ -98,6 +121,9 @@ class LidarPredictor(Predictor):
             x_bound=xbound,
             x_dist=3,
         )
+
+        print("Predict Cones: ", (time.time() - start) * 1000)
+        start = time.time()
 
         # P, C = vis.color_matrix(fns=None, pcs=[points, points_filtered_ground, points_cluster])
 
@@ -126,6 +152,7 @@ class LidarPredictor(Predictor):
                 cones.add_blue_cone(x, y, z)
 
         return cones
+
 
     def display(self):
         # vis.update_visualizer_window(self.window, self.points)

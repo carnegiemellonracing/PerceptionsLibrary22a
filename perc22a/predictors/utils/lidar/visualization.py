@@ -128,8 +128,10 @@ def create_cylinder_vis(
             colors = np.array([colors] * n_centers)
 
     cylinders = []
+    # print(cylinder_centers)
+    # print(colors)
     for i in range(n_centers):
-        centroid = cylinder_centers[i, :]
+        centroid = cylinder_centers[i]
         color = colors[i, :]
 
         cylinder = o3d.geometry.TriangleMesh.create_cylinder(
@@ -137,6 +139,7 @@ def create_cylinder_vis(
         )
         cylinder = o3d.geometry.LineSet.create_from_triangle_mesh(cylinder)
         cylinder = cylinder.translate(tuple(centroid))
+        #print(color)
         cylinder.paint_uniform_color(color)
         cylinders.append(cylinder)
 
@@ -178,8 +181,9 @@ def update_visualizer_window(
     if plane is not None:
         objects.append(create_plane_vis(plane, ymin=0))
 
-    pred_cylinders = create_cylinder_vis(pred_cones, colors=colors_cones)
-    [objects.append(cyl) for cyl in pred_cylinders]
+    if pred_cones is not None:
+        pred_cylinders = create_cylinder_vis(pred_cones, colors=colors_cones)
+        [objects.append(cyl) for cyl in pred_cylinders]
     if window is not None:
         # reset the geometries
         window.clear_geometries()

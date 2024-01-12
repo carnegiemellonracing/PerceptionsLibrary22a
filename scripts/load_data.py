@@ -1,5 +1,8 @@
 # perceptions specific imports
 from perc22a.data.utils.dataloader import DataLoader
+from perc22a.data.utils.DataType import DataType
+
+import perc22a.predictors.utils.lidar.visualization as vis
 
 # general python imports
 import time
@@ -7,17 +10,18 @@ import cv2
 
 
 def main():
-    dl = DataLoader("perc22a/data/raw/track-testing-09-29")
+    window = vis.init_visualizer_window()
+    dl = DataLoader("perc22a/data/raw/12-02-ecg-track-test")
 
-    for i in range(len(dl)):
-        # load the i-th image from track testing run
-        print(dl)
-        data = dl[i]
-        img = data["left_color"]
+    i = 745
+    print(i)
+    data = dl[i]
+    img = data[DataType.ZED_LEFT_COLOR]
+    pointcloud = data[DataType.HESAI_POINTCLOUD]
 
-        # display the image
-        cv2.imshow(f"left image (idx: {i})", img)
-        cv2.waitKey(0)
+    vis.update_visualizer_window(None, points=pointcloud, pred_cones=[])
+
+    
 
 
 if __name__ == "__main__":

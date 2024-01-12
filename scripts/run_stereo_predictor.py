@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import cProfile  # Import cProfile for profiling
 import os
 import pstats  # Import pstats to format and save the profile statistics
@@ -5,6 +6,9 @@ import sys
 
 import numpy as np
 
+=======
+from perc22a.predictors.stereo.StereoPredictor import StereoPredictor
+>>>>>>> main
 from perc22a.data.utils.dataloader import DataLoader
 from perc22a.predictors.stereo.StereoPredictor import StereoPredictor
 
@@ -22,6 +26,7 @@ def main():
 
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     profiler = cProfile.Profile()
     profiler.enable()
 
@@ -35,3 +40,6 @@ if __name__ == "__main__":
     # stats.print_stats()
 
 #! run 'snakeviz stereo_profile_results.prof' in the terminal
+=======
+    main()
+>>>>>>> main

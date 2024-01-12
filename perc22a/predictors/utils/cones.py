@@ -8,6 +8,8 @@ All Predictor algorithm's .predict(...) method should return this datt type
 
 import numpy as np
 
+# TODO: deprecate add_*_points_cone, instead should just loop and add
+
 
 class Cones:
     def __init__(self):
@@ -46,17 +48,33 @@ class Cones:
     def add_blue_cone(self, x, y, z):
         """(x, y, z) are cone position in meters"""
         self.blue_cones.append([x, y, z])
-        return
+        return self.blue_cones
+    
+    def add_blue_points_cone(self, points):
+        for point in points:
+            self.blue_cones.append(point)
+        return self.blue_cones
 
     def add_yellow_cone(self, x, y, z):
         """(x, y, z) are cone position in meters"""
         self.yellow_cones.append([x, y, z])
-        return
+        return self.yellow_cones
+    
+    def add_yellow_points_cone(self, points):
+        for point in points:
+            self.yellow_cones.append(point)
+        return self.yellow_cones
 
     def add_orange_cone(self, x, y, z):
         """(x, y, z) are cone position in meters"""
         self.orange_cones.append([x, y, z])
-        return
+        return self.orange_cones
+    
+    def add_orange_points_cone(self, points):
+        for point in points:
+            self.orange_cones.append(point)
+        return self.orange_cones
+    
 
     def get_cones(self):
         """Returns all cones added to Cones objet
