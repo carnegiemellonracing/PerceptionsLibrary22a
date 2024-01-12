@@ -28,10 +28,11 @@ from perc22a.data.utils.DataType import DataType
 
 from typing import List
 
+
 class Predictor:
     """interface for a [Predictor] that takes time-series data from various
     sensors and performs predictions using it
-    
+
     the current list of sensor data (in numpy arrays) that we have used are...
         - point clouds
             - (N, 6) where N is the number of points in the point cloud
@@ -58,7 +59,7 @@ class Predictor:
                 - color is a 32-bit datatype with 8-bit color values packed
                 inside (R, G, B, Alpha)
         - TODO: incorporate gps collected data
-    
+
     the goal of [Predictor] sub-classes is to take the sensor data and create
     the "best" predictor of 3D cone positions
     """

@@ -3,29 +3,37 @@ import open3d as o3d
 
 # these matrices setup the parameters of the Open3D camera
 # to get various views of the car in the visualizer
-EXTRINSIC_BEHIND = np.array([[1,    0.03, -0.04,  0.19],
-                             [-0.03, -0.24, -0.97,  1.24],
-                             [-0.04,  0.97, -0.24,  3.52],
-                             [0,    0,    0,    1]])
+EXTRINSIC_BEHIND = np.array(
+    [
+        [1, 0.03, -0.04, 0.19],
+        [-0.03, -0.24, -0.97, 1.24],
+        [-0.04, 0.97, -0.24, 3.52],
+        [0, 0, 0, 1],
+    ]
+)
 
-EXTRINSIC_BIRD = np.array([[1., -0.04, -0.07,  2.43],
-                           [-0.04, -1., -0.01, 12.8],
-                           [-0.07,  0.01, -1., 35.52],
-                           [0.,  0.,  0.,  1.]])
+EXTRINSIC_BIRD = np.array(
+    [
+        [1.0, -0.04, -0.07, 2.43],
+        [-0.04, -1.0, -0.01, 12.8],
+        [-0.07, 0.01, -1.0, 35.52],
+        [0.0, 0.0, 0.0, 1.0],
+    ]
+)
 
 
 def create_axis_vis(size=1, npoints=100):
-    '''
-        Creates an Open3D point cloud object that contains points that
-        will visualize 3D axis with the intersecting point being the origin
-        of the point cloud. This will be useful for having a simple frame of
-        reference for the point cloud
-        Inputs:
-            - size: floating point value describing how long the axes will be
-            - npoints: the number of points that each axis will be made of
-        Output:
-            - axis_vis: an Open3D Point Cloud Object setup ready for vis
-    '''
+    """
+    Creates an Open3D point cloud object that contains points that
+    will visualize 3D axis with the intersecting point being the origin
+    of the point cloud. This will be useful for having a simple frame of
+    reference for the point cloud
+    Inputs:
+        - size: floating point value describing how long the axes will be
+        - npoints: the number of points that each axis will be made of
+    Output:
+        - axis_vis: an Open3D Point Cloud Object setup ready for vis
+    """
     dim = np.linspace(0, size, npoints).reshape((-1, 1))
     zeros = np.zeros(dim.shape).reshape((-1, 1))
     xpoints = np.hstack([dim, zeros, zeros])
@@ -38,7 +46,7 @@ def create_axis_vis(size=1, npoints=100):
 
 
 def create_plane_vis(plane, xmin=-3, xmax=3, ymin=0.5, ymax=3, npoints=100):
-    """Creates Open3D PointCloud object that uniformly samples points on the 
+    """Creates Open3D PointCloud object that uniformly samples points on the
     given input plane and returns them for visualizing a plane as a point cloud
 
     Args:
@@ -69,17 +77,17 @@ def create_plane_vis(plane, xmin=-3, xmax=3, ymin=0.5, ymax=3, npoints=100):
 
 
 def create_point_vis(points, colors=None):
-    '''
-        Creates an Open3D point cloud object used in visualization
-        and returns it
+    """
+    Creates an Open3D point cloud object used in visualization
+    and returns it
 
-        Inputs:
-            - points: (N,3) np.array of real values representing N points
-            - colors: (N,3) or (3,) np.array of real values [0,1] representing colors
-                      (optional)
-        Output: pcd - Open3D Point Cloud Object setup ready for visualization
-                      with the o3d.visualization.draw_geometries function
-    '''
+    Inputs:
+        - points: (N,3) np.array of real values representing N points
+        - colors: (N,3) or (3,) np.array of real values [0,1] representing colors
+                  (optional)
+    Output: pcd - Open3D Point Cloud Object setup ready for visualization
+                  with the o3d.visualization.draw_geometries function
+    """
     N = points.shape[0]
     points = points[:, :3]
     pcd = o3d.geometry.PointCloud()
@@ -92,22 +100,24 @@ def create_point_vis(points, colors=None):
     return pcd
 
 
-def create_cylinder_vis(cylinder_centers, colors=[0, 1, 0], radius=0.3, height=0.4, resolution=10):
-    '''
-        Creates a list of Open3D LineSet meshes of cylinders whose centers
-        are listed by the list cylinder_centers
+def create_cylinder_vis(
+    cylinder_centers, colors=[0, 1, 0], radius=0.3, height=0.4, resolution=10
+):
+    """
+    Creates a list of Open3D LineSet meshes of cylinders whose centers
+    are listed by the list cylinder_centers
 
-        Inputs:
-            - cylinder_centers: (N,3) np.array of cylinder center positions
-            - color: list of length 3 of color to assign cylinders (optional)
-            - radius: radius (units???) to give cylinders (optional)
-            - height: height (units???) to give cylinders (optional)
-            - resolution: how circular to make the cylinders
+    Inputs:
+        - cylinder_centers: (N,3) np.array of cylinder center positions
+        - color: list of length 3 of color to assign cylinders (optional)
+        - radius: radius (units???) to give cylinders (optional)
+        - height: height (units???) to give cylinders (optional)
+        - resolution: how circular to make the cylinders
 
-        Output:
-            - cylinders: list of Open3D LineSet meshes of cylinders ready for
-                         visualization with o3d.visualization.draw_geometries
-    '''
+    Output:
+        - cylinders: list of Open3D LineSet meshes of cylinders ready for
+                     visualization with o3d.visualization.draw_geometries
+    """
 
     n_centers = len(cylinder_centers)
 
@@ -115,9 +125,7 @@ def create_cylinder_vis(cylinder_centers, colors=[0, 1, 0], radius=0.3, height=0
     if n_centers > 0:
         colors = np.array(colors)
         if len(colors.shape) == 1:
-            # print(colors)
-            colors = np.array([colors]*n_centers)
-            # print(colors)
+            colors = np.array([colors] * n_centers)
 
     cylinders = []
     # print(cylinder_centers)
@@ -127,7 +135,8 @@ def create_cylinder_vis(cylinder_centers, colors=[0, 1, 0], radius=0.3, height=0
         color = colors[i, :]
 
         cylinder = o3d.geometry.TriangleMesh.create_cylinder(
-            radius=radius, height=height, resolution=resolution, split=1)
+            radius=radius, height=height, resolution=resolution, split=1
+        )
         cylinder = o3d.geometry.LineSet.create_from_triangle_mesh(cylinder)
         cylinder = cylinder.translate(tuple(centroid))
         #print(color)
@@ -160,7 +169,9 @@ def update_visualizer_perspective(vis, extrinsic):
     return
 
 
-def update_visualizer_window(window, points, pred_cones=None, colors=None, colors_cones=[0, 1, 0], plane=None):
+def update_visualizer_window(
+    window, points, pred_cones=[], colors=None, colors_cones=[0, 1, 0], plane=None
+):
     # takes about 60-100ms to update the visualizer
     # calculate the new geometries
     objects = []
@@ -190,15 +201,26 @@ def update_visualizer_window(window, points, pred_cones=None, colors=None, color
 
 
 def color_matrix(fns=None, pcs=None):
-    '''
-        Written By: Meher Mankikar (mmankika) 10/22/2022
-        point cloud visualization using Open3D will write the first points at
-        a specific position and will not write any future points at that exact
-        same position. As a result, display the later stages of the point cloud
-        and then earlier ones with various colors so that pipeline stages can
-        be visualized
-    '''
-    C = np.array([[91, 192, 235], [216, 157, 106], [219, 83, 117], [29, 220, 32], [127, 29, 220]]) / 255
+    """
+    Written By: Meher Mankikar (mmankika) 10/22/2022
+    point cloud visualization using Open3D will write the first points at
+    a specific position and will not write any future points at that exact
+    same position. As a result, display the later stages of the point cloud
+    and then earlier ones with various colors so that pipeline stages can
+    be visualized
+    """
+    C = (
+        np.array(
+            [
+                [91, 192, 235],
+                [216, 157, 106],
+                [219, 83, 117],
+                [29, 220, 32],
+                [127, 29, 220],
+            ]
+        )
+        / 255
+    )
     ncolors = C.shape[0]
 
     pointsList = []

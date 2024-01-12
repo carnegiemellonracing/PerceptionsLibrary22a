@@ -4,6 +4,11 @@ This file contains the implementation of the perceptions predictions algorithm
 that is solely dependent on raw LiDAR point clouds.
 """
 
+import cProfile
+
+import numpy as np
+np.set_printoptions(threshold=np.inf)
+
 # interface
 from perc22a.predictors.interface.PredictorInterface import Predictor
 
@@ -25,19 +30,26 @@ from typing import List
 
 import time
 
-class LidarPredictor(Predictor):
+# TODO: move visualization to display function
 
+class LidarPredictor(Predictor):
     def __init__(self):
         self.window = vis.init_visualizer_window()
         pass
 
+    def profile_predict(self, data):
+        profiler = cProfile.Profile()
+        profiler.enable()
+        cones = self.predict(data)
+        profiler.disable()
+        return cones, profiler
     def required_data(self):
         return [DataType.HESAI_POINTCLOUD]
 
     def _transform_points(self, points):
         points = points[:, :3]
         points = points[:, [1, 0, 2]]
-        points[:,0] = -points[:,0]
+        points[:, 0] = -points[:, 0]
 
         return points
 
@@ -59,37 +71,56 @@ class LidarPredictor(Predictor):
 
         # perform a box range on the data
         points_ground_plane = filter.box_range(
-            points, xmin=-20, xmax=20, ymin=-20, ymax=20, zmin=-1, zmax=1)
-        
-        print("Ground Plane Box Range: ", (time.time() - start) * 1000)
-        start = time.time()
+            points, xmin=-20, xmax=20, ymin=-20, ymax=20, zmin=-1, zmax=1
+        )
+
         # vis.update_visualizer_window(None, points=points_ground_plane)
 
         # perform a plane fit and remove ground points
         xbound = 10
-        points_filtered_ground, _, ground_planevals = filter.plane_fit(
-            points, points_ground_plane, return_mask=True, boxdim=2, height_threshold=0.1)
-        
-
-        print("Remove Ground Points Plane Fit: ", (time.time() - start) * 1000)
         start = time.time()
-
+        points_filtered_ground, _, ground_planevals = filter.plane_fit(
+            points,
+            points_ground_plane,
+            return_mask=True,
+            boxdim=5,
+            height_threshold=0.1,
+        )
+        end = time.time()
+        print(f"plane_fit: {end-start}")
         # perform another filtering algorithm to dissect boxed-region
         points_cluster, mask_cluster = filter.box_range(
-            points_filtered_ground, xmin=-xbound, xmax=xbound, ymin=-10, ymax=50, zmin=-10, zmax=100, return_mask=True)
+            points_filtered_ground,
+            xmin=-xbound,
+            xmax=xbound,
+            ymin=-10,
+            ymax=50,
+            zmin=-10,
+            zmax=100,
+            return_mask=True,
+        )
+        
+        # # Original call using random_subset
+        # points_cluster_subset = filter.random_subset(points_cluster, 0.03)
 
-        print("Filtering Algorithm Box Range: ", (time.time() - start) * 1000)
-        start = time.time()
-
-        # still over 200K points, so take subset to make DBSCAN faster
-        points_cluster_subset = filter.random_subset(points_cluster, 0.03)
+        voxel_size = 0.1  # Example voxel size
+        points_cluster_subset = filter.voxel_downsample(points_cluster, voxel_size)
 
         print("Random Subset: ", (time.time() - start) * 1000)
         start = time.time()
 
         # predict cones using a squashed point cloud and then unsquash
         cone_centers = cluster.predict_cones_z(
-            points_cluster_subset, ground_planevals, hdbscan=False, dist_threshold=0.6, x_threshold_scale=0.15, height_threshold=0.3, scalar=1, x_bound=xbound, x_dist=3)
+            points_cluster_subset,
+            ground_planevals,
+            hdbscan=False,
+            dist_threshold=0.6,
+            x_threshold_scale=0.15,
+            height_threshold=0.3,
+            scalar=1,
+            x_bound=xbound,
+            x_dist=3,
+        )
 
         print("Predict Cones: ", (time.time() - start) * 1000)
         start = time.time()
@@ -103,8 +134,12 @@ class LidarPredictor(Predictor):
         cone_output = cluster.correct_clusters(cone_output)
 
         # visualize points
-        self.points_cluster = points_cluster
-        vis.update_visualizer_window(self.window, points=points_cluster, pred_cones=cone_centers, colors_cones=cone_colors)
+        vis.update_visualizer_window(
+            self.window,
+            points=points_cluster_subset,
+            pred_cones=cone_centers,
+            colors_cones=cone_colors,
+        )
 
         # create a Cones object to return
         cones = Cones()
@@ -116,15 +151,10 @@ class LidarPredictor(Predictor):
             elif c == 0:
                 cones.add_blue_cone(x, y, z)
 
-        print("Color Cones: ", (time.time() - start) * 1000)
-        print("Total Time: ", (time.time() - fullStart)*1000)
-
-        pause = input("Press enter to continue...")
-
-        return cones 
+        return cones
 
 
     def display(self):
-        vis.update_visualizer_window(self.window, self.points)
-        
+        # vis.update_visualizer_window(self.window, self.points)
+
         return

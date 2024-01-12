@@ -1,9 +1,12 @@
 import statistics
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
 from enum import Enum
+
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+
 import perc22a.predictors.stereo.cfg as cfg
+
 
 def calc_box_center(box):
     """
@@ -14,13 +17,14 @@ def calc_box_center(box):
                         bound[2] = x2 (bottom right - x)
                         bound[3] = y2 (bottom right - y)
         Returns:
-            center_x, center_y - center x, y pixel of bounding box 
+            center_x, center_y - center x, y pixel of bounding box
     """
     x1, y1 = box[0], box[1]
     x2, y2 = box[2], box[3]
-    center_y = int((x1+x2)/2)  # x-coordinate of bounding box center
-    center_x = int((y1+y2)/2)  # y-coordinate of bounding box center
+    center_y = int((x1 + x2) / 2)  # x-coordinate of bounding box center
+    center_x = int((y1 + y2) / 2)  # y-coordinate of bounding box center
     return center_x, center_y
+
 
 def get_object_depth(depth_map, box, padding=2):
     """
@@ -32,10 +36,10 @@ def get_object_depth(depth_map, box, padding=2):
                       bound[2] = x2 (bottom right - x)
                       bound[3] = y2 (bottom right - y)
         padding: Num pixels around center to include in depth calculation
-                       REQUIREMENT: padding <= (x2-x1)/2 and padding <= (y2-y1)/2 
+                       REQUIREMENT: padding <= (x2-x1)/2 and padding <= (y2-y1)/2
                        Default = 2
     Returns:
-        float - Depth estimation of object in interest 
+        float - Depth estimation of object in interest
     """
     z_vect = []
     center_x, center_y = calc_box_center(box)
@@ -56,8 +60,13 @@ def get_object_depth(depth_map, box, padding=2):
         z_mean = -1
     return z_mean
 
+
 def get_world_coords(coords):
-    world_xs, world_ys, world_zs = coords[:,:,0].reshape(-1), coords[:,:,1].reshape(-1), coords[:,:,2].reshape(-1)
+    world_xs, world_ys, world_zs = (
+        coords[:, :, 0].reshape(-1),
+        coords[:, :, 1].reshape(-1),
+        coords[:, :, 2].reshape(-1),
+    )
 
     idxs = np.logical_and(~np.isnan(world_xs), ~np.isinf(world_xs))
     world_xs = world_xs[idxs]
@@ -65,7 +74,9 @@ def get_world_coords(coords):
     world_zs = world_zs[idxs]
 
     if world_xs.shape[0] == 0:
-        raise Exception(f"\t[PERCEPTIONS WARNING] cone detected cone but no depth; throwing away")
+        raise Exception(
+            f"\t[PERCEPTIONS WARNING] cone detected cone but no depth; throwing away"
+        )
 
     world_x = np.mean(world_xs)
     world_y = np.mean(world_ys)
@@ -78,6 +89,7 @@ class CFG_PERCEPTIONS:
     IMAGE_WIDTH = 1280
     IMAGE_HEIGHT = 720
     RED_THRESHOLD = 100
+
 
 class CFG_COLORS(Enum):
     BLUE = 1

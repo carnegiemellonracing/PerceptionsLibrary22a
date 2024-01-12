@@ -1,9 +1,9 @@
-'''
+"""
     this file contains classes for performing transformations of objects
     from one perspective to another perspective. This includes 
         - transforming from one 3d coordinate axis to another (AxisTransformer)
         - transforming from world coords to image coords (WorldImageTransformer)
-'''
+"""
 
 import numpy as np
 import open3d as o3d
@@ -16,44 +16,49 @@ import perc22a.predictors.utils.lidar.visualization as vis
 DEG_TO_RAD = np.pi / 180
 
 
-def c(x): return np.cos(x)
-def s(x): return np.sin(x)
+def c(x):
+    return np.cos(x)
+
+
+def s(x):
+    return np.sin(x)
 
 
 def make_RX(rad):
-    return np.array([
-        [1, 0, 0, 0],
-        [0, c(rad), -s(rad), 0],
-        [0, s(rad), c(rad), 0],
-        [0, 0, 0, 1],
-    ])
+    return np.array(
+        [
+            [1, 0, 0, 0],
+            [0, c(rad), -s(rad), 0],
+            [0, s(rad), c(rad), 0],
+            [0, 0, 0, 1],
+        ]
+    )
 
 
 def make_RY(rad):
-    return np.array([
-        [c(rad), 0, s(rad), 0],
-        [0, 1, 0, 0],
-        [-s(rad), 0, c(rad), 0],
-        [0, 0, 0, 1],
-    ])
+    return np.array(
+        [
+            [c(rad), 0, s(rad), 0],
+            [0, 1, 0, 0],
+            [-s(rad), 0, c(rad), 0],
+            [0, 0, 0, 1],
+        ]
+    )
 
 
 def make_RZ(rad):
-    return np.array([
-        [c(rad), -s(rad), 0, 0],
-        [s(rad), c(rad), 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1],
-    ])
+    return np.array(
+        [
+            [c(rad), -s(rad), 0, 0],
+            [s(rad), c(rad), 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1],
+        ]
+    )
 
 
 def make_T(dx, dy, dz):
-    return np.array([
-        [1, 0, 0, dx],
-        [0, 1, 0, dy],
-        [0, 0, 1, dz],
-        [0, 0, 0, 1]
-    ])
+    return np.array([[1, 0, 0, dx], [0, 1, 0, dy], [0, 0, 1, dz], [0, 0, 0, 1]])
 
 
 class PoseTransformations:
@@ -61,9 +66,9 @@ class PoseTransformations:
     # lidar = config['lidar']
     # gps = config['gps']
 
-    #create transformation matrices for each sensor
+    # create transformation matrices for each sensor
     def __init__(self, path):
-        with open(path, 'r') as file:
+        with open(path, "r") as file:
             self.config = yaml.safe_load(file)
             self.TRdict = dict()
             self.INVdict = dict()
@@ -81,11 +86,11 @@ class PoseTransformations:
         RY = make_RY(ry)
         RZ = make_RZ(rz)
 
-        dx = sensor['pose']['position']['x']
-        dy = sensor['pose']['position']['y']
-        dz = sensor['pose']['position']['z']
+        dx = sensor["pose"]["position"]["x"]
+        dy = sensor["pose"]["position"]["y"]
+        dz = sensor["pose"]["position"]["z"]
 
-        #make transformation matrix
+        # make transformation matrix
         T = make_T(dx, dy, dz)
         res = T @ RZ @ RY @ RX
 
@@ -98,7 +103,9 @@ class PoseTransformations:
 
     def _inhomogenize(self, points):
         if np.any(np.abs(points[:, 3]) < 0.00005):
-            raise Exception("AxisTransformer: converting to inhomogenous coordinate with small divisor")
+            raise Exception(
+                "AxisTransformer: converting to inhomogenous coordinate with small divisor"
+            )
 
         points[:, :3] /= points[:, 3].reshape((-1, 1))
         return points[:, :3]
@@ -116,7 +123,7 @@ class PoseTransformations:
             M = self.INVdict[sensor_name]
 
 
-        #transform points and inhomegenize
+        # transform points and inhomegenize
         points_transformed = (M @ points_homogenous.T).T
         result = self._inhomogenize(points_transformed)
 
@@ -134,7 +141,7 @@ class PoseTransformations:
             M = self.INVdict[sensor_name]
         
 
-        #transform points and inhomegenize
+        # transform points and inhomegenize
         points_transformed = (M @ points_homogenous.T).T
         result = self._inhomogenize(points_transformed)
 
@@ -145,19 +152,19 @@ class PoseTransformations:
 
 
 class AxisTransformer:
-    '''
-        TODO: consider if you want to change to do a custom sequence of the 4 operations
-            - e.g. could do [translate, rotate x, rotate z, translate, rotate x]
+    """
+    TODO: consider if you want to change to do a custom sequence of the 4 operations
+        - e.g. could do [translate, rotate x, rotate z, translate, rotate x]
 
-        does the following transformations in order
-            1. rotate w.r.t. x-axis by degx (pitch)
-                - positive points upwards (i think?)
-            2. rotate w.r.t. y-axis by degy (roll)
-                - positive rolls right (i think?)
-            3. rotate w.r.t. z-axis by degz (yaw)
-                - positive turns left (i think?)
-            4. translate according to (dx, dy, dz)
-    '''
+    does the following transformations in order
+        1. rotate w.r.t. x-axis by degx (pitch)
+            - positive points upwards (i think?)
+        2. rotate w.r.t. y-axis by degy (roll)
+            - positive rolls right (i think?)
+        3. rotate w.r.t. z-axis by degz (yaw)
+            - positive turns left (i think?)
+        4. translate according to (dx, dy, dz)
+    """
 
     def __init__(self, degx=0, degy=0, degz=0, dx=0, dy=0, dz=0):
         rx, ry, rz = np.array([degx, degy, degz]) * DEG_TO_RAD
@@ -180,7 +187,9 @@ class AxisTransformer:
 
     def _inhomogenize(self, points):
         if np.any(np.abs(points[:, 3]) < 0.00005):
-            raise Exception("AxisTransformer: converting to inhomogenous coordinate with small divisor")
+            raise Exception(
+                "AxisTransformer: converting to inhomogenous coordinate with small divisor"
+            )
 
         points[:, :3] /= points[:, 3].reshape((-1, 1))
         return points[:, :3]
@@ -198,19 +207,18 @@ class AxisTransformer:
 
 
 class CustomAxisTransformer:
-    '''
-        Can perform the following operations with key and value
-        1. "degx": rotate w.r.t. x-axis by degx (pitch)
-            - positive points upwards (i think?)
-        2. "degy": rotate w.r.t. y-axis by degy (roll)
-            - positive rolls right (i think?)
-        3. "degz": rotate w.r.t. z-axis by degz (yaw)
-            - positive turns left (i think?)
-        4. "t": translate according to [dx, dy, dz]
-    '''
+    """
+    Can perform the following operations with key and value
+    1. "degx": rotate w.r.t. x-axis by degx (pitch)
+        - positive points upwards (i think?)
+    2. "degy": rotate w.r.t. y-axis by degy (roll)
+        - positive rolls right (i think?)
+    3. "degz": rotate w.r.t. z-axis by degz (yaw)
+        - positive turns left (i think?)
+    4. "t": translate according to [dx, dy, dz]
+    """
 
     def __init__(self, commands):
-
         self.TR = np.eye(4)
 
         for c, v in commands:
@@ -230,7 +238,9 @@ class CustomAxisTransformer:
 
     def _inhomogenize(self, points):
         if np.any(np.abs(points[:, 3]) < 0.00005):
-            raise Exception("AxisTransformer: converting to inhomogenous coordinate with small divisor")
+            raise Exception(
+                "AxisTransformer: converting to inhomogenous coordinate with small divisor"
+            )
 
         points[:, :3] /= points[:, 3].reshape((-1, 1))
         return points[:, :3]
@@ -248,22 +258,21 @@ class CustomAxisTransformer:
 
 
 class WorldImageTransformer:
-
     def __init__(self, fx, fy, cx, cy):
         self.params = (fx, fy, cx, cy)
 
     def world_to_image(self, points):
-        '''
-            converts 3D world points in image frame "(Z forward, X right, Y down)"
-            to pixel coordinates in 2D image
+        """
+        converts 3D world points in image frame "(Z forward, X right, Y down)"
+        to pixel coordinates in 2D image
 
-            input:
-                - points: (N,3) np.ndarray where ith row is [x,y,z] coordinate of ith point
-                        where Z is forward, X right, and Y down
-            output:
-                - coords: (N,2) np.ndarray of floating point values representing position
-                        where ith point in points would be in coords
-        '''
+        input:
+            - points: (N,3) np.ndarray where ith row is [x,y,z] coordinate of ith point
+                    where Z is forward, X right, and Y down
+        output:
+            - coords: (N,2) np.ndarray of floating point values representing position
+                    where ith point in points would be in coords
+        """
         # copied from ZED.py ZEDSDK.world_to_image
         # following the procedure described here in the below articles
         # converting between 3D and 2D: https://support.stereolabs.com/hc/en-us/articles/4554115218711-How-can-I-convert-3D-world-coordinates-to-2D-image-coordinates-and-viceversa-
@@ -280,19 +289,19 @@ class WorldImageTransformer:
         return coords
 
     def image_to_world(self, coords, depth):
-        '''
-            converts 2D pixel coordinates in images with their depth map
-            to 3D world points in the image frame with (Z forward, X right, Y down)
+        """
+        converts 2D pixel coordinates in images with their depth map
+        to 3D world points in the image frame with (Z forward, X right, Y down)
 
-            matches the results of the point cloud object that is collected with
-            the same depth map
+        matches the results of the point cloud object that is collected with
+        the same depth map
 
-            input:
-                - coords: (N,2) np.ndarray where ith row is [u,v] coordinate of ith pixel
-                - depth: (W,H) np.ndarray storing the depth values of pixels in image
-            output:
-                - points: (N,3) np.ndarray storing 3D world points corresonding to the pixel coordinates in coords
-        '''
+        input:
+            - coords: (N,2) np.ndarray where ith row is [u,v] coordinate of ith pixel
+            - depth: (W,H) np.ndarray storing the depth values of pixels in image
+        output:
+            - points: (N,3) np.ndarray storing 3D world points corresonding to the pixel coordinates in coords
+        """
         fx, fy, cx, cy = self.params
         N = coords.shape[0]
 
@@ -311,7 +320,6 @@ class WorldImageTransformer:
 
 
 if __name__ == "__main__":
-
     plane = Plane([0, 0, 0], [0, 0, 1])
     xs = np.linspace(-1, 1, 30)
     ys = np.linspace(-0.5, 0.5, 30)
@@ -321,8 +329,8 @@ if __name__ == "__main__":
     T = CustomAxisTransformer([("degx", 90), ("degy", 45), ("degz", 45)])
     result = T.transform(points)
 
-    transforms = PoseTransformations('./run_config.yaml') 
-    #transformed_points = transforms.to_origin('sensor_name', points), where sensor_name is name in yaml
+    transforms = PoseTransformations("./run_config.yaml")
+    # transformed_points = transforms.to_origin('sensor_name', points), where sensor_name is name in yaml
 
     axis_vis = vis.create_axis_vis()
     points_vis = vis.create_point_vis(points, colors=np.array([0, 0, 1]))
