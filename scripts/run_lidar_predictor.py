@@ -13,7 +13,7 @@ from perc22a.predictors.lidar.LidarPredictor import LidarPredictor
 
 def main():
     # initialize data loader and lidar predictor
-    dl = DataLoader("perc22a/data/raw/12-02-ecg-track-test")
+    dl = DataLoader("perc22a/data/raw/track-testing-09-29")
     lp = LidarPredictor()
 
     # Create a profiler object
