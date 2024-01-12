@@ -117,8 +117,9 @@ def remove_ground(
 
     return all_points[pc_mask], plane
 
-
-import cupy as cp
+# removing cupy import due to dependency issues -- requires Python 3.9/3.10
+# but we are using 3.8
+# import cupy as cp
 from skspatial.objects import Plane
 
 
