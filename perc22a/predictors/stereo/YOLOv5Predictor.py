@@ -7,15 +7,13 @@ from perc22a.predictors.utils.cones import Cones
 
 from perc22a.predictors.interface.PredictorInterface import Predictor
 import perc22a.predictors.utils.stereo as utils
+import perc22a.predictors.stereo.cfg as cfg
 
 import os
 import torch
-import statistics
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 from enum import Enum
-import perc22a.predictors.stereo.cfg as cfg
 
 # get for allowing access to parameter files associated with predictor
 STEREO_DIR_NAME = os.path.dirname(__file__)
