@@ -7,15 +7,16 @@ from perc22a.predictors.utils.cones import Cones
 
 from perc22a.predictors.interface.PredictorInterface import Predictor
 import perc22a.predictors.utils.stereo as utils
-
-import torch
-import statistics
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from enum import Enum
 import perc22a.predictors.stereo.cfg as cfg
 
+import os
+import torch
+import cv2
+import numpy as np
+from enum import Enum
+
+# get for allowing access to parameter files associated with predictor
+STEREO_DIR_NAME = os.path.dirname(__file__)
 
 # Hardcoded config info for now, potentially will pull from some constants.py in the future
 class CFG_COLORS(Enum):
@@ -39,13 +40,22 @@ CV2_COLORS = {
 DEBUG = False
 
 
-class StereoPredictor(Predictor):
+class YOLOv5Predictor(Predictor):
     # Implements Predictor interface
 
-    def __init__(self, repo, path, sim=False):
+    def __init__(self, param_file="yolov5_model_params.pt"):
+        ''' Prediction using YOLOv5 cone detection and ZED stereocamera depth
+        
+        Options for the param_file option are as follows
+            - "yolov5_model_params.pt"
+        '''
         # Initializes pytorch model using given path and repository
 
-        self.model = torch.hub.load(repo, "custom", path=path)
+        self.param_file = param_file
+        self.repo = "ultralytics/yolov5"
+        self.path = os.path.join(STEREO_DIR_NAME, self.param_file)
+
+        self.model = torch.hub.load(self.repo, "custom", path=self.path)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = self.model.to(self.device)
 
