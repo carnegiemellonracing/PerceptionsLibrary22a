@@ -39,13 +39,16 @@ CV2_COLORS = {
 DEBUG = False
 
 
-class StereoPredictor(Predictor):
+class YOLOv5Predictor(Predictor):
     # Implements Predictor interface
 
-    def __init__(self, repo, path, sim=False):
+    def __init__(self):
         # Initializes pytorch model using given path and repository
 
-        self.model = torch.hub.load(repo, "custom", path=path)
+        self.repo = "ultralytics/yolov5"
+        self.path = None
+
+        self.model = torch.hub.load(self.repo, "custom", path=self.path)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = self.model.to(self.device)
 
