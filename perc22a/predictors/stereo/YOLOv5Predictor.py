@@ -46,7 +46,10 @@ class YOLOv5Predictor(Predictor):
     # Implements Predictor interface
 
     def __init__(self, param_file="yolov5_model_params.pt"):
-        ''' param_file = the parameter file for the predictor
+        ''' Prediction using YOLOv5 cone detection and ZED stereocamera depth
+        
+        Options for the param_file option are as follows
+            - "yolov5_model_params.pt"
         '''
         # Initializes pytorch model using given path and repository
 
