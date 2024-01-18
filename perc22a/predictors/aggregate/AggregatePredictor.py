@@ -5,7 +5,7 @@
 #what if display returned some open3d project
 from perc22a.predictors.interface.PredictorInterface import Predictor
 from perc22a.predictors.lidar.LidarPredictor import LidarPredictor
-from perc22a.predictors.stereo.StereoPredictor import StereoPredictor
+from perc22a.predictors.stereo.YOLOv5Predictor import YOLOv5Predictor 
 from perc22a.predictors.utils.cones import Cones
 from perc22a.predictors.utils.transform import PoseTransformations
 import perc22a.predictors.utils.lidar.filter as filter
@@ -22,7 +22,7 @@ class AggregatePredictor(Predictor):
         self.predictions = []
         self.transformer = PoseTransformations(path)
         self.Lidar = LidarPredictor()
-        self.Stereo = StereoPredictor('ultralytics/yolov5', 'perc22a/predictors/stereo/model_params.pt')
+        self.Stereo = YOLOv5Predictor()
         self.transformed_lidar = Cones()
         self.transformed_stereo = Cones()
         self.points_cluster = []
