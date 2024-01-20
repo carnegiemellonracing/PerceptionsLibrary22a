@@ -11,7 +11,7 @@ NOTE: pipeline functions must be registered in the bottom of the file
 # import gpu clustering algorithm if gpu available
 import torch
 
-if False:
+if torch.cuda.is_available():
     print("[cluster.py] using GPU-accelerated clustering")
     from cuml import cluster
 else:
