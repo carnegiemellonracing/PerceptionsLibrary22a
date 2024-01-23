@@ -113,3 +113,36 @@ def get_cone_color(left_frame, box, padding=2):
         return cfg.COLORS.BLUE
     else:
         return cfg.COLORS.YELLOW
+
+def increase_brightness(img, value=30):
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    h, s, v = cv2.split(hsv)
+    if value > 0:
+        lim = 255 - value
+        v[v > lim] = 255
+        v[v <= lim] += value
+    else:
+        lim = -value
+        v[v < lim] = 0
+        v[v >= lim] += np.uint8(value)
+
+    final_hsv = cv2.merge((h, s, v))
+    img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
+    return img
+
+def increaseContrast(image):
+    img = image
+    lab= cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    l_channel, a, b = cv2.split(lab)
+    clahe = cv2.createCLAHE(clipLimit=2, tileGridSize=(32,32))
+    cl = clahe.apply(l_channel)
+    limg = cv2.merge((cl,a,b))
+    enhanced_img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+    return enhanced_img
+
+def getBrightnessDelta(image):
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    b_img = hsv[int(len(hsv)*0.55):]
+    h, s, v = cv2.split(b_img)
+    # import pdb; pdb.set_trace()
+    return int(125 - np.average(v).item())
