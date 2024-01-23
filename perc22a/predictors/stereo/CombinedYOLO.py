@@ -32,7 +32,8 @@ class CombinedYolo:
         self.leftDepthImage = data[DataType.ZED_LEFT_DEPTH]
         self.rightDepthImage = data[DataType.ZED_RIGHT_DEPTH]
 
-        self.combinedImage = np.concatenate((self.leftCameraImage, self.rightCameraImage), axis=1)
+        self.combinedImage = np.hstack((self.leftCameraImage, np.zeros((self.leftCameraImage.shape[0], 10, 3), dtype=np.uint8), self.rightCameraImage))
+        
 
         return self.YOLOModel.predict(data)
 
