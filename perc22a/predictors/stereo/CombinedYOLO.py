@@ -22,31 +22,31 @@ class CombinedYolo:
         self.YOLOModel = YOLOv5Predictor()
         self.combinedImage = None
 
-        self.leftCameraImage = None
-        self.rightCameraImage = None
+        self.stereoCameraImage_01 = None
+        self.stereoCameraImage_02 = None
 
-        self.leftDepthImage = None
-        self.rightDepthImage = None
+        self.depthImage_01 = None
+        self.depthImage_02 = None
 
         self.cones = Cones()
 
     def required_data(self) -> List[DataType]:
-        return [DataType.ZED_LEFT_COLOR, DataType.ZED_LEFT_COLOR, DataType.ZED_DEPTH_IMG]
+        return [DataType.ZED_LEFT_COLOR, DataType.ZED_LEFT_COLOR, DataType.ZED_XYZ_IMG, DataType.ZED_XYZ_IMG]
     
     def predict(self, data):
-        self.leftCameraImage = data[DataType.ZED_LEFT_COLOR]
-        self.rightCameraImage = data[DataType.ZED_RIGHT_COLOR]
+        self.stereoCameraImage_01 = data[DataType.ZED_LEFT_COLOR]
+        self.stereoCameraImage_02 = data[DataType.ZED_RIGHT_COLOR]
 
-        self.leftCameraImage = utils.increase_brightness(self.leftCameraImage, utils.getBrightnessDelta(self.leftCameraImage))
-        self.leftCameraImage = utils.increaseContrast(self.leftCameraImage)
+        self.stereoCameraImage_01 = utils.increase_brightness(self.stereoCameraImage_01, utils.getBrightnessDelta(self.stereoCameraImage_01))
+        self.stereoCameraImage_01 = utils.increaseContrast(self.stereoCameraImage_01)
 
-        self.rightCameraImage = utils.increase_brightness(self.rightCameraImage, utils.getBrightnessDelta(self.rightCameraImage))
-        self.rightCameraImage = utils.increaseContrast(self.rightCameraImage)
+        self.stereoCameraImage_02 = utils.increase_brightness(self.stereoCameraImage_02, utils.getBrightnessDelta(self.stereoCameraImage_02))
+        self.stereoCameraImage_02 = utils.increaseContrast(self.stereoCameraImage_02)
 
-        self.leftDepthImage = data[DataType.ZED_LEFT_DEPTH]
-        self.rightDepthImage = data[DataType.ZED_RIGHT_DEPTH]
+        self.depthImage_01 = data[DataType.ZED_DEPTH_01]
+        self.depthImage_02 = data[DataType.ZED_DEPTH_02]
 
-        self.combinedImage = np.hstack((self.leftCameraImage, np.zeros((self.leftCameraImage.shape[0], 10, 3), dtype=np.uint8), self.rightCameraImage))
+        self.combinedImage = np.hstack((self.stereoCameraImage_01, np.zeros((self.stereoCameraImage_01.shape[0], 10, 3), dtype=np.uint8), self.stereoCameraImage_02))
 
         pad = 5
 
@@ -76,10 +76,12 @@ class CombinedYolo:
             # coord = zed_pts[center_x, center_z]
             # world_x, world_y, world_z = coord['x'], coord['y'], coord['z']
 
-            if center_x < self.leftCameraImage.shape[1]:
-                coords = self.leftDepthImage[xl:xr, zt:zb]
+            if center_x < self.stereoCameraImage_01.shape[1]:
+                coords = self.depthImage_01[xl:xr, zt:zb]
             else:
-                coords = self.rightDepthImage[xl:xr, zt:zb]
+                xl = max(0, center_x - pad) - self.stereoCameraImage_01.shape[1] - 10
+                xr = min(center_x + pad, nr) - self.stereoCameraImage_01.shape[1] - 10
+                coords = self.depthImage_02[xl:xr, zt:zb]
             # # if zed is None:
             # #     world_xs, world_ys, world_zs = coords['x'], coords['y'], coords['z']
             # # else:
