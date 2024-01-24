@@ -46,7 +46,7 @@ class CombinedYolo:
         self.depthImage_01 = data[DataType.ZED_DEPTH_01]
         self.depthImage_02 = data[DataType.ZED_DEPTH_02]
 
-        self.combinedImage = np.hstack((self.stereoCameraImage_01, np.zeros((self.stereoCameraImage_01.shape[0], 10, 3), dtype=np.uint8), self.stereoCameraImage_02))
+        self.combinedImage = np.hstack((self.stereoCameraImage_01, np.zeros((self.stereoCameraImage_01.shape[0], 30, 3), dtype=np.uint8), self.stereoCameraImage_02))
 
         pad = 5
 
@@ -79,8 +79,8 @@ class CombinedYolo:
             if center_x < self.stereoCameraImage_01.shape[1]:
                 coords = self.depthImage_01[xl:xr, zt:zb]
             else:
-                xl = max(0, center_x - pad) - self.stereoCameraImage_01.shape[1] - 10
-                xr = min(center_x + pad, nr) - self.stereoCameraImage_01.shape[1] - 10
+                xl = max(0, center_x - pad) - self.stereoCameraImage_01.shape[1] - 30
+                xr = min(center_x + pad, nr) - self.stereoCameraImage_01.shape[1] - 30
                 coords = self.depthImage_02[xl:xr, zt:zb]
             # # if zed is None:
             # #     world_xs, world_ys, world_zs = coords['x'], coords['y'], coords['z']
