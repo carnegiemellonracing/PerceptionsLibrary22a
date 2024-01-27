@@ -87,6 +87,7 @@ class YOLOv5Predictor(Predictor):
         nr, nc = self.left_img.shape[:2]
 
         num_cones = len(boxes.xyxy[0])
+        print(f"[YOLOv5Predictor] [DEBUG] {num_cones} cones detected")
         for i, box in enumerate(boxes.xyxy[0]):
             # depth_y = get_object_depth(box, padding=1) # removing get_object_depth because need depth map (not in DataFrame)
             # and also not as accurate of an indicator of position as the point cloud which is just some func(depth, cp)
@@ -112,13 +113,13 @@ class YOLOv5Predictor(Predictor):
             try:
                 world_x, world_y, world_z = utils.get_world_coords(coords)
                 if DEBUG:
-                    print(f"\t success in (cone {i} of {num_cones})")
+                    print(f"\t [YOLOv5Predictor] [DEBUG] success in (cone {i} of {num_cones})")
             except Exception:
                 if DEBUG:
                     print(
-                        f"\t[PERCEPTIONS WARNING] (cone {i} of {num_cones}) detected cone but no depth; throwing away"
+                        f"\t [YOLOv5Predictor] [DEBUG]  (cone {i} of {num_cones}) detected cone but no depth; throwing away"
                     )
-                break
+                continue
 
             # use YOLO model color prediction
             color_str = pred_color_dict[color_id]
@@ -160,6 +161,6 @@ class YOLOv5Predictor(Predictor):
             bottom_right = (int(box[2]), int(box[3]))
             c = CV2_COLORS[color]
             image = cv2.rectangle(image.copy(), top_left, bottom_right, c, 3)
-        cv2.imshow("left w/ predictions", image)
-        cv2.waitKey(1)
+        cv2.imshow("yolov5 predictions", image)
+        cv2.waitKey(1 if not DEBUG else 0)
         return
