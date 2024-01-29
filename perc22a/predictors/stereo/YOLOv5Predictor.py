@@ -25,6 +25,13 @@ class CFG_COLORS(Enum):
     ORANGE = 3
     UNKNOWN = 4
 
+ZED_STR = "zed"
+ZED2_STR = "zed2"
+
+CAMERA_TO_DATATYPE = {
+    ZED_STR: [DataType.ZED_LEFT_COLOR, DataType.ZED_XYZ_IMG],
+    ZED2_STR: [DataType.ZED2_LEFT_COLOR, DataType.ZED2_XYZ_IMG]
+}
 
 COLORS = {
     1: (255, 191, 0),
@@ -43,14 +50,18 @@ DEBUG = False
 class YOLOv5Predictor(Predictor):
     # Implements Predictor interface
 
-    def __init__(self, param_file="yolov5_model_params.pt"):
+    def __init__(self, param_file="yolov5_model_params.pt", camera=ZED2_STR):
         ''' Prediction using YOLOv5 cone detection and ZED stereocamera depth
-        
-        Options for the param_file option are as follows
-            - "yolov5_model_params.pt"
+
+        Arguments:
+            param_file (str): parameter file to load YOLOv5 model
+                - "yolov5_model_params.pt"
+
+            camera (str): which camera stream to perform prediction on
+                - "zed"
+                - "zed2"
         '''
         # Initializes pytorch model using given path and repository
-
         self.param_file = param_file
         self.repo = "ultralytics/yolov5"
         self.path = os.path.join(STEREO_DIR_NAME, self.param_file)
@@ -59,12 +70,17 @@ class YOLOv5Predictor(Predictor):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = self.model.to(self.device)
 
+        # get camera datatypes
+        self.camera = camera
+        self.img_datatype = CAMERA_TO_DATATYPE[self.camera][0]
+        self.xyz_datatype = CAMERA_TO_DATATYPE[self.camera][1]
+
         # Used for visualization in display()
         self.predictions = []
         self.boxes_with_depth = []
 
     def required_data(self) -> List[DataType]:
-        return [DataType.ZED_LEFT_COLOR, DataType.ZED_XYZ_IMG]
+        return [self.img_datatype, self.xyz_datatype]
 
     def predict(self, data: DataInstance) -> Cones:
 
@@ -72,8 +88,8 @@ class YOLOv5Predictor(Predictor):
         cones = Cones()
 
         #access left_img and zed_pts from data dict(just hardcoded for now)
-        self.left_img = data[DataType.ZED_LEFT_COLOR]
-        self.zed_pts = data[DataType.ZED_XYZ_IMG]
+        self.left_img = data[self.img_datatype]
+        self.zed_pts = data[self.xyz_datatype]
 
         pad = 5
 
@@ -87,7 +103,9 @@ class YOLOv5Predictor(Predictor):
         nr, nc = self.left_img.shape[:2]
 
         num_cones = len(boxes.xyxy[0])
-        print(f"[YOLOv5Predictor] [DEBUG] {num_cones} cones detected")
+        if DEBUG:
+            print(f"[YOLOv5Predictor] [DEBUG] {num_cones} cones detected")
+
         for i, box in enumerate(boxes.xyxy[0]):
             # depth_y = get_object_depth(box, padding=1) # removing get_object_depth because need depth map (not in DataFrame)
             # and also not as accurate of an indicator of position as the point cloud which is just some func(depth, cp)
@@ -161,6 +179,6 @@ class YOLOv5Predictor(Predictor):
             bottom_right = (int(box[2]), int(box[3]))
             c = CV2_COLORS[color]
             image = cv2.rectangle(image.copy(), top_left, bottom_right, c, 3)
-        cv2.imshow("yolov5 predictions", image)
+        cv2.imshow(f"yolov5 predictions ({self.camera})", image)
         cv2.waitKey(1 if not DEBUG else 0)
         return
