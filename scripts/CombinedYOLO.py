@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 
 from typing import List
+import os
+import torch
 from perc22a.predictors.stereo.YOLOv5Predictor import YOLOv5Predictor 
 from perc22a.data.utils.DataType import DataType
 from perc22a.predictors.utils.cones import Cones
@@ -9,6 +11,14 @@ import perc22a.predictors.utils.stereo as utils
 import perc22a.predictors.stereo.cfg as cfg
 
 DEBUG = False
+
+STEREO_DIR_NAME = os.path.dirname(__file__)
+
+
+COLORS = {
+    1: (255, 191, 0),
+    0: (0, 150, 255),
+}
 
 
 CV2_COLORS = {
@@ -19,7 +29,15 @@ CV2_COLORS = {
 
 class CombinedYolo:
     def init(self):
-        self.YOLOModel = YOLOv5Predictor()
+        self.param_file = "/home/chip/Documents/driverless-packages/PerceptionsLibrary22a/perc22a/predictors/stereo/yolov5_model_params.pt"
+        self.repo = "ultralytics/yolov5"
+        self.path = os.path.join(STEREO_DIR_NAME, self.param_file)
+
+        self.model = torch.hub.load(self.repo, "custom", path=self.path)
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.model = self.model.to(self.device)
+
+
         self.combinedImage = None
 
         self.stereoCameraImage_01 = None
@@ -54,7 +72,8 @@ class CombinedYolo:
         self.predictions, self.boxes_with_depth = [], []
 
         # model expects RGB, convert BGR to RGB
-        boxes = self.YOLOModel(self.combinedImage[:, :, [2, 1, 0]], size=640)
+        print(self.combinedImage[:, :, [2, 1, 0]].shape)
+        boxes = self.model(self.combinedImage[:, :, [2, 1, 0]], size=640)
         pred_color_dict = boxes.names
 
         nr, nc = self.combinedImage.shape[:2]
@@ -62,16 +81,22 @@ class CombinedYolo:
         num_cones = len(boxes.xyxy[0])
         print(f"[YOLOv5Predictor] [DEBUG] {num_cones} cones detected")
         for i, box in enumerate(boxes.xyxy[0]):
+            raw_box_copy = box.cpu().numpy().copy()
+            raw_box_copy = np.zeros(raw_box_copy.shape) + raw_box_copy
+            print(f"hi 2: {raw_box_copy}")
             # depth_y = get_object_depth(box, padding=1) # removing get_object_depth because need depth map (not in DataFrame)
             # and also not as accurate of an indicator of position as the point cloud which is just some func(depth, cp)
             # where cp is the camera parameters
             center_x, center_z = utils.calc_box_center(box)
+            # print(int(center_x), int(center_z))
             color_id = int(box[-1].item())
 
             xl = max(0, center_x - pad)
             xr = min(center_x + pad, nr)
             zt = max(0, center_z - pad)
             zb = min(center_z + pad, nc)
+
+            # print(self.combinedImage.shape, box)
 
             # coord = zed_pts[center_x, center_z]
             # world_x, world_y, world_z = coord['x'], coord['y'], coord['z']
@@ -116,7 +141,8 @@ class CombinedYolo:
             prediction = [world_x, world_y, world_z, color]
 
             # add most recent prediction to arrays and call display to visualize
-            self.boxes_with_depth.append(box)
+            # print(f"hi: {raw_box_copy}")
+            self.boxes_with_depth.append(raw_box_copy)
             self.predictions.append(prediction)
 
             x, y, z, c = prediction
@@ -145,24 +171,28 @@ class CombinedYolo:
 
 def testing():
     import time
-    from perc22a.predictors.stereo.CombinedYOLO import CombinedYolo
+    from scripts.CombinedYOLO import CombinedYolo
     predictor = CombinedYolo()
+    from perc22a.predictors.stereo.YOLOv5Predictor import YOLOv5Predictor
+    from perc22a.data.utils.dataloader import DataLoader
+    from perc22a.data.utils.DataInstance import DataInstance
+    from perc22a.data.utils.DataType import DataType
 
+    dl = DataLoader("perc22a/data/raw/ecg-12-02-full")
     predictor.init()
 
-    for i in range(23, 155):
-        array = np.load(f"track-testing-09-29/instance-{i}.npz")
-        left_img = array['left_color'] 
-        depth_img = array['depth_image']
-            
-        data = {
+    for i in range(len(dl)):
+        left_img = dl[i][DataType.ZED_LEFT_COLOR]
+        depth_img = dl[i][DataType.ZED_XYZ_IMG]
+
+        data1 = {
             "ZED_LEFT_COLOR": left_img,
             "ZED_RIGHT_COLOR": left_img,
             "ZED_DEPTH_01": depth_img,
             "ZED_DEPTH_02": depth_img,
         }
 
-        predictor.predict(data)
+        predictor.predict(data1)
         predictor.display()
         time.sleep(0.1)
 

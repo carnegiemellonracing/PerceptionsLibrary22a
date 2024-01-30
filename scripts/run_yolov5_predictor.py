@@ -4,7 +4,7 @@ from perc22a.data.utils.dataloader import DataLoader
 
 def main():
     sp = YOLOv5Predictor()
-    dl = DataLoader("perc22a/data/raw/track-testing-09-29")
+    dl = DataLoader("perc22a/data/raw/ecg-12-02-full")
 
     for i in range(len(dl)):
         cones = sp.predict(dl[i])
