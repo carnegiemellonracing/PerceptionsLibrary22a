@@ -34,8 +34,8 @@ class CombinedYolo:
         return [DataType.ZED_LEFT_COLOR, DataType.ZED_LEFT_COLOR, DataType.ZED_XYZ_IMG, DataType.ZED_XYZ_IMG]
     
     def predict(self, data):
-        self.stereoCameraImage_01 = data[DataType.ZED_LEFT_COLOR]
-        self.stereoCameraImage_02 = data[DataType.ZED_RIGHT_COLOR]
+        self.stereoCameraImage_01 = data["ZED_LEFT_COLOR"]
+        self.stereoCameraImage_02 = data["ZED_RIGHT_COLOR"]
 
         self.stereoCameraImage_01 = utils.increase_brightness(self.stereoCameraImage_01, utils.getBrightnessDelta(self.stereoCameraImage_01))
         self.stereoCameraImage_01 = utils.increaseContrast(self.stereoCameraImage_01)
@@ -43,8 +43,8 @@ class CombinedYolo:
         self.stereoCameraImage_02 = utils.increase_brightness(self.stereoCameraImage_02, utils.getBrightnessDelta(self.stereoCameraImage_02))
         self.stereoCameraImage_02 = utils.increaseContrast(self.stereoCameraImage_02)
 
-        self.depthImage_01 = data[DataType.ZED_DEPTH_01]
-        self.depthImage_02 = data[DataType.ZED_DEPTH_02]
+        self.depthImage_01 = data["ZED_DEPTH_01"]
+        self.depthImage_02 = data["ZED_DEPTH_02"]
 
         self.combinedImage = np.hstack((self.stereoCameraImage_01, np.zeros((self.stereoCameraImage_01.shape[0], 30, 3), dtype=np.uint8), self.stereoCameraImage_02))
 
@@ -54,7 +54,7 @@ class CombinedYolo:
         self.predictions, self.boxes_with_depth = [], []
 
         # model expects RGB, convert BGR to RGB
-        boxes = self.model(self.combinedImage[:, :, [2, 1, 0]], size=640)
+        boxes = self.YOLOModel(self.combinedImage[:, :, [2, 1, 0]], size=640)
         pred_color_dict = boxes.names
 
         nr, nc = self.combinedImage.shape[:2]
@@ -141,3 +141,29 @@ class CombinedYolo:
         cv2.imshow("yolov5 predictions", image)
         cv2.waitKey(1 if not DEBUG else 0)
         return
+
+
+def testing():
+    import time
+    from perc22a.predictors.stereo.CombinedYOLO import CombinedYolo
+    predictor = CombinedYolo()
+
+    predictor.init()
+
+    for i in range(23, 155):
+        array = np.load(f"track-testing-09-29/instance-{i}.npz")
+        left_img = array['left_color'] 
+        depth_img = array['depth_image']
+            
+        data = {
+            "ZED_LEFT_COLOR": left_img,
+            "ZED_RIGHT_COLOR": left_img,
+            "ZED_DEPTH_01": depth_img,
+            "ZED_DEPTH_02": depth_img,
+        }
+
+        predictor.predict(data)
+        predictor.display()
+        time.sleep(0.1)
+
+testing()
