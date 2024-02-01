@@ -23,9 +23,11 @@ class Vis3D:
         # initialize geometry objects to visualize
         self.axis_vis = create_axis_vis()
         self.cones_vis = None
-        
+
+        # initialize a random point cloud so that display is correct
+        init_points = np.random.rand(1000, 3) * 100  
         self.points_vis = o3d.geometry.PointCloud()
-        self.points_vis.points = o3d.utility.Vector3dVector()
+        self.points_vis.points = o3d.utility.Vector3dVector(init_points)
 
         # initialize window to visualize in, set perspectives, and add objects
         self.vis = o3d.visualization.Visualizer()
@@ -68,7 +70,7 @@ class Vis3D:
         self.points = self.points[np.any(self.points != 0, axis=1)][:,:3]
 
         # modify the pointcloud geometry        
-        self.points_vis.clear()
+        self.points_vis.points.clear()
         self.points_vis.points.extend(self.points)
 
         # update geometry in visualization
