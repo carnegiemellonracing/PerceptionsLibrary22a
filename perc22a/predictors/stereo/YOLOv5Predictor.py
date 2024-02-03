@@ -4,6 +4,7 @@ from typing import List
 from perc22a.data.utils.DataInstance import DataInstance
 from perc22a.data.utils.DataType import DataType
 from perc22a.predictors.utils.cones import Cones
+from perc22a.predictors.utils.transform import PoseTransformations
 
 from perc22a.predictors.interface.PredictorInterface import Predictor
 import perc22a.predictors.utils.stereo as utils
@@ -50,7 +51,7 @@ DEBUG = False
 class YOLOv5Predictor(Predictor):
     # Implements Predictor interface
 
-    def __init__(self, param_file="yolov5_model_params.pt", camera=ZED2_STR):
+    def __init__(self, sensor_name, param_file="yolov5_model_params.pt", camera=ZED_STR):
         ''' Prediction using YOLOv5 cone detection and ZED stereocamera depth
 
         Arguments:
@@ -61,6 +62,10 @@ class YOLOv5Predictor(Predictor):
                 - "zed"
                 - "zed2"
         '''
+        self.sensor_name = sensor_name
+        self.transformer = PoseTransformations('config/race_config.yaml')
+
+
         # Initializes pytorch model using given path and repository
         self.param_file = param_file
         self.repo = "ultralytics/yolov5"
@@ -167,7 +172,9 @@ class YOLOv5Predictor(Predictor):
             elif c == cfg.COLORS.ORANGE:
                 cones.add_orange_cone(x, y, z)
 
-        return cones
+
+
+        return self.transformer.transform_cones(self.sensor_name, cones)
 
     def display(self):
         # code for visualizePrediction() in og

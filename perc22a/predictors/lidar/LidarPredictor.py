@@ -18,6 +18,7 @@ from perc22a.data.utils.DataType import DataType
 
 # predict output datatype
 from perc22a.predictors.utils.cones import Cones
+from perc22a.predictors.utils.transform import PoseTransformations
 
 # visualization and core lidar algorithm functions
 import perc22a.predictors.utils.lidar.visualization as vis
@@ -33,8 +34,10 @@ import time
 # TODO: move visualization to display function
 
 class LidarPredictor(Predictor):
-    def __init__(self):
+    def __init__(self, sensor_name):
         self.window = vis.init_visualizer_window()
+        self.sensor_name = sensor_name
+        self.transformer = PoseTransformations('config/race_config.yaml')
         pass
 
     def profile_predict(self, data):
@@ -151,7 +154,7 @@ class LidarPredictor(Predictor):
             elif c == 0:
                 cones.add_blue_cone(x, y, z)
 
-        return cones
+        return self.transformer.transform_cones(self.sensor_name, cones)
 
 
     def display(self):
