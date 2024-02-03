@@ -416,13 +416,15 @@ def get_centroids_z(
             #       with a much lower x and much lower avg_dist than actual.
 
             # dist = math.sqrt((center[0] ** 2) + (center[1] ** 2) + (center[2] ** 2))
+            # print("hello")
+            # print(x_bound)
             if not(avg_dist <= curr_dist_thresh): 
                 print("eifijijejfi")
                 print(avg_dist)
                 print(dist_threshold)
                 print(curr_dist_thresh)
-            if (
-                (avg_dist <= curr_dist_thresh) and 
+            if ( 
+                #(avg_dist <= curr_dist_thresh) and 
                 (max_cluster_z <= height_threshold) and 
                 (abs(center[0]) <= x_bound - x_dist) #and abs(center[0]) > 0.1
             ):

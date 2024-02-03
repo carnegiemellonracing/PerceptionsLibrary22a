@@ -123,7 +123,7 @@ class LidarPredictor(Predictor):
             x_threshold_scale=0.15,
             height_threshold=0.5,
             scalar=1,
-            x_bound=xbound,
+            x_bound=20,
             x_dist=3,
         )
         print("Predict Cones: ", (time.time() - start) * 1000)
@@ -136,11 +136,11 @@ class LidarPredictor(Predictor):
 
         # correct the positions of the cones to the center of mass of the car
         cone_output = cluster.correct_clusters(cone_output)
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
 
         # visualize points
         vis.update_visualizer_window(
-            self.window,
+            None,
             points=points_cluster_subset,
             pred_cones=cone_centers,
             colors_cones=cone_colors,
