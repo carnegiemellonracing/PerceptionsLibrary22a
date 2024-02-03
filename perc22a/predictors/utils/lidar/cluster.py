@@ -10,6 +10,7 @@ NOTE: pipeline functions must be registered in the bottom of the file
 
 # import gpu clustering algorithm if gpu available
 import torch
+import perc22a.predictors.utils.lidar.visualization as vis
 
 if torch.cuda.is_available():
     print("[cluster.py] using GPU-accelerated clustering")
@@ -55,7 +56,7 @@ def run_hdbscan(points, eps=1, min_samples=1):
     return clusterer
 
 
-def run_dbscan(points, eps=1, min_samples=1):
+def run_dbscan(points, eps=0.25, min_samples=1):
     """
     identical to run_hdbscan but runs using DBSCAN from sklearn library
     Input:
@@ -285,7 +286,7 @@ def get_centroids_z(
     filter_distant=True,
     dist_threshold=0.2,
     x_threshold_scale=2,
-    height_threshold=4,
+    height_threshold=0,
     scalar=1,
     x_bound=10,
     x_dist=1,
@@ -359,6 +360,7 @@ def get_centroids_z(
         center = np.sum(cluster_points * cluster_probs, axis=0) / scale
 
         # do not add cone centroid if it is too far from its cluster
+        #filter_distant = False
         if not filter_distant:
             centroids.append(center)
         else:
@@ -382,7 +384,10 @@ def get_centroids_z(
                 - ground_planevals[3]
             )
             max_cluster_z = point_heights.max()
-
+            # print("hello")
+            #print(dist_threshold)
+            # print("bello")
+            # print(dist_threshold)
             # find what we want our distance threshold to be for averagedists
             # the distance threshold is equal to dist_threshold for clusters
             # within the xbounds [4, -4]. Going further outwards from x, the
@@ -390,6 +395,8 @@ def get_centroids_z(
             curr_dist_thresh = dist_threshold * (
                 1 - x_threshold_scale * max(0, abs(center[0]) - 4)
             )
+            # print("poopoo")
+            # print(curr_dist_thresh)
 
             # If there is onyl one cone, we just set our avg_dist to be higher
             # than the distance threshold, thereby always labelling single point'
@@ -409,10 +416,15 @@ def get_centroids_z(
             #       with a much lower x and much lower avg_dist than actual.
 
             # dist = math.sqrt((center[0] ** 2) + (center[1] ** 2) + (center[2] ** 2))
+            if not(avg_dist <= curr_dist_thresh): 
+                print("eifijijejfi")
+                print(avg_dist)
+                print(dist_threshold)
+                print(curr_dist_thresh)
             if (
-                (avg_dist <= curr_dist_thresh)
-                and (max_cluster_z <= height_threshold)
-                and (abs(center[0]) <= x_bound - x_dist)
+                (avg_dist <= curr_dist_thresh) and 
+                (max_cluster_z <= height_threshold) and 
+                (abs(center[0]) <= x_bound - x_dist) #and abs(center[0]) > 0.1
             ):
                 # (dist < 4 or outer_points < 1):
                 # if True:
@@ -492,7 +504,7 @@ def predict_cones_z(
     scalar=1,
     dist_threshold=0.2,
     x_threshold_scale=1,
-    height_threshold=4,
+    height_threshold=0,
     x_bound=10,
     x_dist=1,
 ):
@@ -544,6 +556,8 @@ def predict_cones_z(
         clusterer = run_dbscan(points)
     labels = clusterer.labels_.reshape((-1, 1))
     probs = clusterer.probabilities_.reshape((-1, 1))
+
+    #import pdb; pdb.set_trace();
 
     # get the cone centers and return
     centroids = get_centroids_z(

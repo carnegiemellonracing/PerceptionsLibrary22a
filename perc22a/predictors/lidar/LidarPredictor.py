@@ -60,6 +60,11 @@ class LidarPredictor(Predictor):
         points = self._transform_points(data[DataType.HESAI_POINTCLOUD])
         self.points = points
 
+        points = points[~np.all(points == 0, axis=1)]
+
+        #import pdb; pdb.set_trace()
+
+
         print("transform time: ", (time.time() - start) * 1000)
         start = time.time()
 
@@ -77,7 +82,7 @@ class LidarPredictor(Predictor):
         # vis.update_visualizer_window(None, points=points_ground_plane)
 
         # perform a plane fit and remove ground points
-        xbound = 10
+        xbound = 12
         start = time.time()
         points_filtered_ground, _, ground_planevals = filter.plane_fit(
             points,
@@ -116,12 +121,11 @@ class LidarPredictor(Predictor):
             hdbscan=False,
             dist_threshold=0.6,
             x_threshold_scale=0.15,
-            height_threshold=0.3,
+            height_threshold=0.5,
             scalar=1,
             x_bound=xbound,
             x_dist=3,
         )
-
         print("Predict Cones: ", (time.time() - start) * 1000)
         start = time.time()
 
@@ -132,6 +136,7 @@ class LidarPredictor(Predictor):
 
         # correct the positions of the cones to the center of mass of the car
         cone_output = cluster.correct_clusters(cone_output)
+        import pdb; pdb.set_trace()
 
         # visualize points
         vis.update_visualizer_window(
