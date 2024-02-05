@@ -1,0 +1,62 @@
+---
+#define origin as some arbitrary point on car 
+#all other pose/orientations in relation to defined origin
+origin: 
+  pose: {
+    position: {
+                x: 0,
+                y: 0,
+                z: 0
+              }
+    #orientation?
+  }
+sensors:
+  - stereo:
+      name: stereo,
+      pose: {
+        position: {
+                    x: 0,
+                    y: 0.146,
+                    z: 0.149
+                  },
+        orientation: {theta: 0,
+                      phi: 0, 
+                      psi: 0
+                    },
+      focal_params: {
+                      x: 687.14,
+                      y: 687.14
+                    },
+      center_params: {
+                      x: 676.84,
+                      y: 369.63
+                    }
+    }
+  - lidar: {
+      name: lidar,
+      pose: {
+        position: {
+                    x: 0,
+                    y: 1.797,
+                    z: -0.479
+                  },
+        orientation: {theta: 0,
+                      phi: 0, 
+                      psi: 0}
+                }
+      }
+  - gps: {
+      name: gps,
+      pose: {
+          position: {
+                    x: -0.20,
+                    y: -0.25,
+                    z: -0.10
+                  },
+          orientation: {theta: 0,
+                      phi: 0, 
+                      psi: 0
+                      }
+              },
+          rtk_on: true,
+        }
