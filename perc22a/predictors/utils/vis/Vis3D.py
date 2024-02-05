@@ -17,20 +17,11 @@ GRID_RIGHT_BOUND = 10
 GRID_FRONT_BOUND = 10
 INTERVAL = 1
 
-LEFT_POINTS = [[-GRID_RIGHT_BOUND, y, 0] for y in np.arange(0, GRID_FRONT_BOUND, step=INTERVAL)]
-RIGHT_POINTS = [[GRID_RIGHT_BOUND, y, 0] for y in np.arange(0, GRID_FRONT_BOUND, step=INTERVAL)]
-BACK_POINTS = [
-    [x, 0, 0] for x in np.arange(0, GRID_RIGHT_BOUND, step=INTERVAL)
-] + [
-    [-x, 0, 0] for x in np.arange(0, GRID_RIGHT_BOUND, step=INTERVAL)
-]
-FRONT_POINTS = [
-    [x, GRID_FRONT_BOUND, 0] for x in np.arange(0, GRID_RIGHT_BOUND, step=INTERVAL)
-] + [
-    [-x, GRID_FRONT_BOUND, 0] for x in np.arange(0, GRID_RIGHT_BOUND, step=INTERVAL)
-]
-
 class Vis3D:
+    '''
+        1. only update cones when necessary (e.g. when publishing)
+        2. update on a timer
+    '''
 
     def __init__(self):
 
@@ -65,6 +56,21 @@ class Vis3D:
         return
     
     def _init_grid(self):
+
+        # create points for creating linesets
+        LEFT_POINTS = [[-GRID_RIGHT_BOUND, y, 0] for y in np.arange(0, GRID_FRONT_BOUND, step=INTERVAL)]
+        RIGHT_POINTS = [[GRID_RIGHT_BOUND, y, 0] for y in np.arange(0, GRID_FRONT_BOUND, step=INTERVAL)]
+        BACK_POINTS = [
+            [x, 0, 0] for x in np.arange(0, GRID_RIGHT_BOUND, step=INTERVAL)
+        ] + [
+            [-x, 0, 0] for x in np.arange(0, GRID_RIGHT_BOUND, step=INTERVAL)
+        ]
+        FRONT_POINTS = [
+            [x, GRID_FRONT_BOUND, 0] for x in np.arange(0, GRID_RIGHT_BOUND, step=INTERVAL)
+        ] + [
+            [-x, GRID_FRONT_BOUND, 0] for x in np.arange(0, GRID_RIGHT_BOUND, step=INTERVAL)
+        ]
+
         assert (len(BACK_POINTS) == len(FRONT_POINTS))
         assert (len(LEFT_POINTS) == len(RIGHT_POINTS))
 
@@ -115,6 +121,8 @@ class Vis3D:
 
         # update geometry in visualization
         self.vis.update_geometry(self.points_vis)
+
+        self.points = None
 
     def _update_cones(self):
         '''updates 3D visualization with latest points'''

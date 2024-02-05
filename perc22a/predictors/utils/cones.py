@@ -59,6 +59,15 @@ class Cones:
         """(x, y, z) are cone position in meters"""
         self.orange_cones.append([x, y, z])
         return self.orange_cones
+    
+    def add_cones(self, cones):
+        """adds cones from another Cone object"""
+        self.blue_cones += cones.blue_cones
+        self.yellow_cones += cones.yellow_cones
+        self.orange_cones += cones.orange_cones
+
+        return
+        
 
     def to_numpy(self):
         """Returns all cones added to Cones objet
