@@ -13,6 +13,23 @@ from perc22a.predictors.utils.lidar.visualization import create_axis_vis, \
 import numpy as np
 import open3d as o3d
 
+GRID_RIGHT_BOUND = 10
+GRID_FRONT_BOUND = 10
+INTERVAL = 1
+
+LEFT_POINTS = [[-GRID_RIGHT_BOUND, y, 0] for y in np.arange(0, GRID_FRONT_BOUND, step=INTERVAL)]
+RIGHT_POINTS = [[GRID_RIGHT_BOUND, y, 0] for y in np.arange(0, GRID_FRONT_BOUND, step=INTERVAL)]
+BACK_POINTS = [
+    [x, 0, 0] for x in np.arange(0, GRID_RIGHT_BOUND, step=INTERVAL)
+] + [
+    [-x, 0, 0] for x in np.arange(0, GRID_RIGHT_BOUND, step=INTERVAL)
+]
+FRONT_POINTS = [
+    [x, GRID_FRONT_BOUND, 0] for x in np.arange(0, GRID_RIGHT_BOUND, step=INTERVAL)
+] + [
+    [-x, GRID_FRONT_BOUND, 0] for x in np.arange(0, GRID_RIGHT_BOUND, step=INTERVAL)
+]
+
 class Vis3D:
 
     def __init__(self):
@@ -36,11 +53,44 @@ class Vis3D:
 
         self.vis.add_geometry(self.axis_vis)
         self.vis.add_geometry(self.points_vis)
+        self._init_grid()
 
         # initialize visualizer perspective
         update_visualizer_perspective(self.vis, EXTRINSIC_BEHIND)
 
+        # clear original point cloud to avoid random stuff
+        self.points_vis.points.clear()
+        self.vis.update_geometry(self.points_vis)
+
         return
+    
+    def _init_grid(self):
+        assert (len(BACK_POINTS) == len(FRONT_POINTS))
+        assert (len(LEFT_POINTS) == len(RIGHT_POINTS))
+
+        # construct vertical grid lines
+        vertical_points = BACK_POINTS + FRONT_POINTS
+        vertical_lines = [[i, i + len(BACK_POINTS)] for i in range(len(BACK_POINTS))]
+        vertical_colors = [[0.25, 0.25, 0.25] for i in range(len(BACK_POINTS))]
+        self.vertical_lineset = o3d.geometry.LineSet(
+            points=o3d.utility.Vector3dVector(vertical_points),
+            lines=o3d.utility.Vector2iVector(vertical_lines),
+        )
+        self.vertical_lineset.colors = o3d.utility.Vector3dVector(vertical_colors)
+
+        # construct horizontal grid lines
+        horizontal_points = LEFT_POINTS + RIGHT_POINTS
+        horizontal_lines = [[i, i + len(RIGHT_POINTS)] for i in range(len(RIGHT_POINTS))]
+        horizontal_colors = [[0.25, 0.25, 0.25] for i in range(len(RIGHT_POINTS))]
+        self.horizontal_lineset = o3d.geometry.LineSet(
+            points=o3d.utility.Vector3dVector(horizontal_points),
+            lines=o3d.utility.Vector2iVector(horizontal_lines),
+        )
+        self.horizontal_lineset.colors = o3d.utility.Vector3dVector(horizontal_colors)
+
+        # visualize the lineset
+        self.vis.add_geometry(self.vertical_lineset)
+        self.vis.add_geometry(self.horizontal_lineset)
 
 
     def set_points(self, points: np.ndarray):
