@@ -86,9 +86,9 @@ class PoseTransformations:
         #construct homogeneous rotation matrices
         #all angles and positions are given relative to origin from yaml'
         #print(sensor)
-        rx = sensor['pose']['orientation']['theta'] * DEG_TO_RAD
-        ry = sensor['pose']['orientation']['phi'] * DEG_TO_RAD
-        rz= sensor['pose']['orientation']['psi'] * DEG_TO_RAD
+        rx = sensor['pose']['orientation']['theta_x'] * DEG_TO_RAD
+        ry = sensor['pose']['orientation']['theta_y'] * DEG_TO_RAD
+        rz= sensor['pose']['orientation']['theta_z'] * DEG_TO_RAD
         RX = make_RX(rx)
         RY = make_RY(ry)
         RZ = make_RZ(rz)
