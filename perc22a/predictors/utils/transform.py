@@ -11,6 +11,9 @@ from skspatial.objects import Plane
 import yaml
 import time
 import perc22a.predictors.utils.lidar.visualization as vis
+from perc22a.predictors.utils.cones import Cones
+
+
 
 
 DEG_TO_RAD = np.pi / 180
@@ -62,7 +65,7 @@ def make_T(dx, dy, dz):
 
 
 class PoseTransformations:
-    # stereo_cam = config['stereo_camera']
+    # stereo_cam = config['stereo']
     # lidar = config['lidar']
     # gps = config['gps']
 
@@ -146,6 +149,16 @@ class PoseTransformations:
         result = self._inhomogenize(points_transformed)
 
         return result
+    
+    def transform_cones(self, sensor_name, cones: Cones):
+        #cones = Cones coming from predictor, to be transformed to be relative to origin of car
+        blue_arr, yellow_arr, orange_arr = cones.to_numpy()
+        transformed_cones = Cones.from_numpy(
+            self.to_origin(sensor_name, blue_arr, inverse=False),
+            self.to_origin(sensor_name, yellow_arr, inverse=False),
+            self.to_origin(sensor_name, orange_arr, inverse=False)
+        )
+        return transformed_cones
            
         
         
