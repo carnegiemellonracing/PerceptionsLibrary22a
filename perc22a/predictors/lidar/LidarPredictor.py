@@ -37,7 +37,7 @@ class LidarPredictor(Predictor):
     def __init__(self):
         self.window = vis.init_visualizer_window()
         self.sensor_name = "lidar"
-        self.transformer = PoseTransformations('config/race_config.yaml')
+        self.transformer = PoseTransformations()
         pass
 
     def profile_predict(self, data):

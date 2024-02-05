@@ -63,7 +63,7 @@ class YOLOv5Predictor(Predictor):
                 - "zed2"
         '''
         self.sensor_name = self.camera
-        self.transformer = PoseTransformations('config/race_config.yaml')
+        self.transformer = PoseTransformations()
 
 
         # Initializes pytorch model using given path and repository
