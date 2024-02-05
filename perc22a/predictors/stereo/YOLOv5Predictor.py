@@ -62,7 +62,7 @@ class YOLOv5Predictor(Predictor):
                 - "zed"
                 - "zed2"
         '''
-        self.sensor_name = self.camera
+        self.sensor_name = camera
         self.transformer = PoseTransformations()
 
 
