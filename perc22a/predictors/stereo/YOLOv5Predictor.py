@@ -4,7 +4,7 @@ from typing import List
 from perc22a.data.utils.DataInstance import DataInstance
 from perc22a.data.utils.DataType import DataType
 from perc22a.predictors.utils.cones import Cones
-from perc22a.predictors.utils.transform import PoseTransformations
+from perc22a.predictors.utils.transform.transform import PoseTransformations
 
 from perc22a.predictors.interface.PredictorInterface import Predictor
 import perc22a.predictors.utils.stereo as utils
@@ -51,7 +51,7 @@ DEBUG = False
 class YOLOv5Predictor(Predictor):
     # Implements Predictor interface
 
-    def __init__(self, sensor_name, param_file="yolov5_model_params.pt", camera=ZED_STR):
+    def __init__(self, param_file="yolov5_model_params.pt", camera=ZED_STR):
         ''' Prediction using YOLOv5 cone detection and ZED stereocamera depth
 
         Arguments:
@@ -62,7 +62,7 @@ class YOLOv5Predictor(Predictor):
                 - "zed"
                 - "zed2"
         '''
-        self.sensor_name = sensor_name
+        self.sensor_name = self.camera
         self.transformer = PoseTransformations('config/race_config.yaml')
 
 

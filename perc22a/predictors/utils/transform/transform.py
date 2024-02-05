@@ -10,11 +10,12 @@ import open3d as o3d
 from skspatial.objects import Plane
 import yaml
 import time
+import os
 import perc22a.predictors.utils.lidar.visualization as vis
 from perc22a.predictors.utils.cones import Cones
 
-
-
+# get transform directory absolute path
+TRANSFORM_DIR_NAME = os.path.dirname(__file__)
 
 DEG_TO_RAD = np.pi / 180
 
@@ -70,8 +71,11 @@ class PoseTransformations:
     # gps = config['gps']
 
     # create transformation matrices for each sensor
-    def __init__(self, path):
-        with open(path, "r") as file:
+    def __init__(self, config_file="cart_config.yaml"):
+
+        self.path = os.path.join(TRANSFORM_DIR_NAME, "config", config_file)        
+
+        with open(self.path, "r") as file:
             self.config = yaml.safe_load(file)
             self.TRdict = dict()
             self.INVdict = dict()
