@@ -20,7 +20,7 @@ sensors:
                   },
         orientation: {theta_x: 0,
                       theta_y: 0, 
-                      theta_z: -25
+                      theta_z: 25
                     },
       focal_params: {
                       x: 687.14,
@@ -40,7 +40,7 @@ sensors:
                   },
         orientation: {theta_x: 0,
                       theta_y: 0, 
-                      theta_z: 25
+                      theta_z: -25
                     },
       focal_params: {
                       x: 687.14,  # UPDATE THESE FOR THE ZED2
