@@ -32,10 +32,11 @@ from typing import List
 import time
 
 # TODO: move visualization to display function
+LIDAR_DEBUG = False
 
 class LidarPredictor(Predictor):
     def __init__(self):
-        self.window = vis.init_visualizer_window()
+        # self.window = vis.init_visualizer_window()
         self.sensor_name = "lidar"
         self.transformer = PoseTransformations()
         pass
@@ -65,41 +66,42 @@ class LidarPredictor(Predictor):
 
         self.points = points
 
-        print("transform time: ", (time.time() - start) * 1000)
+        # print("transform time: ", (time.time() - start) * 1000)
         start = time.time()
 
         # remove all points with nan values
         points = points[~np.any(np.isnan(points), axis=-1)]
 
-        print("nan time: ", (time.time() - start) * 1000)
+        # print("nan time: ", (time.time() - start) * 1000)
         start = time.time()
 
-        # perform a box range on the data
+        # perform a box range on the data 
+        # NOTE: scale box_dim appropriately with these values
         points_ground_plane = filter.box_range(
-            points, xmin=-20, xmax=20, ymin=-20, ymax=20, zmin=-1, zmax=1
+            points, xmin=-3, xmax=3, ymin=-3, ymax=20, zmin=-1, zmax=1
         )
 
         # vis.update_visualizer_window(None, points=points_ground_plane)
 
         # perform a plane fit and remove ground points
-        xbound = 10
         start = time.time()
         points_filtered_ground, _, ground_planevals = filter.plane_fit(
             points,
             points_ground_plane,
             return_mask=True,
-            boxdim=2,
-            height_threshold=0.05,
+            boxdim=0.5,
+            height_threshold=0.15, # cone height typically 33cm
         )
         end = time.time()
-        print(f"plane_fit: {end-start}")
+        # print(f"plane_fit: {end-start}")
         # perform another filtering algorithm to dissect boxed-region
+        xbound = 10
         points_cluster, mask_cluster = filter.box_range(
             points_filtered_ground,
             xmin=-xbound,
             xmax=xbound,
             ymin=-10,
-            ymax=50,
+            ymax=20,
             zmin=-10,
             zmax=100,
             return_mask=True,
@@ -111,7 +113,7 @@ class LidarPredictor(Predictor):
         voxel_size = 0.1  # Example voxel size
         points_cluster_subset = filter.voxel_downsample(points_cluster, voxel_size)
 
-        print("Random Subset: ", (time.time() - start) * 1000)
+        # print("Random Subset: ", (time.time() - start) * 1000)
         start = time.time()
 
         # predict cones using a squashed point cloud and then unsquash
@@ -121,13 +123,13 @@ class LidarPredictor(Predictor):
             hdbscan=False,
             dist_threshold=0.6,
             x_threshold_scale=0.15,
-            height_threshold=0.3,
+            height_threshold=0.4,
             scalar=1,
             x_bound=xbound,
             x_dist=3,
         )
 
-        print("Predict Cones: ", (time.time() - start) * 1000)
+        # print("Predict Cones: ", (time.time() - start) * 1000)
         start = time.time()
 
         # P, C = vis.color_matrix(fns=None, pcs=[points, points_filtered_ground, points_cluster])
@@ -139,12 +141,19 @@ class LidarPredictor(Predictor):
         cone_output = cluster.correct_clusters(cone_output)
 
         # visualize points
-        vis.update_visualizer_window(
-            self.window,
-            points=points_cluster_subset,
-            pred_cones=cone_centers,
-            colors_cones=cone_colors,
-        )
+        # vis.update_visualizer_window(
+        #     self.window,
+        #     points=points_cluster_subset,
+        #     pred_cones=cone_centers,
+        #     colors_cones=cone_colors,
+        # )
+
+        if LIDAR_DEBUG:
+            # vis.update_visualizer_window(None, points)
+            vis.update_visualizer_window(None, points_ground_plane)
+            # vis.update_visualizer_window(None, points_cluster)
+            vis.update_visualizer_window(None, points_cluster, pred_cones=cone_centers)
+        
 
         # create a Cones object to return
         cones = Cones()

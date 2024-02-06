@@ -131,10 +131,10 @@ def plane_fit(
     xmin = np.min(planecloud[:, 0])
     xmax = np.max(planecloud[:, 0])
     ymin, ymax = 0.0, 20.0
-    print(xmin, ymin, xmax, ymax)
+    # print(xmin, ymin, xmax, ymax)
     boxdim = np.asarray(boxdim)
     end = time.time()
-    print(f" min + max: {end-start}")
+    # print(f" min + max: {end-start}")
     # # Create grid points for each box
     # xgrid = np.arange(xmin, xmax, boxdim)
     # ygrid = np.arange(ymin, ymax, boxdim)
@@ -148,14 +148,14 @@ def plane_fit(
     start = time.time()
     xbins = np.arange(xmin, xmax, boxdim)
     ybins = np.arange(ymin, ymax, boxdim)
-    print(len(xbins), len(ybins))
+    # print(len(xbins), len(ybins))
     M, N = len(xbins), len(ybins)
 
     # Use digitize to assign each point to a bin
     x_bin_indices = np.digitize(planecloud[:, 0], xbins) - 1
     y_bin_indices = np.digitize(planecloud[:, 1], ybins) - 1
     end = time.time()
-    print(f"arange + digitze: {end-start}")
+    # print(f"arange + digitze: {end-start}")
     # print(x_bin_indices)
     # print(planecloud.shape, x_bin_indices.shape, y_bin_indices.shape)
 
@@ -175,7 +175,7 @@ def plane_fit(
             LPR.append(binLP)
     
     end = time.time()
-    print(f"loop part: {end-start}")
+    # print(f"loop part: {end-start}")
 
     # # Vectorize the box computation using broadcasting
     # start = time.time()
@@ -221,7 +221,7 @@ def plane_fit(
         plane_vals = np.array([A, B, C, D])
         pc_mask = (D + height_threshold) < pc_compare
         end = time.time()
-        print(f"gen plane: {end-start}")
+        # print(f"gen plane: {end-start}")
     if return_mask:
         return pointcloud[pc_mask], pc_mask, plane_vals
     else:
@@ -314,7 +314,7 @@ def box_range(
 
     points_filtered = pointcloud[mask]
     end = time.time()
-    print(f"Box_Range: {end-start}")
+    # print(f"Box_Range: {end-start}")
     if return_mask:
         return points_filtered, mask
     else:
