@@ -61,6 +61,8 @@ class LidarPredictor(Predictor):
         start = time.time()
 
         points = self._transform_points(data[DataType.HESAI_POINTCLOUD])
+        points = points[~np.any(points == 0, axis=1)]
+
         self.points = points
 
         print("transform time: ", (time.time() - start) * 1000)
@@ -86,8 +88,8 @@ class LidarPredictor(Predictor):
             points,
             points_ground_plane,
             return_mask=True,
-            boxdim=5,
-            height_threshold=0.1,
+            boxdim=2,
+            height_threshold=0.05,
         )
         end = time.time()
         print(f"plane_fit: {end-start}")
