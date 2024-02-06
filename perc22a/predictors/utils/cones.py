@@ -44,6 +44,9 @@ class Cones:
 
     def __str__(self):
         return self.__repr__()
+    
+    def __len__(self):
+        return sum([len(cones) for cones in [self.blue_cones, self.yellow_cones, self.orange_cones]])
 
     def add_blue_cone(self, x, y, z):
         """(x, y, z) are cone position in meters"""
