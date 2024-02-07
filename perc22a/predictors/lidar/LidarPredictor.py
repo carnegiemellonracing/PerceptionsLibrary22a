@@ -80,6 +80,8 @@ class LidarPredictor(Predictor):
         points_ground_plane = filter.box_range(
             points, xmin=-3, xmax=3, ymin=-3, ymax=20, zmin=-1, zmax=1
         )
+        if points_ground_plane.shape[0] == 0:
+            return Cones()
 
         # vis.update_visualizer_window(None, points=points_ground_plane)
 
