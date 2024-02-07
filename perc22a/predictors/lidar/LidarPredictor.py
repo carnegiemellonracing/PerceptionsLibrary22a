@@ -80,6 +80,8 @@ class LidarPredictor(Predictor):
         points_ground_plane = filter.box_range(
             points, xmin=-3, xmax=3, ymin=-3, ymax=20, zmin=-1, zmax=1
         )
+
+        # avoid crashing sometimes
         if points_ground_plane.shape[0] == 0:
             return Cones()
 
