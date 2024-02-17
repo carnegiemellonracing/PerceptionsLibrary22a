@@ -70,6 +70,7 @@ class LidarPredictor(Predictor):
 
         # remove all points with nan values
         points = points[~np.any(np.isnan(points), axis=-1)]
+        #import pdb; pdb.set_trace()
 
         print("nan time: ", (time.time() - start) * 1000)
         start = time.time()
@@ -89,10 +90,12 @@ class LidarPredictor(Predictor):
             points_ground_plane,
             return_mask=True,
             boxdim=5,
-            height_threshold=0.1,
+            height_threshold=0.2,
         )
         end = time.time()
         print(f"plane_fit: {end-start}")
+
+        #import pdb; pdb.set_trace()
         # perform another filtering algorithm to dissect boxed-region
         points_cluster, mask_cluster = filter.box_range(
             points_filtered_ground,

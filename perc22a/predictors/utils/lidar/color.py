@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import perc22a.predictors.utils.lidar.visualization as vis
+import pdb
 
 C2RGB = {
     "blue": [7, 61, 237],  # cone color: Blue RYB
@@ -20,7 +22,7 @@ def split_by_y(points):
     return points[np.logical_not(right_idxs)], points[right_idxs]
 
 
-def next_point_simple(curr_point, points, dir, max_angle_diff=np.pi / 3.5):
+def next_point_simple(curr_point, yellow, points, dir, max_angle_diff=np.pi / 3.5):
     """
     assume that curr_point is (3,) and points is N x 3 (idx, x, y)
     dir is an angle in radians
@@ -29,28 +31,82 @@ def next_point_simple(curr_point, points, dir, max_angle_diff=np.pi / 3.5):
     and at some thresholded value of how far off of the radius to consider
     """
 
-    max_dist = 6
+
+    #change angle to y axis not x axis
+
+    max_dist = 8
 
     # to ignore the index
     points_index = points[:, 0].reshape((-1, 1))
+    currburr = (np.cos(dir), np.sin(dir))
 
     # compute the distances and angles of all points relative to curr_point
     deltas = points[:, 1:] - curr_point[1:]
+
+    raangles = np.empty(len(deltas))
+    for i in range(len(deltas)):
+        delta = deltas[i]
+        cos_theta = np.arccos(np.dot(currburr, delta) / (np.linalg.norm(delta)))
+        cross_prod = np.cross(currburr, delta)
+        if cross_prod > 0:
+            cos_theta = -cos_theta
+        raangles[i] = cos_theta
+
+
     dists = np.sqrt(np.sum(deltas**2, axis=1))
-    angles = np.arctan2(deltas[:, 1], deltas[:, 0])
-    angles = np.where(angles < 0, angles + 2 * np.pi, angles)
-    angle_diffs = np.abs(angles - dir)
+    angles2 = np.arctan2(deltas[:, 1], deltas[:, 0])
+    angles3 = np.arccos
+    angles = np.where(angles2 < 0, angles2 + 2 * np.pi, angles2)
+    anglesbangles = np.where(angles <= dir + np.pi, dir - angles2, dir + 2 * np.pi - angles)
+    #angle_diffs = np.abs(angles - dir)
+    angle_diffs = np.abs(raangles)
+    # for i in range(len(points)):
+    #     print(angles2[i], points[i], curr_point, deltas[i])
 
     # get all points within angle range and distance range
     is_close = np.logical_and(dists < max_dist, angle_diffs < max_angle_diff)
+    #is_close = dists < max_dist
 
     if np.any(is_close):
         points_close = points[is_close]
         dists_close = dists[is_close]
         angles_close = angles[is_close]
-        idx = np.argmin(dists_close)
-        return points_close[idx], angles_close[idx]
+        angles_diffs_close = angle_diffs[is_close]
+        angles2_close = angles2[is_close]
+        #angles3_close = angles3[is_close]
+        #import pdb; pdb.set_trace();
+        anglesbangles_close = anglesbangles[is_close]
+        raangles_close = raangles[is_close]
+        #idx = np.argmin(dists_close)
+        #idx = np.argmax(angles_close)
+        # if yellow: 
+        #     peepeepoopoo = np.where(raangles_close > 0, anglesbangles_close / dists_close ** 4, anglesbangles_close * dists_close ** 4)
+        #     idx = np.argmax(peepeepoopoo)
+        # else: 
+        #     peepeepoopoo = np.where(raangles_close < 0, anglesbangles_close / dists_close ** 4, anglesbangles_close * dists_close ** 4)
+        #     idx = np.argmin(peepeepoopoo)
+        
+        # anglesbangles_diffs = abs(raangles_close - raangles_close[idx])
+        # is_closeblose = raangles_close < 1
+        # is_closeblose_anglesbangles = dists_close[is_closeblose]
+        # ridx = np.argmin(is_closeblose_anglesbangles)
+        angle_diffs_close = angle_diffs[is_close]
+
+        # print(dists_close, angles_close, dir, angle_diffs_close, raangles_close)
+        ridx = np.argmin(dists_close)
+        angle_diffy = angle_diffs_close[ridx]
+        # print(angle_diffy)
+        anglles = np.logical_and(angle_diffs_close != angle_diffy, abs(angle_diffs_close - angle_diffy) < 0.15)
+        if abs(angle_diffy) > np.pi / 3 and not np.any(anglles): return None, None
+        #pdb.set_trace()
+        # print(points_close)
+        # print(idx)
+        # print(points_close[idx])
+        return points_close[ridx], angles_close[ridx]
     else:
+        # for i in range(len(dists)):
+        #     if dists[i] < max_dist:
+        #         print(angle_diffs[i], dir, points[i])
         return None, None
 
 
@@ -67,8 +123,8 @@ def plot(centers, colors):
     """
     plt.scatter(centers[:, 0], centers[:, 1], c=colors)
     plt.scatter([0], [0], c="red")
-    plt.xlim([-10, 10])
-    plt.ylim([-5, 40])
+    plt.xlim([-20, 10])
+    plt.ylim([-5, 30])
     plt.gca().set_aspect("equal")
 
 
@@ -79,21 +135,22 @@ def color_cones(centers):
     algorithm should check track bounds so that we are not creating
     incorrect predictions
     """
-
     # TODO: get a better algorithm for selecting the first point!!!
     # TODO: get a better algorithm for selecting the next point!!!
     # TODO: when performing a scan, should we rotate the centers for a better direction?
-
+    #import pdb; pdb.set_trace()
     if centers.shape[0] == 0:
         return np.zeros((0, 3)), np.zeros((0, 3)), np.zeros((0, 3))
 
-    max_angle_diff = np.pi / 3
+    max_angle_diff = np.pi / 1.9
 
     # NOTE: these center filtering steps should be center filtering stages
     centers = centers[centers[:, 1] >= 0]
 
     all_centers = centers
     centers = centers[:, :2]
+
+    #pdb.set_trace()
 
     N = centers.shape[0]
 
@@ -117,6 +174,7 @@ def color_cones(centers):
             y_avg = np.average(centers_remaining[:, 2])
 
             # seed is based on distribution of points -- to help with turns
+            y_avg = 0
             if y_avg < 4:
                 # get closest point by lowest on y-axis
                 i = np.argmin(points[:, 2])
@@ -126,6 +184,17 @@ def color_cones(centers):
                 S = np.array([[2, 0], [0, 1]])
                 dists = np.sqrt(np.sum((points[:, 1:3] @ S) ** 2, axis=1))
                 i = np.argmin(dists)
+
+
+            # raangles = np.empty(len(points))
+            # for i in range(len(points)):
+            #     delta = points[i, 1:]
+            #     print(delta)
+            #     cos_theta = np.arctan2(delta[1], delta[0])
+            #     raangles[i] = cos_theta
+
+            # if color == "yellow": idx = np.argmin(raangles)
+            # else: idx = np.argmax(raangles)
 
             point_curr = points[i, :]
             cidx = int(point_curr[0])
@@ -153,9 +222,13 @@ def color_cones(centers):
         while True:
             # get new point
             point_new, angle_new = next_point_simple(
-                point_curr, centers_remaining, angle, max_angle_diff=max_angle_diff
+                point_curr, True, centers_remaining, angle, max_angle_diff=max_angle_diff
             )
+
+            #pdb.set_trace()
+
             if point_new is None:
+                # print("hello")
                 break
 
             # update color and state
@@ -181,7 +254,7 @@ def color_cones(centers):
         while True:
             # get new point
             point_new, angle_new = next_point_simple(
-                point_curr, centers_remaining, angle, max_angle_diff=max_angle_diff
+                point_curr, False, centers_remaining, angle, max_angle_diff=max_angle_diff
             )
             if point_new is None:
                 break
@@ -203,10 +276,12 @@ def color_cones(centers):
     colors = np.array([C2RGB[c] for c in colors]) / 255
 
     # plot_dir(point_curr[1:], angle)
-    # plot_dir(point_curr[1:], angle - np.pi / 3.5)
-    # plot_dir(point_curr[1:], angle + np.pi / 3.5)
+    # plot_dir(point_curr[1:], angle - np.pi / 1.75)
+    # plot_dir(point_curr[1:], angle + np.pi / 1.75)
     # plot(all_centers[:, :2], colors)
     # plt.show()
+    
+    #pdb.set_trace()
 
     cone_output = np.hstack([all_centers[:, :2], color_ids])
     return cone_output, all_centers, colors

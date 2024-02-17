@@ -56,7 +56,7 @@ def run_hdbscan(points, eps=1, min_samples=1):
     return clusterer
 
 
-def run_dbscan(points, eps=0.25, min_samples=1):
+def run_dbscan(points, eps=0.5, min_samples=1):
     """
     identical to run_hdbscan but runs using DBSCAN from sklearn library
     Input:
@@ -418,12 +418,13 @@ def get_centroids_z(
             # dist = math.sqrt((center[0] ** 2) + (center[1] ** 2) + (center[2] ** 2))
             # print("hello")
             # print(x_bound)
-            if not(avg_dist <= curr_dist_thresh): 
-                print("eifijijejfi")
-                print(avg_dist)
-                print(dist_threshold)
-                print(curr_dist_thresh)
+            # if not(avg_dist <= curr_dist_thresh): 
+            #     print("eifijijejfi")
+            #     print(avg_dist)
+            #     print(dist_threshold)
+            #     print(curr_dist_thresh)
             if ( 
+                
                 #(avg_dist <= curr_dist_thresh) and 
                 (max_cluster_z <= height_threshold) and 
                 (abs(center[0]) <= x_bound - x_dist) #and abs(center[0]) > 0.1

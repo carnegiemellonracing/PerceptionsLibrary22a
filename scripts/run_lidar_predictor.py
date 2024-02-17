@@ -13,7 +13,7 @@ from perc22a.predictors.lidar.LidarPredictor import LidarPredictor
 
 def main():
     # initialize data loader and lidar predictor
-    dl = DataLoader("perc22a/data/raw/track-testing-09-29")
+    dl = DataLoader("/Users/michael/Desktop/PerceptionsLibrary22a/perc22a/data/raw/three-laps-reverse-subset")
     lp = LidarPredictor()
 
     # Create a profiler object
@@ -21,7 +21,8 @@ def main():
 
     #import pdb; pdb.set_trace();
     
-    for i in range(35, len(dl)):
+    for i in range(3, len(dl)):
+        print(i)
         # load the i-th image from track testing run
         # profiler.enable()
         # cones = lp.predict(dl[i])
