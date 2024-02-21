@@ -32,7 +32,7 @@ from typing import List
 import time
 
 # TODO: move visualization to display function
-LIDAR_DEBUG = True
+LIDAR_DEBUG = False
 
 class LidarPredictor(Predictor):
     def __init__(self):
