@@ -101,7 +101,7 @@ def create_point_vis(points, colors=None):
 
 
 def create_cylinder_vis(
-    cylinder_centers, colors=[0, 1, 0], radius=0.3, height=0.4, resolution=10
+    cylinder_centers, colors=[0, 1, 0], radius=0.2, height=0.4, resolution=10
 ):
     """
     Creates a list of Open3D LineSet meshes of cylinders whose centers
