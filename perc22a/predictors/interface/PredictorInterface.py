@@ -71,12 +71,12 @@ class Predictor:
         """
         pass
 
-    def required_data() -> List[DataType]:
+    def required_data(self) -> List[DataType]:
         """Return list of DataTypes that predictor requires for processing"""
         # return list of all types in DataType
         return [t for t in DataType]
     
-    def predict(data: DataInstance) -> Cones:
+    def predict(self, data: DataInstance) -> Cones:
         """will take the data and predict the 3D positions of cones
 
         Arguments:
@@ -89,7 +89,7 @@ class Predictor:
 
         return cones
 
-    def display():
+    def display(self):
         """this functions is purely for displaying visual information used in
         the pipeline and primarily for debugging purposes.
 
