@@ -131,10 +131,10 @@ def plane_fit(
     xmin = np.min(planecloud[:, 0])
     xmax = np.max(planecloud[:, 0])
     ymin, ymax = 0.0, 20.0
-    print(xmin, ymin, xmax, ymax)
+    # print(xmin, ymin, xmax, ymax)
     boxdim = np.asarray(boxdim)
     end = time.time()
-    print(f" min + max: {end-start}")
+    # print(f" min + max: {end-start}")
     # # Create grid points for each box
     # xgrid = np.arange(xmin, xmax, boxdim)
     # ygrid = np.arange(ymin, ymax, boxdim)
@@ -148,14 +148,14 @@ def plane_fit(
     start = time.time()
     xbins = np.arange(xmin, xmax, boxdim)
     ybins = np.arange(ymin, ymax, boxdim)
-    print(len(xbins), len(ybins))
+    # print(len(xbins), len(ybins))
     M, N = len(xbins), len(ybins)
 
     # Use digitize to assign each point to a bin
     x_bin_indices = np.digitize(planecloud[:, 0], xbins) - 1
     y_bin_indices = np.digitize(planecloud[:, 1], ybins) - 1
     end = time.time()
-    print(f"arange + digitze: {end-start}")
+    # print(f"arange + digitze: {end-start}")
     # print(x_bin_indices)
     # print(planecloud.shape, x_bin_indices.shape, y_bin_indices.shape)
 
@@ -175,7 +175,7 @@ def plane_fit(
             LPR.append(binLP)
     
     end = time.time()
-    print(f"loop part: {end-start}")
+    # print(f"loop part: {end-start}")
 
     # # Vectorize the box computation using broadcasting
     # start = time.time()
@@ -221,7 +221,7 @@ def plane_fit(
         plane_vals = np.array([A, B, C, D])
         pc_mask = (D + height_threshold) < pc_compare
         end = time.time()
-        print(f"gen plane: {end-start}")
+        # print(f"gen plane: {end-start}")
     if return_mask:
         return pointcloud[pc_mask], pc_mask, plane_vals
     else:
@@ -314,7 +314,7 @@ def box_range(
 
     points_filtered = pointcloud[mask]
     end = time.time()
-    print(f"Box_Range: {end-start}")
+    # print(f"Box_Range: {end-start}")
     if return_mask:
         return points_filtered, mask
     else:
@@ -332,6 +332,36 @@ def circle_range(pointcloud, return_mask=False, radiusmin=0, radiusmax=100):
         return points_filtered, mask
     else:
         return points_filtered
+    
+def fov_range(pointcloud, minang=-90, maxang=90, minradius=0, maxradius=30):
+    '''removes all points outside of a fields of view range (assumes even fov on left and right side)
+    and limits points to within the radius on x-y plane
+
+    Args:
+        pointcloud: pointcloud to remove from
+        fov: degrees pointcloud of resulting fov should be (e.g. 180 returns everything with +y value)
+        radius: max distance resulting points in pointcloud should be
+
+    Return: filtered point cloud where all points outside of fov are removed
+    '''
+    RAD_TO_DEG = 180 / math.pi
+
+    # remove points of too large radius
+    pointcloud = pointcloud[:,:3]
+    points_radius = np.sqrt(np.sum(pointcloud[:,:2] ** 2, axis=1))
+
+    radius_mask = np.logical_and(
+        minradius <= points_radius, 
+        points_radius <= maxradius
+    )
+    pointcloud = pointcloud[radius_mask]
+
+    # remove points outside of fov
+    angles = np.arctan2(pointcloud[:,0], pointcloud[:,1]) * RAD_TO_DEG
+    angles += fov / 2
+    filtered_pointcloud = pointcloud[np.logical_and(0 <= angles, angles <= fov)]
+
+    return filtered_pointcloud
 
 
 def random_subset(pointcloud, p):

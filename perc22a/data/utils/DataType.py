@@ -11,9 +11,10 @@ class DataType(Enum):
 
     # zed stereocamera data
     ZED_LEFT_COLOR = "left_color"
-    ZED_RIGHT_COLOR = "right_color"
     ZED_XYZ_IMG = "xyz_image"
-    ZED_DEPTH_IMG = "depth_image"
+   
+    ZED2_LEFT_COLOR = "zed2_left_color"
+    ZED2_XYZ_IMG = "zed2_xyz_image"
 
     # hesai pointcloud data
     HESAI_POINTCLOUD = "points"

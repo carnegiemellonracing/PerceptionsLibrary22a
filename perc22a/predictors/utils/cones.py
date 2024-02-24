@@ -44,6 +44,9 @@ class Cones:
 
     def __str__(self):
         return self.__repr__()
+    
+    def __len__(self):
+        return sum([len(cones) for cones in [self.blue_cones, self.yellow_cones, self.orange_cones]])
 
     def add_blue_cone(self, x, y, z):
         """(x, y, z) are cone position in meters"""
@@ -59,6 +62,33 @@ class Cones:
         """(x, y, z) are cone position in meters"""
         self.orange_cones.append([x, y, z])
         return self.orange_cones
+    
+    def add_cones(self, cones):
+        """adds cones from another Cone object"""
+        self.blue_cones += cones.blue_cones
+        self.yellow_cones += cones.yellow_cones
+        self.orange_cones += cones.orange_cones
+
+        return
+        
+    def filter(self, function_filter):
+        filtered_cone_list_blue = []
+        filtered_cone_list_orange = []
+        filtered_cone_list_yellow = []
+
+        for cone in self.blue_cones:
+            if function_filter(cone): filtered_cone_list_blue.append(cone)
+        for cone in self.orange_cones:
+            if function_filter(cone): filtered_cone_list_orange.append(cone)
+        for cone in self.yellow_cones:
+            if function_filter(cone): filtered_cone_list_yellow.append(cone)
+
+        self.blue_cones = filtered_cone_list_blue
+        self.orange_cones = filtered_cone_list_orange
+        self.yellow_cones = filtered_cone_list_yellow
+
+        return
+        
 
     def to_numpy(self):
         """Returns all cones added to Cones objet

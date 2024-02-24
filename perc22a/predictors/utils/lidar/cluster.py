@@ -23,11 +23,11 @@ import math
 import time
 
 import numpy as np
-# from hdbscan import HDBSCAN
 
-# from sklearn import cluster
+import perc22a.predictors.utils.lidar.visualization as vis
 
 CORRECTION = np.array([0.0693728, 0.12893042])
+CLUSTER_DEBUG = False
 
 ####################
 # HELPER FUNCTIONS #
@@ -199,7 +199,7 @@ def filter_centers(all_points, clustering_points, centers, labels, probs):
             print("incorrect number of points")
             continue
 
-        print(cluster_center, num_points_expected, num_cone_points)
+        # print(cluster_center, num_points_expected, num_cone_points)
         filtered_centers.append(cluster_center)
 
         pass
@@ -284,6 +284,7 @@ def get_centroids_z(
     ground_planevals,
     probs=None,
     filter_distant=True,
+    radius_threshold=0.2,
     dist_threshold=0.2,
     x_threshold_scale=2,
     height_threshold=0,
@@ -341,7 +342,7 @@ def get_centroids_z(
     # then centroid is in between them, for now, just remove
 
     # only need to consider (x, y, z) position for centroid calculations
-    points = points[:, :3]
+    points = np.zeros(points.shape) + points[:, :3]
     points[:, 2] *= scalar
     n_clusters = np.max(labels) + 1
     centroids = []
@@ -365,7 +366,8 @@ def get_centroids_z(
             centroids.append(center)
         else:
             # calculate the average distance of the cluster from centroid
-            dists = np.sqrt(np.sum((cluster_points - center) ** 2, axis=1))
+            # dists = np.sqrt(np.sum((cluster_points - center) ** 2, axis=1)) 
+            dists = np.sqrt(np.sum((cluster_points[:,:2] - center[:2]) ** 2, axis=1))
             # outer_points are points that are some radial distance away from
             # centroid. We tried to use these points to detect lines rather
             # than cones exept ran into issues with cones doubling up close to
@@ -374,6 +376,7 @@ def get_centroids_z(
             cluster_probs = probs[idxs].reshape(-1)
             scale = np.sum(cluster_probs)
             avg_dist = np.sum(dists * cluster_probs) / scale
+            max_dist = np.max(dists)
             # max_cluster_z = cluster_points[:, 2].max(axis=0)
 
             # find point heights based on projection from the ground plane
@@ -410,10 +413,11 @@ def get_centroids_z(
             # - center being mores than x_dist away from our x_bounds
             #       - Logic behind the above is that cones that are too far away
             #       from the car left and right we don't really care about anyway
-            #       But we want to keep those points within our clutsering stage
+            #       But we want to keep those points within our clustering stage
             #       because without them. If they were not included, the cluster
             #       that originally included those points would have a centroid
             #       with a much lower x and much lower avg_dist than actual.
+            # - maximum distance from cluster center must be less than radius_threshold
 
             # dist = math.sqrt((center[0] ** 2) + (center[1] ** 2) + (center[2] ** 2))
             # print("hello")
@@ -440,6 +444,7 @@ def get_centroids_z(
                 # print(" ---- dists: " + str(dist) + "\n")
                 centroids.append(center)
 
+    print("=====")
     return np.array(centroids)
 
 
@@ -552,11 +557,11 @@ def predict_cones_z(
     points[:, 2] /= endscal
 
     # run HDBSCAN and get the resulting labels and probabilities
-    print(np.any(np.isnan(points)))
+    # print(np.any(np.isnan(points)))
     if hdbscan:
         clusterer = run_hdbscan(points, min_samples=2)
     else:
-        clusterer = run_dbscan(points)
+        clusterer = run_dbscan(points, min_samples=2, eps=0.3)
     labels = clusterer.labels_.reshape((-1, 1))
     probs = clusterer.probabilities_.reshape((-1, 1))
 

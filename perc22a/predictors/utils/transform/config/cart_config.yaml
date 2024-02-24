@@ -1,0 +1,80 @@
+---
+#define origin as some arbitrary point on car 
+#all other pose/orientations in relation to defined origin
+origin: 
+  pose: {
+    position: {
+                x: 0,
+                y: 0,
+                z: 0
+              }
+    #orientation?
+  }
+sensors:
+  - zed:
+      pose: {
+        position: {
+                    x: -0.1778,
+                    y: 0.8636,
+                    z: 0.88265
+                  },
+        orientation: {theta_x: 0,
+                      theta_y: 0, 
+                      theta_z: 25
+                    },
+      focal_params: {
+                      x: 687.14,
+                      y: 687.14
+                    },
+      center_params: {
+                      x: 676.84,
+                      y: 369.63
+                    }
+    }
+  - zed2:
+      pose: {
+        position: {
+                    x: 0.0508,
+                    y: 0.9335,
+                    z: 0.88265
+                  },
+        orientation: {theta_x: 0,
+                      theta_y: 0, 
+                      theta_z: -25
+                    },
+      focal_params: {
+                      x: 687.14,  # UPDATE THESE FOR THE ZED2
+                      y: 687.14
+                    },
+      center_params: {
+                      x: 676.84,
+                      y: 369.63
+                    }
+    }
+  - lidar: {
+      pose: {
+        position: {
+                    x: 0,
+                    y: 0.8636,
+                    z: 0.2667
+                  },
+        orientation: {theta_x: 0,
+                      theta_y: 0, 
+                      theta_z: 0
+                    },
+                }
+      }
+  - gps: {
+      pose: {
+          position: {
+                    x: -0.20,
+                    y: -0.25,
+                    z: -0.10
+                  },
+        orientation: {theta_x: 0,
+                      theta_y: 0, 
+                      theta_z: 0
+                    },
+              },
+          rtk_on: true,
+        }

@@ -10,8 +10,12 @@ import open3d as o3d
 from skspatial.objects import Plane
 import yaml
 import time
+import os
 import perc22a.predictors.utils.lidar.visualization as vis
+from perc22a.predictors.utils.cones import Cones
 
+# get transform directory absolute path
+TRANSFORM_DIR_NAME = os.path.dirname(__file__)
 
 DEG_TO_RAD = np.pi / 180
 
@@ -62,13 +66,16 @@ def make_T(dx, dy, dz):
 
 
 class PoseTransformations:
-    # stereo_cam = config['stereo_camera']
+    # stereo_cam = config['stereo']
     # lidar = config['lidar']
     # gps = config['gps']
 
     # create transformation matrices for each sensor
-    def __init__(self, path):
-        with open(path, "r") as file:
+    def __init__(self, config_file="cart_config.yaml"):
+
+        self.path = os.path.join(TRANSFORM_DIR_NAME, "config", config_file)        
+
+        with open(self.path, "r") as file:
             self.config = yaml.safe_load(file)
             self.TRdict = dict()
             self.INVdict = dict()
@@ -79,9 +86,9 @@ class PoseTransformations:
         #construct homogeneous rotation matrices
         #all angles and positions are given relative to origin from yaml'
         #print(sensor)
-        rx = sensor['pose']['orientation']['theta'] * DEG_TO_RAD
-        ry = sensor['pose']['orientation']['phi'] * DEG_TO_RAD
-        rz= sensor['pose']['orientation']['psi'] * DEG_TO_RAD
+        rx = sensor['pose']['orientation']['theta_x'] * DEG_TO_RAD
+        ry = sensor['pose']['orientation']['theta_y'] * DEG_TO_RAD
+        rz= sensor['pose']['orientation']['theta_z'] * DEG_TO_RAD
         RX = make_RX(rx)
         RY = make_RY(ry)
         RZ = make_RZ(rz)
@@ -146,6 +153,16 @@ class PoseTransformations:
         result = self._inhomogenize(points_transformed)
 
         return result
+    
+    def transform_cones(self, sensor_name, cones: Cones):
+        #cones = Cones coming from predictor, to be transformed to be relative to origin of car
+        blue_arr, yellow_arr, orange_arr = cones.to_numpy()
+        transformed_cones = Cones.from_numpy(
+            self.to_origin(sensor_name, blue_arr, inverse=False),
+            self.to_origin(sensor_name, yellow_arr, inverse=False),
+            self.to_origin(sensor_name, orange_arr, inverse=False)
+        )
+        return transformed_cones
            
         
         

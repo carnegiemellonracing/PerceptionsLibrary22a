@@ -26,7 +26,7 @@ class DataInstance:
     def have_all_data(self):
         '''returns true if all required_types are set in DataInstance'''
         for t in self.required_types:
-            if t not in self.data:
+            if t.value not in self.data:
                 return False
         return True
 

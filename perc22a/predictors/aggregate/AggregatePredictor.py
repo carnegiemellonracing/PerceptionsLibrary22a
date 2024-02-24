@@ -7,7 +7,7 @@ from perc22a.predictors.interface.PredictorInterface import Predictor
 from perc22a.predictors.lidar.LidarPredictor import LidarPredictor
 from perc22a.predictors.stereo.YOLOv5Predictor import YOLOv5Predictor 
 from perc22a.predictors.utils.cones import Cones
-from perc22a.predictors.utils.transform import PoseTransformations
+from perc22a.predictors.utils.transform.transform import PoseTransformations
 import perc22a.predictors.utils.lidar.filter as filter
 
 
