@@ -172,8 +172,6 @@ class YOLOv5Predictor(Predictor):
             elif c == cfg.COLORS.ORANGE:
                 cones.add_orange_cone(x, y, z)
 
-
-
         return self.transformer.transform_cones(self.sensor_name, cones)
 
     def display(self):

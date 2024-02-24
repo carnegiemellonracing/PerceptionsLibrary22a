@@ -154,13 +154,13 @@ class PoseTransformations:
 
         return result
     
-    def transform_cones(self, sensor_name, cones: Cones):
+    def transform_cones(self, sensor_name, cones: Cones, inverse=False):
         #cones = Cones coming from predictor, to be transformed to be relative to origin of car
         blue_arr, yellow_arr, orange_arr = cones.to_numpy()
         transformed_cones = Cones.from_numpy(
-            self.to_origin(sensor_name, blue_arr, inverse=False),
-            self.to_origin(sensor_name, yellow_arr, inverse=False),
-            self.to_origin(sensor_name, orange_arr, inverse=False)
+            self.to_origin(sensor_name, blue_arr, inverse=inverse),
+            self.to_origin(sensor_name, yellow_arr, inverse=inverse),
+            self.to_origin(sensor_name, orange_arr, inverse=inverse)
         )
         return transformed_cones
            
