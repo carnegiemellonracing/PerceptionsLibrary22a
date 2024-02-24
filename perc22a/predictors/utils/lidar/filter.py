@@ -333,7 +333,7 @@ def circle_range(pointcloud, return_mask=False, radiusmin=0, radiusmax=100):
     else:
         return points_filtered
     
-def fov_range(pointcloud, fov=180, radius=30):
+def fov_range(pointcloud, fov=180, minradius=0, maxradius=30):
     '''removes all points outside of a fields of view range (assumes even fov on left and right side)
     and limits points to within the radius on x-y plane
 
@@ -349,7 +349,12 @@ def fov_range(pointcloud, fov=180, radius=30):
     # remove points of too large radius
     pointcloud = pointcloud[:,:3]
     points_radius = np.sqrt(np.sum(pointcloud[:,:2] ** 2, axis=1))
-    pointcloud = pointcloud[points_radius < radius]
+
+    radius_mask = np.logical_and(
+        minradius <= points_radius, 
+        points_radius <= maxradius
+    )
+    pointcloud = pointcloud[radius_mask]
 
     # remove points outside of fov
     angles = np.arctan2(pointcloud[:,0], pointcloud[:,1]) * RAD_TO_DEG

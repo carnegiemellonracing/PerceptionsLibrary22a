@@ -64,7 +64,7 @@ class LidarPredictor(Predictor):
         points = self._transform_points(data[DataType.HESAI_POINTCLOUD])
         points = points[~np.any(points == 0, axis=1)]
 
-        points = filter.fov_range(points, fov=180, radius=40)
+        points = filter.fov_range(points, fov=180, maxradius=40)
 
         self.points = points
 
