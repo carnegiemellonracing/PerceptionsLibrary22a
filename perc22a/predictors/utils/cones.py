@@ -71,6 +71,24 @@ class Cones:
 
         return
         
+    def filter(self, function_filter):
+        filtered_cone_list_blue = []
+        filtered_cone_list_orange = []
+        filtered_cone_list_yellow = []
+
+        for cone in self.blue_cones:
+            if function_filter(cone): filtered_cone_list_blue.append(cone)
+        for cone in self.orange_cones:
+            if function_filter(cone): filtered_cone_list_orange.append(cone)
+        for cone in self.yellow_cones:
+            if function_filter(cone): filtered_cone_list_yellow.append(cone)
+
+        self.blue_cones = filtered_cone_list_blue
+        self.orange_cones = filtered_cone_list_orange
+        self.yellow_cones = filtered_cone_list_yellow
+
+        return
+        
 
     def to_numpy(self):
         """Returns all cones added to Cones objet
