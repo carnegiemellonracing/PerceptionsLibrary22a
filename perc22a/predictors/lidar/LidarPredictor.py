@@ -90,7 +90,7 @@ class LidarPredictor(Predictor):
             points_ground_plane,
             return_mask=True,
             boxdim=5,
-            height_threshold=0.2,
+            height_threshold=0.12,
         )
         end = time.time()
         print(f"plane_fit: {end-start}")
