@@ -4,6 +4,7 @@ import numpy as np
 import open3d as o3d
 from skspatial.objects import Plane
 import time
+import perc22a.predictors.utils.lidar.visualization as vis
 
 def trim_cloud(points, return_mask=False):
     """
@@ -122,6 +123,47 @@ def remove_ground(
 # import cupy as cp
 from skspatial.objects import Plane
 
+def section_pointcloud (pointscloud, boxdim_x, boxdim_y):
+    xmin = np.min(pointscloud[:, 0])
+    xmax = np.max(pointscloud[:, 0])
+    ymin = np.min(pointscloud[:, 1])
+    ymax = np.max(pointscloud[:, 1])
+
+    xbins = np.arange(xmin, xmax, boxdim_x)
+    ybins = np.arange(ymin, ymax, boxdim_y)
+
+    x_bin_indices = np.digitize(pointscloud[:, 0], xbins) - 1
+    y_bin_indices = np.digitize(pointscloud[:, 1], ybins) - 1
+    M, N = len(xbins), len(ybins)
+
+    grid_cell_indices = x_bin_indices * N + y_bin_indices
+
+    pointcloud_sections = []
+
+    for bin_idx in range(M*N):
+        idxs = np.where(grid_cell_indices == bin_idx)
+        bin = pointscloud[idxs, :][0]
+        if bin.shape[0] > 0: pointcloud_sections.append(bin)
+
+    return pointcloud_sections
+
+def fit_sections(pointcloud, planecloud=None):
+    pointcloud_sections = section_pointcloud(pointcloud, boxdim_x=5, boxdim_y=5)
+    if len(pointcloud_sections) > 0:
+        section = pointcloud_sections[0]
+        # vis.update_visualizer_window(None, section)
+        points = plane_fit(section, planecloud, return_mask=True, boxdim=0.5, height_threshold=0.12)[0]
+        planevals = plane_fit(section, planecloud, return_mask=True, boxdim=0.5, height_threshold=0.12)[2]
+        # vis.update_visualizer_window(None, points)
+        for i in range(len(pointcloud_sections)):
+            # vis.update_visualizer_window(None, pointcloud_sections[i])
+            thing = plane_fit(pointcloud_sections[i], planecloud, return_mask=True, boxdim=0.5, height_threshold=0.12)
+            # vis.update_visualizer_window(None, thing[0])
+            points = np.concatenate((points, thing[0]), axis=0)
+            planevals = np.concatenate((planevals, thing[2]), axis=0)
+        return points, planevals
+    else:
+        return np.array([])
 
 def plane_fit(
     pointcloud, planecloud=None, return_mask=False, boxdim=0.5, height_threshold=0.01
@@ -413,3 +455,4 @@ def voxel_downsample(points, voxel_size=0.1):
     # Convert back to numpy array
     points_downsampled = np.asarray(pcd_downsampled.points)
     return points_downsampled
+

@@ -64,7 +64,7 @@ class LidarPredictor(Predictor):
         points = self._transform_points(data[DataType.HESAI_POINTCLOUD])
         points = points[~np.any(points == 0, axis=1)]
 
-        points = filter.fov_range(points, fov=180, maxradius=40)
+        # points = filter.fov_range(points, fov=180, maxradius=40)
 
         self.points = points
 
@@ -82,7 +82,7 @@ class LidarPredictor(Predictor):
 
         # print("nan time: ", (time.time() - start) * 1000)
         start = time.time()
-
+        self.transformer.to_origin(self.sensor_name, points, inverse=False)
         # perform a box range on the data 
         # NOTE: scale box_dim appropriately with these values
         points_ground_plane = filter.box_range(
@@ -98,17 +98,24 @@ class LidarPredictor(Predictor):
         # perform a plane fit and remove ground points
         xbound = 12
         start = time.time()
-        points_cluster, _, ground_planevals = filter.plane_fit(
-            points,
-            points_ground_plane,
-            return_mask=True,
-            boxdim=5,
-            height_threshold=0.12,
-        )
-        end = time.time()
-        print(f"plane_fit: {end-start}")
 
-        #import pdb; pdb.set_trace()
+        # points_secitons = filter.section_pointcloud(points_ground_plane, boxdim_x=5, boxdim_y=5)
+        # for secition in points_secitons:
+        #     print(secition)
+        #     vis.update_visualizer_window(None, secition)
+
+        points_filtered_ground, ground_planevals= filter.fit_sections(points, points_ground_plane)
+        # points_filtered_ground, _, ground_planevals = filter.plane_fit(
+        #     points,
+        #     points_ground_plane,
+        #     return_mask=True,
+        #     boxdim=5,
+        #     height_threshold=0.12,
+        # )
+        # end = time.time()
+        # print(f"plane_fit: {end-start}")
+
+        #vis.update_visualizer_window(None, points_filtered_ground)
         # perform another filtering algorithm to dissect boxed-region
         points_cluster, mask_cluster = filter.box_range(
             points_filtered_ground,
@@ -120,7 +127,7 @@ class LidarPredictor(Predictor):
             zmax=100,
             return_mask=True,
         )
-        
+        #vis.update_visualizer_window(None, points_cluster)
         # # Original call using random_subset
         # points_cluster_subset = filter.random_subset(points_cluster, 0.03)
 
