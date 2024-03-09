@@ -161,6 +161,8 @@ class Vis2D:
 
     def update(self):
         self._setup_image()
+        if self.cones == None:
+            return
         cones = self.cones.to_numpy()
         blue_cones_arr, yellow_cones_arr, orange_cones_arr = cones
         if len(blue_cones_arr.shape) != 2 or blue_cones_arr.shape[0] == 0:
