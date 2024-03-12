@@ -165,9 +165,6 @@ class Vis2D:
             return
         cones = self.cones.to_numpy()
         blue_cones_arr, yellow_cones_arr, orange_cones_arr = cones
-        if len(blue_cones_arr.shape) != 2 or blue_cones_arr.shape[0] == 0:
-            cones = np.zeros((0, 3))
-            print("CVVis Warning: not given any cones or in improper format")
         
         #make color arrs
         yellow_color = CV2_COLORS[CFG_COLORS.YELLOW]
