@@ -1,4 +1,4 @@
-'''Naive Merger
+'''Base Merger
 
 sufficient() -> true iff non-zero number of cones have been added 
     and required pipelines are obtained
@@ -11,7 +11,7 @@ from perc22a.mergers.PipelineType import PipelineType
 
 from types import List
 
-class NaiveMerger(Merger):
+class BaseMerger(Merger):
 
     def __init__(self, required_pipelines: List[PipelineType] = []):
         self.required_pipelines_set = set(required_pipelines)
