@@ -8,18 +8,18 @@ class Merger:
         '''initialize all variables for empty cone policy'''
         pass
 
-    def add(cones: Cones, pipeline: PipelineType):
+    def add(self, cones: Cones, pipeline: PipelineType):
         '''add cones from a specific pipeline'''
         pass
 
-    def sufficient() -> bool:
+    def sufficient(self) -> bool:
         '''returns whether there are enough cones to merge'''
         pass
 
-    def merge() -> Cones:
+    def merge(self) -> Cones:
         '''returns merged cones, requires sufficiency'''
         pass
 
-    def reset():
+    def reset(self):
         '''resets merger as if new-ly initialized'''
         pass
