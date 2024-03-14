@@ -40,6 +40,8 @@ class NaiveMerger(Merger):
         return non_zero_cones and seen_required_cones
 
     def merge(self) -> Cones:
+        # TODO: implement height zero-ing and distance limiting on ZED pipelines
+
         all_cones = Cones()
         for p, cones in self.pipeline_cones.items():
             all_cones.add_cones(cones)
