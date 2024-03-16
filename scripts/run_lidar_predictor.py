@@ -21,7 +21,7 @@ def main():
 
     #import pdb; pdb.set_trace();
     
-    for i in range(3, len(dl)):
+    for i in range(8, len(dl)):
         print(i)
         # load the i-th image from track testing run
         # profiler.enable()

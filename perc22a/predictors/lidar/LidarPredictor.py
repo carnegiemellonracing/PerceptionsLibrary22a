@@ -82,11 +82,12 @@ class LidarPredictor(Predictor):
 
         # print("nan time: ", (time.time() - start) * 1000)
         start = time.time()
-        self.transformer.to_origin(self.sensor_name, points, inverse=False)
+        points = self.transformer.to_origin(self.sensor_name, points, inverse=False)
+        print(points)
         # perform a box range on the data 
         # NOTE: scale box_dim appropriately with these values
         points_ground_plane = filter.box_range(
-            points, xmin=-5, xmax=5, ymin=-3, ymax=20, zmin=-1, zmax=1
+            points, xmin=-10, xmax=10, ymin=-3, ymax=20, zmin=-1, zmax=1
         )
 
         # avoid crashing sometimes
@@ -98,12 +99,15 @@ class LidarPredictor(Predictor):
         # perform a plane fit and remove ground points
         xbound = 12
         start = time.time()
-
+        # import pdb; pdb.set_trace()
         # points_secitons = filter.section_pointcloud(points_ground_plane, boxdim_x=5, boxdim_y=5)
         # for secition in points_secitons:
         #     print(secition)
         #     vis.update_visualizer_window(None, secition)
-
+        # vis.update_visualizer_window(None, points_ground_plane)
+        gracebrace = filter.GraceAndConrad(points_ground_plane, points_ground_plane, 0.1, 10, 0.2)
+        vis.update_visualizer_window(None, gracebrace)
+        
         points_filtered_ground, ground_planevals= filter.fit_sections(points, points_ground_plane)
         # points_filtered_ground, _, ground_planevals = filter.plane_fit(
         #     points,
@@ -114,7 +118,8 @@ class LidarPredictor(Predictor):
         # )
         # end = time.time()
         # print(f"plane_fit: {end-start}")
-
+        #vis.update_visualizer_window(None, points_filtered_ground)
+        #import pdb; pdb.set_trace()
         #vis.update_visualizer_window(None, points_filtered_ground)
         # perform another filtering algorithm to dissect boxed-region
         points_cluster, mask_cluster = filter.box_range(
