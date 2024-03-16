@@ -105,10 +105,13 @@ class LidarPredictor(Predictor):
         #     print(secition)
         #     vis.update_visualizer_window(None, secition)
         # vis.update_visualizer_window(None, points_ground_plane)
-        gracebrace = filter.GraceAndConrad(points_ground_plane, points_ground_plane, 0.1, 10, 0.2)
-        vis.update_visualizer_window(None, gracebrace)
+        points_filtered_ground = filter.GraceAndConrad(points_ground_plane, points_ground_plane, 0.1, 10, 0.1)
+        end = time.time()
+        print(end - start)
+        vis.update_visualizer_window(None, points_filtered_ground)
         
-        points_filtered_ground, ground_planevals= filter.fit_sections(points, points_ground_plane)
+        #points_filtered_ground, ground_planevals= filter.fit_sections(points, points_ground_plane)
+        poopoo, ground_planevals= filter.fit_sections(points, points_ground_plane)
         # points_filtered_ground, _, ground_planevals = filter.plane_fit(
         #     points,
         #     points_ground_plane,

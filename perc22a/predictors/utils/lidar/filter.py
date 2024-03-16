@@ -217,12 +217,12 @@ def GraceAndConrad (points, points_ground, alpha, num_bins, height_threshold):
             x = ranges[seg]
             y = points[seg, 2]
             # vis.update_visualizer_window(None, points[seg])
-            plt.plot(x, y, 'o', label='original data')
-            plt.plot(x, intercept + slope*x, 'r', label='fitted line')
-            plt.plot(x, intercept + slope*x + height_threshold, 'g', label='height line')
-            for x in rbins: plt.axvline(x=x, color='r', linestyle='--')
-            plt.legend()
-            plt.show()
+            # plt.plot(x, y, 'o', label='original data')
+            # plt.plot(x, intercept + slope*x, 'r', label='fitted line')
+            # plt.plot(x, intercept + slope*x + height_threshold, 'g', label='height line')
+            # for x in rbins: plt.axvline(x=x, color='r', linestyle='--')
+            # plt.legend()
+            # plt.show()
 
             
             pc_compare = slope * np.sqrt(points[:, 0]**2 + points[:, 1]**2) + intercept
