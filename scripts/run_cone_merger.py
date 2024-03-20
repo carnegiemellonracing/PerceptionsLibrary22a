@@ -7,18 +7,21 @@ from perc22a.mergers.PipelineType import PipelineType
 
 from perc22a.data.utils.dataloader import DataLoader
 
+from perc22a.utils.Timer import Timer
+
 
 def main():
     sp1 = YOLOv5Predictor(camera="zed")
     sp2 = YOLOv5Predictor(camera="zed2")
     lp = LidarPredictor()
+    t = Timer()
 
     # create merger
-    merger = BaseMerger(required_pipelines=[])
+    merger = BaseMerger(required_pipelines=[], debug=True)
 
     dl = DataLoader("perc22a/data/raw/three-laps-large")
 
-    for i in range(len(dl)):
+    for i in range(40, len(dl)):
         cones_zed = sp1.predict(dl[i])
         cones_zed2 = sp2.predict(dl[i])
         cones_lidar = lp.predict(dl[i])
@@ -27,7 +30,10 @@ def main():
         merger.add(cones_zed2, PipelineType.ZED2_PIPELINE)
         merger.add(cones_lidar, PipelineType.LIDAR)
 
+        t.start("merge")
         merged_cones = merger.merge()
+        t.end("merge")
+
         merger.display()
         merger.reset()
 
