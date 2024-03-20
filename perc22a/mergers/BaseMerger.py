@@ -45,7 +45,9 @@ class BaseMerger(Merger):
         self.debug = debug
         if debug:
             self.vis = Vis2D()
-            self.reset() 
+
+        # reset all tracking information for sufficiency
+        self.reset() 
 
         return
 
