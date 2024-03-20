@@ -23,3 +23,13 @@ def create_zed_merger():
             PipelineType.ZED2_PIPELINE
         ]
     )
+
+def create_all_merger():
+    '''simple merger that requires cones from all pipelines'''
+    return BaseMerger(
+        required_pipelines=[
+            PipelineType.LIDAR,
+            PipelineType.ZED_PIPELINE, 
+            PipelineType.ZED2_PIPELINE
+        ]
+    )
