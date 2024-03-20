@@ -55,7 +55,6 @@ class BaseMerger(Merger):
 
     def merge(self) -> Cones:
         # TODO: implement height zero-ing and distance limiting on ZED pipelines
-        # TODO: do duplication removal
 
         # all_cones = Cones()
         # result_cones = Cones()
@@ -128,6 +127,8 @@ class BaseMerger(Merger):
                 result_cones.add_yellow_cone(finalCone.x, finalCone.y, finalCone.z)
             else:
                 result_cones.add_orange_cone(finalCone.x, finalCone.y, finalCone.z)
+
+        # TODO: limit the distance of the appropriate cones (need to keep track of which thing the cones came from though)
 
         return result_cones
 
