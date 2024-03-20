@@ -9,6 +9,7 @@ from perc22a.mergers.MergerInterface import Merger
 from perc22a.predictors.utils.cones import Cones
 from perc22a.mergers.PipelineType import PipelineType
 from perc22a.predictors.utils.vis.Vis3D import Vis3D
+from perc22a.predictors.utils.vis.Vis2D import Vis2D
 
 import numpy as np
 from typing import List
@@ -43,7 +44,7 @@ class BaseMerger(Merger):
 
         self.debug = debug
         if debug:
-            self.vis = Vis3D()
+            self.vis = Vis2D()
             self.reset() 
 
         return
