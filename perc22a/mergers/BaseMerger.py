@@ -10,9 +10,15 @@ from perc22a.predictors.utils.cones import Cones
 from perc22a.mergers.PipelineType import PipelineType
 from perc22a.predictors.utils.vis.Vis3D import Vis3D
 
+import numpy as np
 from typing import List
 
 MAX_TOLERATED_DIFFERENCE = 1
+
+def create_dist_filter(dist):
+    def dist_filter(tup):
+        return np.linalg.norm(np.array(tup)[:2]) < dist
+    return dist_filter
 
 class custom_cone:
     def __init__(self, xPos, yPos, zPos, color, pipeline) -> None:
@@ -24,10 +30,21 @@ class custom_cone:
 
 class BaseMerger(Merger):
 
-    def __init__(self, required_pipelines: List[PipelineType] = []):
+    def __init__(
+            self, 
+            required_pipelines: List[PipelineType] = [],
+            zed_dist_limit=8,
+            lidar_dist_limit=20,
+            debug=False
+        ):
         self.required_pipelines_set = set(required_pipelines)
-        self.vis = Vis3D()
-        self.reset() 
+        self.zed_filter = create_dist_filter(zed_dist_limit)
+        self.lidar_filter = create_dist_filter(lidar_dist_limit)
+
+        self.debug = debug
+        if debug:
+            self.vis = Vis3D()
+            self.reset() 
 
         return
 
@@ -52,38 +69,19 @@ class BaseMerger(Merger):
     
     def dist(self, cone1, cone2):
         return ((cone1.x - cone2.x)**2 + (cone1.y - cone2.y)**2) ** 0.5
+    
+    def _naive_merge(self):
+        merged_cones = Cones()
+        for pipeline, cones in self.pipeline_cones.items():
+            merged_cones.add_cones(cones)
+        return merged_cones
 
     def merge(self) -> Cones:
-        # TODO: implement height zero-ing and distance limiting on ZED pipelines
 
-        # all_cones = Cones()
-        # result_cones = Cones()
-        # for p, cones in self.pipeline_cones.items():
-        #     all_cones.add_cones(cones)
-
-        # all_cones_list = all_cones.blue_cones + all_cones.yellow_cones + all_cones.orange_cones
-        # blue_length = len(all_cones.blue_cones)
-        # yellow_length = len(all_cones.yellow_cones)
-        # counter = 0
-        # result_cones_list = []
-
-        # for i in all_cones_list:
-        #     isDuplicate = False
-        #     for j in result_cones_list:
-        #         if self.dist(i, j) < MAX_TOLERATED_DIFFERENCE: isDuplicate = True
-        #     if not isDuplicate: 
-
-        #         if 0 <= counter and counter < blue_length:
-        #             result_cones.add_blue_cone(i[0], i[1], 0)
-        #         elif blue_length <= counter and counter < (blue_length + yellow_length):
-        #             result_cones.add_yellow_cone(i[0], i[1], 0)
-        #         else:
-        #             result_cones.add_orange_cone(i[0], i[1], 0)
-                 
-        #         result_cones_list.append(i)
-        #     counter+=1
-
-        # return result_cones
+        # filter out the cones from the ZED pipelines that are too far away
+        self.pipeline_cones[PipelineType.ZED_PIPELINE].filter(self.zed_filter)
+        self.pipeline_cones[PipelineType.ZED2_PIPELINE].filter(self.zed_filter)
+        self.pipeline_cones[PipelineType.LIDAR].filter(self.lidar_filter)
 
         all_cones = []
         for  p, cones in self.pipeline_cones.items():
@@ -94,7 +92,7 @@ class BaseMerger(Merger):
             for cone in cones.blue_cones:
                 all_cones.append(custom_cone(cone[0], cone[1], 0, "orange", p))
     
-        result_cones = Cones()
+        merged_cones = []
         for i in all_cones:
             duplicateCones = [i]
             for j in all_cones:
@@ -121,21 +119,24 @@ class BaseMerger(Merger):
             if hasLidar: finalCone = custom_cone(lidarX, lidarY, 0, color, PipelineType.LIDAR)
             else: finalCone = custom_cone(xPos/len(duplicateCones), yPos/len(duplicateCones), 0, color, PipelineType.ZED2_PIPELINE)
 
-            if finalCone.color == "blue":
-                result_cones.add_blue_cone(finalCone.x, finalCone.y, finalCone.z)
-            elif finalCone.color == "yellow":
-                result_cones.add_yellow_cone(finalCone.x, finalCone.y, finalCone.z)
-            else:
-                result_cones.add_orange_cone(finalCone.x, finalCone.y, finalCone.z)
+            merged_cones.append(finalCone) 
 
-        # TODO: limit the distance of the appropriate cones (need to keep track of which thing the cones came from though)
+        result_cones = Cones()
+        for cone in merged_cones:
+            if cone.color == "blue":
+                result_cones.add_blue_cone(cone.x, cone.y, 0)
+            elif cone.color == "yellow":
+                result_cones.add_yellow_cone(cone.x, cone.y, 0)
+            else:
+                result_cones.add_orange_cone(cone.x, cone.y, 0)
 
         return result_cones
 
 
     def display(self):
-        self.vis.set_cones(self.merge())
-        self.vis.update()
+        if self.debug:
+            self.vis.set_cones(self.merge())
+            self.vis.update()
 
 
 # sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)
