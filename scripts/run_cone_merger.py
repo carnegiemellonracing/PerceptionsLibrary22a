@@ -27,8 +27,6 @@ def main():
         merger.add(cones_zed2, PipelineType.ZED2_PIPELINE)
         merger.add(cones_lidar, PipelineType.LIDAR)
 
-        print(merger.sufficient())
-
         merged_cones = merger.merge()
         merger.display()
         merger.reset()

@@ -101,7 +101,8 @@ class BaseMerger(Merger):
             for j in all_cones:
                 if self.dist(i, j)  < MAX_TOLERATED_DIFFERENCE:
                     duplicateCones.append(j)
-            
+
+            # TODO: could speed up this computation for computing cone distances 
             xPos = i.x
             yPos = i.y
             hasLidar = False
