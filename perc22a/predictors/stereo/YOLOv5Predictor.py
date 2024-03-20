@@ -71,7 +71,7 @@ class YOLOv5Predictor(Predictor):
         self.repo = "ultralytics/yolov5"
         self.path = os.path.join(STEREO_DIR_NAME, self.param_file)
 
-        self.model = torch.hub.load(self.repo, "custom", path=self.path)
+        self.model = torch.hub.load(self.repo, "custom", path=self.path, force_reload=True)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = self.model.to(self.device)
 
