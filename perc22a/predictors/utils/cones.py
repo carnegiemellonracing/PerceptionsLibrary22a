@@ -88,6 +88,22 @@ class Cones:
         self.yellow_cones = filtered_cone_list_yellow
 
         return
+    
+    def map(self, function_map):
+        filtered_cone_list_blue = []
+        filtered_cone_list_orange = []
+        filtered_cone_list_yellow = []
+
+        for cone in self.blue_cones:
+            filtered_cone_list_blue.append(function_map(cone))
+        for cone in self.orange_cones:
+            filtered_cone_list_orange.append(function_map(cone))
+        for cone in self.yellow_cones:
+            filtered_cone_list_yellow.append(function_map(cone))
+
+        self.blue_cones = filtered_cone_list_blue
+        self.orange_cones = filtered_cone_list_orange
+        self.yellow_cones = filtered_cone_list_yellow
         
 
     def to_numpy(self):

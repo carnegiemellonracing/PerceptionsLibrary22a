@@ -333,7 +333,7 @@ def circle_range(pointcloud, return_mask=False, radiusmin=0, radiusmax=100):
     else:
         return points_filtered
     
-def fov_range(pointcloud, fov=90, minradius=0, maxradius=30):
+def fov_range(pointcloud, fov=180, minradius=0, maxradius=30):
     '''removes all points outside of a fields of view range (assumes even fov on left and right side)
     and limits points to within the radius on x-y plane
 
