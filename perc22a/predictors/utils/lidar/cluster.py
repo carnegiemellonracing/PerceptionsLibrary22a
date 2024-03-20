@@ -425,7 +425,6 @@ def get_centroids_z(
                 # print(" ---- dists: " + str(dist) + "\n")
                 centroids.append(center)
 
-    print("=====")
     return np.array(centroids)
 
 
