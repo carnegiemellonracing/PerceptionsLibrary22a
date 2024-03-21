@@ -156,9 +156,9 @@ class Cones:
 
         blue_cones, yellow_cones, orange_cones = self.to_numpy()
 
-        plt.plot(blue_cones[:, 0], blue_cones[:, 1], c="blue")
-        plt.plot(yellow_cones[:, 0], yellow_cones[:, 1], c="yellow")
-        plt.plot(orange_cones[:, 0], orange_cones[:, 1], c="orange")
+        plt.scatter(blue_cones[:, 0], blue_cones[:, 1], c="blue")
+        plt.scatter(yellow_cones[:, 0], yellow_cones[:, 1], c="gold")
+        plt.scatter(orange_cones[:, 0], orange_cones[:, 1], c="orange")
         plt.scatter([0], [0], c="red")
 
         plt.show()
