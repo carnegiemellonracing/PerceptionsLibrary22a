@@ -63,7 +63,6 @@ class LidarPredictor(Predictor):
     def predict(self, data) -> Cones:
         # fullStart = time.time()
         # start = time.time()
-
         points = self._transform_points(data[DataType.HESAI_POINTCLOUD])
         points = points[~np.any(points == 0, axis=1)]
 
@@ -92,8 +91,9 @@ class LidarPredictor(Predictor):
         # points_ground_plane = filter.box_range(
         #     points, xmin=-10, xmax=10, ymin=-3, ymax=20, zmin=-1, zmax=1
         # )
-        points_ground_plane = 
+        points_ground_plane = filter.fov_range(points, fov=180, minradius=0, maxradius=20)
         vis.update_visualizer_window(None, points_ground_plane)
+        self.timer.start("predict")
 
         # avoid crashing sometimes
         if points_ground_plane.shape[0] == 0:
@@ -111,49 +111,31 @@ class LidarPredictor(Predictor):
         #     vis.update_visualizer_window(None, secition)
         # vis.update_visualizer_window(None, points_ground_plane)
         self.timer.start("ground-filtering")
-        points_filtered_ground = filter.GraceAndConrad(points_ground_plane, points_ground_plane, 0.1, 10, 0.1)
+        points_filtered_ground = filter.GraceAndConrad(points_ground_plane, points_ground_plane, 0.1, 10, 0.13)
         self.timer.end("ground-filtering")
         # end = time.time()
         # print(end - start)
-        vis.update_visualizer_window(None, points_filtered_ground)
+        # vis.update_visualizer_window(None, points_filtered_ground)
         
         #points_filtered_ground, ground_planevals= filter.fit_sections(points, points_ground_plane)
-        '''
-        self.timer.start("fit-sections")
-        poopoo, ground_planevals= filter.fit_sections(points, points_ground_plane)
-        self.timer.end("fit-sections")
-        '''
-        # points_filtered_ground, _, ground_planevals = filter.plane_fit(
-        #     points,
-        #     points_ground_plane,
-        #     return_mask=True,
-        #     boxdim=5,
-        #     height_threshold=0.12,
-        # )
-        # end = time.time()
-        # print(f"plane_fit: {end-start}")
-        #vis.update_visualizer_window(None, points_filtered_ground)
-        #import pdb; pdb.set_trace()
-        #vis.update_visualizer_window(None, points_filtered_ground)
-        # perform another filtering algorithm to dissect boxed-region
-        '''
-        points_cluster, mask_cluster = filter.box_range(
-            points_filtered_ground,
-            xmin=-xbound,
-            xmax=xbound,
-            ymin=-10,
-            ymax=50,
-            zmin=-10,
-            zmax=100,
+        # get planar representation of ground
+        self.timer.start("plane-fit")
+        _, _, ground_planevals = filter.plane_fit(
+            points,
+            points_ground_plane,
             return_mask=True,
+            boxdim=5,
+            height_threshold=0.12,
         )
-        '''
+        self.timer.end("plane-fit")
+
         #vis.update_visualizer_window(None, points_cluster)
         # # Original call using random_subset
         # points_cluster_subset = filter.random_subset(points_cluster, 0.03)
-        '''
+        self.timer.start("downsample")
         voxel_size = 0.1  # Example voxel size
-        points_cluster_subset = filter.voxel_downsample(points_cluster, voxel_size)
+        points_cluster_subset = filter.voxel_downsample(points_filtered_ground, voxel_size)
+        self.timer.end("downsample")
 
         # print("Random Subset: ", (time.time() - start) * 1000)
         # start = time.time()
@@ -172,7 +154,7 @@ class LidarPredictor(Predictor):
             x_bound=20,
             x_dist=3,
         )
-        self.timer.start("cluster")
+        self.timer.end("cluster")
         # print("Predict Cones: ", (time.time() - start) * 1000)
         # start = time.time()
 
@@ -184,6 +166,8 @@ class LidarPredictor(Predictor):
         # correct the positions of the cones to the center of mass of the car
         cone_output = cluster.correct_clusters(cone_output)
         #import pdb; pdb.set_trace()
+
+        self.timer.end("predict")
 
         # visualize points
         vis.update_visualizer_window(
@@ -204,8 +188,6 @@ class LidarPredictor(Predictor):
                 cones.add_blue_cone(x, y, z)
 
         return self.transformer.transform_cones(self.sensor_name, cones)
-        '''
-        return None
 
 
     def display(self):

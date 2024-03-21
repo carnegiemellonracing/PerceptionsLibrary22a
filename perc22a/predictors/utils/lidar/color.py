@@ -150,7 +150,7 @@ def color_cones(centers):
     all_centers = centers
     centers = centers[:, :2]
 
-    #pdb.set_trace()
+    # pdb.set_trace()
 
     N = centers.shape[0]
 

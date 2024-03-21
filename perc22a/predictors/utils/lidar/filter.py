@@ -127,9 +127,17 @@ import matplotlib.pyplot as plt
 from sklearn import linear_model
 
 def GraceAndConrad (points, points_ground, alpha, num_bins, height_threshold):
+    from perc22a.utils.Timer import Timer
+    timer = Timer()
+
     angles = np.arctan2(points[:, 1], points[:, 0])  # Calculate angle for each point
     bangles = np.where(angles < 0, angles + 2 * np.pi, angles)
-    gangles = np.arange(0, 2 * np.pi, alpha)
+
+    # NOTE: making gangles from min to max to avoid iterating over empty regions
+    gangles = np.arange(np.min(bangles), np.max(bangles), alpha)
+
+    # gangles = np.arange(0, 2 * np.pi, alpha)
+    # import pdb; pdb.set_trace()
     segments = np.digitize(bangles, gangles) - 1 # Map angles to segments
     ranges = np.sqrt(points[:, 0]**2 + points[:, 1]**2)  # Calculate range for each point
     # print(segments)
@@ -147,7 +155,7 @@ def GraceAndConrad (points, points_ground, alpha, num_bins, height_threshold):
     M, N = len(gangles), len(rbins)
     #import pdb; pdb.set_trace()
     grid_cell_indices = segments * N + regments
-    
+
     gracebrace = []
     for seg_idx in range(M):
         Bines = []
@@ -192,6 +200,7 @@ def GraceAndConrad (points, points_ground, alpha, num_bins, height_threshold):
             # peepeepoopoo = [x and y for x,y in zip(seg, pc_mask)]
             # conradbonrad = points[peepeepoopoo]
             # if conradbonrad.tolist(): gracebrace.extend(conradbonrad.tolist())
+            # NOTE: could make some of this faster with numpy - but short anyways so its fine
             filtered_Bines = []
             i = 0
             while i < len(min_zs):
@@ -210,12 +219,32 @@ def GraceAndConrad (points, points_ground, alpha, num_bins, height_threshold):
             #res = stats.linregress(Bines)
             X = [p[0] for p in Bines]
             Y = [p[1] for p in Bines]
-            reg = linear_model.Ridge(alpha=0)
-            res = reg.fit(np.array(X).reshape(-1,1), Y)
-            slope = res.coef_
-            intercept = res.intercept_
-            x = ranges[seg]
-            y = points[seg, 2]
+
+            # timer.start("linear-fit")
+            # reg = linear_model.LinearRegression()
+            # res = reg.fit(np.array(X).reshape(-1,1), Y)
+            # slope = res.coef_
+            # intercept = res.intercept_
+            # timer.end("linear-fit")
+
+            # NOTE: perform linear regression (our own implementation for speed)
+            # LinearRegression model was slow and too much overhead
+            X = np.array(X)
+            Y = np.array(Y)
+
+            x_bar = np.mean(X)
+            y_bar = np.mean(Y)
+            x_dev = X - x_bar
+            y_dev = Y - y_bar
+            ss = np.sum(x_dev * x_dev)
+
+            slope = np.sum(x_dev * y_dev) / np.sum(x_dev * x_dev) if ss != 0 else 0
+            intercept = y_bar - slope * x_bar
+
+            # assert(np.abs(slope_est - slope) < 0.000001)
+            # assert(np.abs(intercept_est - intercept) < 0.000001)
+
+            # NOTE: calculating heights only on points within segment 
             # vis.update_visualizer_window(None, points[seg])
             # plt.plot(x, y, 'o', label='original data')
             # plt.plot(x, intercept + slope*x, 'r', label='fitted line')
@@ -225,12 +254,13 @@ def GraceAndConrad (points, points_ground, alpha, num_bins, height_threshold):
             # plt.show()
 
             
-            pc_compare = slope * np.sqrt(points[:, 0]**2 + points[:, 1]**2) + intercept
-            pc_mask = (pc_compare + height_threshold) < points[:, 2]
-            peepeepoopoo = [x and y for x,y in zip(seg, pc_mask)]
-            conradbonrad = points[peepeepoopoo]
+            points_seg = points[seg]
+            pc_compare = slope * np.sqrt(points_seg[:, 0]**2 + points_seg[:, 1]**2) + intercept
+            pc_mask = (pc_compare + height_threshold) < points_seg[:, 2]
+            conradbonrad = points_seg[pc_mask]
             if conradbonrad.tolist(): gracebrace.extend(conradbonrad.tolist())
 
+    
     # for bin_idx in range(M*N):
     #     idxs = np.where(grid_cell_indices == bin_idx)
     #     bin = points[idxs, :][0]
