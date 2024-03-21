@@ -92,8 +92,8 @@ class LidarPredictor(Predictor):
         #     points, xmin=-10, xmax=10, ymin=-3, ymax=20, zmin=-1, zmax=1
         # )
         points_ground_plane = filter.fov_range(points, fov=180, minradius=0, maxradius=20)
-        vis.update_visualizer_window(None, points_ground_plane)
-        self.timer.start("predict")
+        # vis.update_visualizer_window(None, points_ground_plane)
+        # self.timer.start("predict")
 
         # avoid crashing sometimes
         if points_ground_plane.shape[0] == 0:
@@ -110,16 +110,16 @@ class LidarPredictor(Predictor):
         #     print(secition)
         #     vis.update_visualizer_window(None, secition)
         # vis.update_visualizer_window(None, points_ground_plane)
-        self.timer.start("ground-filtering")
+        # self.timer.start("ground-filtering")
         points_filtered_ground = filter.GraceAndConrad(points_ground_plane, points_ground_plane, 0.1, 10, 0.13)
-        self.timer.end("ground-filtering")
+        # self.timer.end("ground-filtering")
         # end = time.time()
         # print(end - start)
         # vis.update_visualizer_window(None, points_filtered_ground)
         
         #points_filtered_ground, ground_planevals= filter.fit_sections(points, points_ground_plane)
         # get planar representation of ground
-        self.timer.start("plane-fit")
+        # self.timer.start("plane-fit")
         _, _, ground_planevals = filter.plane_fit(
             points,
             points_ground_plane,
@@ -127,21 +127,21 @@ class LidarPredictor(Predictor):
             boxdim=5,
             height_threshold=0.12,
         )
-        self.timer.end("plane-fit")
+        # self.timer.end("plane-fit")
 
         #vis.update_visualizer_window(None, points_cluster)
         # # Original call using random_subset
         # points_cluster_subset = filter.random_subset(points_cluster, 0.03)
-        self.timer.start("downsample")
+        # self.timer.start("downsample")
         voxel_size = 0.1  # Example voxel size
         points_cluster_subset = filter.voxel_downsample(points_filtered_ground, voxel_size)
-        self.timer.end("downsample")
+        # self.timer.end("downsample")
 
         # print("Random Subset: ", (time.time() - start) * 1000)
         # start = time.time()
 
         # predict cones using a squashed point cloud and then unsquash
-        self.timer.start("cluster")
+        # self.timer.start("cluster")
         xbound = 10
         cone_centers = cluster.predict_cones_z(
             points_cluster_subset,
@@ -154,7 +154,7 @@ class LidarPredictor(Predictor):
             x_bound=20,
             x_dist=3,
         )
-        self.timer.end("cluster")
+        # self.timer.end("cluster")
         # print("Predict Cones: ", (time.time() - start) * 1000)
         # start = time.time()
 
@@ -167,15 +167,15 @@ class LidarPredictor(Predictor):
         cone_output = cluster.correct_clusters(cone_output)
         #import pdb; pdb.set_trace()
 
-        self.timer.end("predict")
+        # self.timer.end("predict")
 
         # visualize points
-        vis.update_visualizer_window(
-            None,
-            points=points_cluster_subset,
-            pred_cones=cone_centers,
-            colors_cones=cone_colors,
-        )
+        # vis.update_visualizer_window(
+        #     None,
+        #     points=points_cluster_subset,
+        #     pred_cones=cone_centers,
+        #     colors_cones=cone_colors,
+        # )
 
         # create a Cones object to return
         cones = Cones()
