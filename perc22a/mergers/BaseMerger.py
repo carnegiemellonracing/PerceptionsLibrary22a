@@ -14,7 +14,7 @@ from perc22a.predictors.utils.vis.Vis2D import Vis2D
 import numpy as np
 from typing import List
 
-MAX_TOLERATED_DIFFERENCE = 1
+MAX_TOLERATED_DIFFERENCE = 0.2
 
 def create_dist_filter(dist):
     def dist_filter(tup):
