@@ -169,7 +169,7 @@ def GraceAndConrad (points, points_ground, alpha, num_bins, height_threshold):
         Points = []
         c = 0
         if Bines:
-            print(Bines)
+            # print(Bines)
             #import pdb; pdb.set_trace()
             # for i in range(len(Bines) - 1):
             #     p1 = Bines[i]
@@ -195,7 +195,7 @@ def GraceAndConrad (points, points_ground, alpha, num_bins, height_threshold):
             filtered_Bines = []
             i = 0
             while i < len(min_zs):
-                print(min_zs)
+                # print(min_zs)
                 good_before = i == 0 or min_zs[i] - min_zs[i - 1] < 0.1
                 good_after = i == len(min_zs) - 1 or min_zs[i] - min_zs[i + 1] < 0.1
                 if not (good_before and good_after):
@@ -205,7 +205,7 @@ def GraceAndConrad (points, points_ground, alpha, num_bins, height_threshold):
                     i -= 1
                 i += 1
             #Bines = filtered_Bines
-            print(Bines)
+            # print(Bines)
             seg = segments == seg_idx
             #res = stats.linregress(Bines)
             X = [p[0] for p in Bines]
