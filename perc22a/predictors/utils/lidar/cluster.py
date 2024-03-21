@@ -17,7 +17,7 @@ if torch.cuda.is_available():
     # from cuml import cluster
 else:
     print("[cluster.py] using CPU-only clustering")
-    from sklearn import cluster
+from sklearn import cluster
 
 import math
 import time
