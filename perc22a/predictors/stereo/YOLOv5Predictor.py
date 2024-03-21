@@ -13,6 +13,8 @@ import perc22a.predictors.stereo.cfg as cfg
 import os
 import torch
 import cv2
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 from enum import Enum
 
@@ -71,7 +73,10 @@ class YOLOv5Predictor(Predictor):
         self.repo = "ultralytics/yolov5"
         self.path = os.path.join(STEREO_DIR_NAME, self.param_file)
 
+        backend = plt.get_backend()
         self.model = torch.hub.load(self.repo, "custom", path=self.path)
+        matplotlib.use(backend)
+
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = self.model.to(self.device)
 
