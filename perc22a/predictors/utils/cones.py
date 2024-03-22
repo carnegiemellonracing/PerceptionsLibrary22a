@@ -7,6 +7,7 @@ All Predictor algorithm's .predict(...) method should return this datt type
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 # TODO: deprecate add_*_points_cone, instead should just loop and add
 
@@ -150,3 +151,26 @@ class Cones:
             )
 
         return cones
+    
+    def plot2d(self, ax=None, show=True, title="", label=""):
+
+        blue_cones, yellow_cones, orange_cones = self.to_numpy()
+
+        if ax is None:
+            ax = plt.gca()
+
+        ax.scatter(blue_cones[:, 0], blue_cones[:, 1], c="blue")
+        ax.scatter(yellow_cones[:, 0], yellow_cones[:, 1], c="gold")
+        ax.scatter(orange_cones[:, 0], orange_cones[:, 1], c="orange")
+        ax.scatter([0], [0], c="red")
+        ax.set_aspect('equal', adjustable='box')
+        ax.set_title(title)
+
+        cones = np.concatenate([blue_cones, yellow_cones, orange_cones])
+        for i in range(cones.shape[0]):
+            ax.annotate(label, (cones[i, 0], cones[i, 1]))
+
+        if show:
+            plt.show()
+
+        return

@@ -142,7 +142,7 @@ def color_cones(centers):
     if centers.shape[0] == 0:
         return np.zeros((0, 3)), np.zeros((0, 3)), np.zeros((0, 3))
 
-    max_angle_diff = np.pi / 1.9
+    max_angle_diff = np.pi / 2.5
 
     # NOTE: these center filtering steps should be center filtering stages
     centers = centers[centers[:, 1] >= 0]

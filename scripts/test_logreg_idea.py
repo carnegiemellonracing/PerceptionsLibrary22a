@@ -9,6 +9,8 @@ from perc22a.data.utils.dataloader import DataLoader
 
 from perc22a.utils.Timer import Timer
 
+import matplotlib.pyplot as plt
+
 
 def main():
     sp1 = YOLOv5Predictor(camera="zed")
@@ -18,6 +20,7 @@ def main():
 
     # create merger
     merger = BaseMerger(required_pipelines=[], debug=True, zed_dist_limit=10, lidar_dist_limit=10)
+    naive_merger = BaseMerger(required_pipelines=[], zed_dist_limit=10, lidar_dist_limit=10)
 
     dl = DataLoader("perc22a/data/raw/three-laps-large")
 
@@ -29,13 +32,24 @@ def main():
         merger.add(cones_zed, PipelineType.ZED_PIPELINE)
         merger.add(cones_zed2, PipelineType.ZED2_PIPELINE)
         merger.add(cones_lidar, PipelineType.LIDAR)
+        naive_merger.add(cones_zed, PipelineType.ZED_PIPELINE)
+        naive_merger.add(cones_zed2, PipelineType.ZED2_PIPELINE)
+        naive_merger.add(cones_lidar, PipelineType.LIDAR)
 
-        t.start("merge")
         merged_cones = merger.merge()
-        t.end("merge")
-
-        merger.display()
+        naive_merged_cones = naive_merger._naive_merge()
+        
         merger.reset()
+        naive_merger.reset()
+
+        # print(merged_cones)
+
+        fig, axes = plt.subplots(1, 2)
+        merged_cones.plot2d(axes[0], show=False, title="merged")
+        # naive_merged_cones.plot2d(axes[1], title="naive")
+        cones_zed.plot2d(axes[1], show=False, label="Z")
+        cones_zed2.plot2d(axes[1], show=False, label="Y")
+        cones_lidar.plot2d(axes[1], show=True, label="L")
 
 
 if __name__ == "__main__":

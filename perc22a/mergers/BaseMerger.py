@@ -29,12 +29,18 @@ class custom_cone:
         self.color = color
         self.p = pipeline
 
+    def __repr__(self):
+        return f"x: {self.x} y: {self.y} z: {self.z} c: {self.color} p: {self.p}"
+
+    def __str__(self):
+        return self.__repr__()
+
 class BaseMerger(Merger):
 
     def __init__(
             self, 
             required_pipelines: List[PipelineType] = [],
-            zed_dist_limit=8,
+            zed_dist_limit=10,
             lidar_dist_limit=20,
             debug=False
         ):
@@ -99,12 +105,12 @@ class BaseMerger(Merger):
         for i in all_cones:
             duplicateCones = [i]
             for j in all_cones:
-                if self.dist(i, j)  < MAX_TOLERATED_DIFFERENCE:
+                if i != j and self.dist(i, j)  < MAX_TOLERATED_DIFFERENCE:
                     duplicateCones.append(j)
 
             # TODO: could speed up this computation for computing cone distances 
-            xPos = i.x
-            yPos = i.y
+            xPos = 0
+            yPos = 0
             hasLidar = False
             lidarX = 0
             lidarY = 0
