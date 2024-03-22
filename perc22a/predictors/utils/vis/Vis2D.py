@@ -32,11 +32,13 @@ class CFG_COLORS(Enum):
     YELLOW = 2
     ORANGE = 3
     UNKNOWN = 4
+    RED = 5
 
 CV2_COLORS = {
     CFG_COLORS.BLUE: [255, 191, 0],
     CFG_COLORS.YELLOW: [7, 238, 255],
-    CFG_COLORS.ORANGE: [0, 150, 255]
+    CFG_COLORS.ORANGE: [0, 150, 255],
+    CFG_COLORS.RED: [0, 0, 255],
 }
 
 
@@ -176,10 +178,14 @@ class Vis2D:
         blue_cone_pixels = self._points_to_pixels(blue_cones_arr)
         orange_cone_pixels = self._points_to_pixels(orange_cones_arr)
 
-
         self._draw_squares(yellow_cone_pixels, yellow_color, length=CONE_LENGTH_PIXELS)
         self._draw_squares(blue_cone_pixels, blue_color, length=CONE_LENGTH_PIXELS)
         self._draw_squares(orange_cone_pixels, orange_color, length=CONE_LENGTH_PIXELS)
+
+        # draw spline points if necessary
+        if self.points is not None:
+            red_cone_pixels = self._points_to_pixels(self.points)
+            self._draw_squares(red_cone_pixels, CV2_COLORS[CFG_COLORS.RED], length=SPLINE_LENGTH_PIXELS)
 
         cv2.imshow(self.name, self.image.astype(np.uint8))
         cv2.waitKey(1)

@@ -14,7 +14,7 @@ from perc22a.predictors.utils.vis.Vis2D import Vis2D
 import numpy as np
 from typing import List
 
-MAX_TOLERATED_DIFFERENCE = 0.7
+MAX_TOLERATED_DIFFERENCE = 1
 
 def create_dist_filter(dist):
     def dist_filter(tup):
@@ -92,11 +92,6 @@ class BaseMerger(Merger):
         self.pipeline_cones[PipelineType.ZED2_PIPELINE].filter(self.zed_filter)
         self.pipeline_cones[PipelineType.LIDAR].filter(self.lidar_filter)
 
-        print(self.pipeline_cones[PipelineType.ZED_PIPELINE])
-        print(self.pipeline_cones[PipelineType.ZED2_PIPELINE])
-        print(self.pipeline_cones[PipelineType.LIDAR])
-
-
         all_cones = []
         for  p, cones in self.pipeline_cones.items():
             for cone in cones.blue_cones:
@@ -121,7 +116,6 @@ class BaseMerger(Merger):
             lidarY = 0
             color = i.color
             for d in duplicateCones:
-                print("\t", d)
                 if d.p == PipelineType.LIDAR: 
                     hasLidar = True
                     lidarX = d.x
@@ -133,7 +127,6 @@ class BaseMerger(Merger):
             
             if hasLidar: finalCone = custom_cone(lidarX, lidarY, 0, color, PipelineType.LIDAR)
             else: finalCone = custom_cone(xPos/len(duplicateCones), yPos/len(duplicateCones), 0, color, PipelineType.ZED2_PIPELINE)
-            print(finalCone, hasLidar, xPos, yPos, len(duplicateCones))
 
             merged_cones.append(finalCone) 
 
