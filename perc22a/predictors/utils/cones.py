@@ -152,7 +152,7 @@ class Cones:
 
         return cones
     
-    def plot2d(self, ax=None, show=True):
+    def plot2d(self, ax=None, show=True, title="", label=""):
 
         blue_cones, yellow_cones, orange_cones = self.to_numpy()
 
@@ -164,6 +164,11 @@ class Cones:
         ax.scatter(orange_cones[:, 0], orange_cones[:, 1], c="orange")
         ax.scatter([0], [0], c="red")
         ax.set_aspect('equal', adjustable='box')
+        ax.set_title(title)
+
+        cones = np.concatenate([blue_cones, yellow_cones, orange_cones])
+        for i in range(cones.shape[0]):
+            ax.annotate(label, (cones[i, 0], cones[i, 1]))
 
         if show:
             plt.show()
