@@ -12,12 +12,7 @@ NOTE: pipeline functions must be registered in the bottom of the file
 import torch
 import perc22a.predictors.utils.lidar.visualization as vis
 
-if torch.cuda.is_available():
-    print("[cluster.py] using GPU-accelerated clustering")
-    from cuml import cluster
-else:
-    print("[cluster.py] using CPU-only clustering")
-    from sklearn import cluster
+from sklearn import cluster
 
 import math
 import time
