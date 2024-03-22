@@ -51,11 +51,27 @@ def debug_svm(cones: Cones, X, y, clf):
     pass
 
 def augment_dataset(X, mult=4, var=0.5):
-
     X = np.concatenate([X] * mult).astype(np.float64)
     X += np.random.randn(X.shape[0], X.shape[1]) * var
 
     return X
+
+def supplement_cones(cones: Cones):
+    '''does in place'''
+    cones.add_blue_cone(-1, 0, 0)
+    cones.add_yellow_cone(1, 0, 0)
+
+    cones.add_blue_cone(-1, 1, 0)
+    cones.add_yellow_cone(1, 1, 0) 
+
+def augment_cones(cones: Cones, mult=8, var=0.35):
+    blue, yellow, orange = cones.to_numpy()
+
+    blue = augment_dataset(blue, mult=mult, var=var)
+    yellow = augment_dataset(yellow, mult=mult, var=var)
+    orange = augment_dataset(orange, mult=mult, var=var)
+
+    return Cones.from_numpy(blue, yellow, orange)
 
 def cones_to_xy(cones: Cones):
     blue_cones, yellow_cones, orange_cones = cones.to_numpy()
@@ -70,6 +86,10 @@ def cones_to_midline(cones: Cones):
     blue_cones, yellow_cones, _ = cones.to_numpy()
     if len(blue_cones) == 0 or len(yellow_cones) == 0:
         return []
+
+    # augment dataset to make it better for SVM training  
+    supplement_cones(cones)
+    cones = augment_cones(cones)
 
     X, y = cones_to_xy(cones)
 

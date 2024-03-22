@@ -11,16 +11,7 @@ from perc22a.predictors.utils.cones import Cones
 from perc22a.predictors.utils.vis.Vis2D import Vis2D
 from perc22a.utils.Timer import Timer
 
-from perc22a.svm.svm_utils import cones_to_midline, augment_dataset
-
-def augment_cones(cones: Cones, mult=8, var=0.35):
-    blue, yellow, orange = cones.to_numpy()
-
-    blue = augment_dataset(blue, mult=mult, var=var)
-    yellow = augment_dataset(yellow, mult=mult, var=var)
-    orange = augment_dataset(orange, mult=mult, var=var)
-
-    return Cones.from_numpy(blue, yellow, orange)
+from perc22a.svm.svm_utils import cones_to_midline, augment_dataset, augment_cones
 
 def main():
     sp1 = YOLOv5Predictor(camera="zed")
@@ -43,15 +34,7 @@ def main():
         merger.add(cones_zed2, PipelineType.ZED2_PIPELINE)
         merger.add(cones_lidar, PipelineType.LIDAR)
         merged_cones = merger.merge()
-
-        merged_cones.add_blue_cone(-1, 0, 0)
-        merged_cones.add_yellow_cone(1, 0, 0)
-
-        merged_cones.add_blue_cone(-1, 1, 0)
-        merged_cones.add_yellow_cone(1, 1, 0)
-
-        merged_cones = augment_cones(merged_cones)
-
+        
         t.start("spline")
         midline_points = cones_to_midline(merged_cones)
         t.end("spline")
