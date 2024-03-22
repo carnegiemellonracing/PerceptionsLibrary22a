@@ -92,7 +92,7 @@ class BaseMerger(Merger):
                 all_cones.append(custom_cone(cone[0], cone[1], 0, "blue", p))
             for cone in cones.yellow_cones:
                 all_cones.append(custom_cone(cone[0], cone[1], 0, "yellow", p))
-            for cone in cones.blue_cones:
+            for cone in cones.orange_cones:
                 all_cones.append(custom_cone(cone[0], cone[1], 0, "orange", p))
     
         merged_cones = []
