@@ -411,7 +411,7 @@ def plane_fit(
     plane_vals = np.array([1, 2, 3, 4])
     pc_mask = np.ones(pointcloud.shape[0], dtype=bool)  # Default to all true
     
-    if LPR:
+    if len(LPR) > 2:
         start = time.time()
         # Convert LPR back to a NumPy array for Plane fitting (skspatial not GPU compatible)
         LPR = np.array(LPR)
