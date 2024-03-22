@@ -4,6 +4,7 @@ import numpy as np
 import open3d as o3d
 from skspatial.objects import Plane
 import time
+import perc22a.predictors.utils.lidar.visualization as vis
 
 def trim_cloud(points, return_mask=False):
     """
@@ -121,7 +122,210 @@ def remove_ground(
 # but we are using 3.8
 # import cupy as cp
 from skspatial.objects import Plane
+from scipy import stats
+import matplotlib.pyplot as plt
+from sklearn import linear_model
 
+def GraceAndConrad (points, points_ground, alpha, num_bins, height_threshold):
+    from perc22a.utils.Timer import Timer
+    timer = Timer()
+
+    angles = np.arctan2(points[:, 1], points[:, 0])  # Calculate angle for each point
+    bangles = np.where(angles < 0, angles + 2 * np.pi, angles)
+
+    # NOTE: making gangles from min to max to avoid iterating over empty regions
+    gangles = np.arange(np.min(bangles), np.max(bangles), alpha)
+
+    # gangles = np.arange(0, 2 * np.pi, alpha)
+    # import pdb; pdb.set_trace()
+    segments = np.digitize(bangles, gangles) - 1 # Map angles to segments
+    ranges = np.sqrt(points[:, 0]**2 + points[:, 1]**2)  # Calculate range for each point
+    # print(segments)
+    # import pdb; pdb.set_trace()
+
+    rmax = np.max(ranges)
+    rmin = np.min(ranges)
+    bin_size = (rmax - rmin) / num_bins
+    rbins = np.arange(rmin, rmax, bin_size)
+    regments = np.digitize(ranges, rbins) - 1
+
+    # print(regments)
+    #import pdb; pdb.set_trace()
+
+    M, N = len(gangles), len(rbins)
+    #import pdb; pdb.set_trace()
+    grid_cell_indices = segments * N + regments
+
+    gracebrace = []
+    for seg_idx in range(M):
+        Bines = []
+        min_zs = []
+        prev_z = None
+        for range_idx in range(N):
+            bin_idx = seg_idx * N + range_idx
+            idxs = np.where(grid_cell_indices == bin_idx)
+            bin = points[idxs, :][0]
+            if bin.size > 0:
+                #vis.update_visualizer_window(None, bin)
+                min_z = np.min(bin[:, 2])
+                #if prev_z == None or abs(min_z - prev_z) < 0.1:
+                binLP = bin[bin[:, 2] == min_z][0].tolist()
+                min_zs.append(min_z)
+                Bines.append([np.sqrt(binLP[0]**2 + binLP[1]**2), binLP[2]])
+                prev_z = min_z
+        Lines = []
+        Points = []
+        c = 0
+        if Bines:
+            # print(Bines)
+            #import pdb; pdb.set_trace()
+            # for i in range(len(Bines) - 1):
+            #     p1 = Bines[i]
+            #     p2 = Bines[i + 1]
+            #     m = (p2[1] - p1[1]) / (p2[0] - p1[0])
+            #     b = (p2[1] - p1[1]) / (p2[0] - p1[0]) * (-1 * p1[0]) + p2[0]
+            #     Lines.append((m, b))
+            # X = np.array([p[0] for p in Bines])
+            # import pdb; pdb.set_trace()
+            # # res = stats.linregress(Bines)
+            # seg = segments == seg_idx
+            # peepee = ranges.tolist()
+            # pc_compare = []
+            # for i in range(len(peepee)):
+            #     r = ranges[i]
+            #     m,b = Lines[rgs[i]]
+            #     pc_compare.append(m * r + b)
+            # pc_compare = np.array(pc_compare)
+            # pc_mask = (pc_compare + height_threshold) < points[:, 2]
+            # peepeepoopoo = [x and y for x,y in zip(seg, pc_mask)]
+            # conradbonrad = points[peepeepoopoo]
+            # if conradbonrad.tolist(): gracebrace.extend(conradbonrad.tolist())
+            # NOTE: could make some of this faster with numpy - but short anyways so its fine
+            filtered_Bines = []
+            i = 0
+            while i < len(min_zs):
+                # print(min_zs)
+                good_before = i == 0 or min_zs[i] - min_zs[i - 1] < 0.1
+                good_after = i == len(min_zs) - 1 or min_zs[i] - min_zs[i + 1] < 0.1
+                if not (good_before and good_after):
+                    # filtered_Bines.append(Bines[i])
+                    Bines.pop(i)
+                    min_zs.pop(i)
+                    i -= 1
+                i += 1
+            #Bines = filtered_Bines
+            # print(Bines)
+            seg = segments == seg_idx
+            #res = stats.linregress(Bines)
+            X = [p[0] for p in Bines]
+            Y = [p[1] for p in Bines]
+
+            # timer.start("linear-fit")
+            # reg = linear_model.LinearRegression()
+            # res = reg.fit(np.array(X).reshape(-1,1), Y)
+            # slope = res.coef_
+            # intercept = res.intercept_
+            # timer.end("linear-fit")
+
+            # NOTE: perform linear regression (our own implementation for speed)
+            # LinearRegression model was slow and too much overhead
+            X = np.array(X)
+            Y = np.array(Y)
+
+            x_bar = np.mean(X)
+            y_bar = np.mean(Y)
+            x_dev = X - x_bar
+            y_dev = Y - y_bar
+            ss = np.sum(x_dev * x_dev)
+
+            slope = np.sum(x_dev * y_dev) / np.sum(x_dev * x_dev) if ss != 0 else 0
+            intercept = y_bar - slope * x_bar
+
+            # assert(np.abs(slope_est - slope) < 0.000001)
+            # assert(np.abs(intercept_est - intercept) < 0.000001)
+
+            # NOTE: calculating heights only on points within segment 
+            # vis.update_visualizer_window(None, points[seg])
+            # plt.plot(x, y, 'o', label='original data')
+            # plt.plot(x, intercept + slope*x, 'r', label='fitted line')
+            # plt.plot(x, intercept + slope*x + height_threshold, 'g', label='height line')
+            # for x in rbins: plt.axvline(x=x, color='r', linestyle='--')
+            # plt.legend()
+            # plt.show()
+
+            
+            points_seg = points[seg]
+            pc_compare = slope * np.sqrt(points_seg[:, 0]**2 + points_seg[:, 1]**2) + intercept
+            pc_mask = (pc_compare + height_threshold) < points_seg[:, 2]
+            conradbonrad = points_seg[pc_mask]
+            if conradbonrad.tolist(): gracebrace.extend(conradbonrad.tolist())
+
+    
+    # for bin_idx in range(M*N):
+    #     idxs = np.where(grid_cell_indices == bin_idx)
+    #     bin = points[idxs, :][0]
+    #     if bin.size > 0:
+    #         print(bin_idx / N, bin_idx % M, bin)
+    #         if bin_idx / N == 4.0 and bin_idx % M == 8:
+    #             vis.update_visualizer_window(None, points[segments == 4])
+    #             vis.update_visualizer_window(None, points[regments == 8])
+    #         vis.update_visualizer_window(None, bin)
+    #         # import pdb; pdb.set_trace()
+    #         # print(f"{planecloud[idxs, :].shape} -> {bin.shape}")
+    #         min_z = np.min(bin[:, 2])
+    #         binLP = bin[bin[:, 2] == min_z][0].tolist()
+    #         LPR.append(binLP)
+
+    # for i in range(1, len(gangles)):
+    #     ingles = segments == i
+    #     pangles = points[ingles]
+    #     rangles = ranges[ingles]
+    #import pdb; pdb.set_trace()
+    #print(gracebrace)
+    gracebrace = np.array(gracebrace)
+    return gracebrace
+
+def section_pointcloud (pointscloud, boxdim_x, boxdim_y):
+    xmin = np.min(pointscloud[:, 0])
+    xmax = np.max(pointscloud[:, 0])
+    ymin = np.min(pointscloud[:, 1])
+    ymax = np.max(pointscloud[:, 1])
+
+    xbins = np.arange(xmin, xmax, boxdim_x)
+    ybins = np.arange(ymin, ymax, boxdim_y)
+
+    x_bin_indices = np.digitize(pointscloud[:, 0], xbins) - 1
+    y_bin_indices = np.digitize(pointscloud[:, 1], ybins) - 1
+    M, N = len(xbins), len(ybins)
+
+    grid_cell_indices = x_bin_indices * N + y_bin_indices
+
+    pointcloud_sections = []
+
+    for bin_idx in range(M*N):
+        idxs = np.where(grid_cell_indices == bin_idx)
+        bin = pointscloud[idxs, :][0]
+        if bin.shape[0] > 0: pointcloud_sections.append(bin)
+
+    return pointcloud_sections
+
+def fit_sections(pointcloud, planecloud=None):
+    pointcloud_sections = section_pointcloud(pointcloud, boxdim_x=10, boxdim_y=10)
+    if len(pointcloud_sections) > 0:
+        section = pointcloud_sections[0]
+        # vis.update_visualizer_window(None, section)
+        points = plane_fit(section, planecloud, return_mask=True, boxdim=0.5, height_threshold=0.11)[0]
+        planevals = plane_fit(section, planecloud, return_mask=True, boxdim=0.5, height_threshold=0.11)[2]
+        # vis.update_visualizer_window(None, points)
+        for i in range(len(pointcloud_sections)):
+            # vis.update_visualizer_window(None, pointcloud_sections[i])
+            thing = plane_fit(pointcloud_sections[i], planecloud, return_mask=True, boxdim=0.5, height_threshold=0.12)
+            # vis.update_visualizer_window(None, thing[0])
+            points = np.concatenate((points, thing[0]), axis=0)
+            planevals = np.concatenate((planevals, thing[2]), axis=0)
+        return points, planevals
+    else:
+        return np.array([])
 
 def plane_fit(
     pointcloud, planecloud=None, return_mask=False, boxdim=0.5, height_threshold=0.01
@@ -207,7 +411,7 @@ def plane_fit(
     plane_vals = np.array([1, 2, 3, 4])
     pc_mask = np.ones(pointcloud.shape[0], dtype=bool)  # Default to all true
     
-    if LPR:
+    if len(LPR) > 2:
         start = time.time()
         # Convert LPR back to a NumPy array for Plane fitting (skspatial not GPU compatible)
         LPR = np.array(LPR)
@@ -333,7 +537,7 @@ def circle_range(pointcloud, return_mask=False, radiusmin=0, radiusmax=100):
     else:
         return points_filtered
     
-def fov_range(pointcloud, fov=180, radius=30):
+def fov_range(pointcloud, fov=180, minradius=0, maxradius=30):
     '''removes all points outside of a fields of view range (assumes even fov on left and right side)
     and limits points to within the radius on x-y plane
 
@@ -349,7 +553,12 @@ def fov_range(pointcloud, fov=180, radius=30):
     # remove points of too large radius
     pointcloud = pointcloud[:,:3]
     points_radius = np.sqrt(np.sum(pointcloud[:,:2] ** 2, axis=1))
-    pointcloud = pointcloud[points_radius < radius]
+
+    radius_mask = np.logical_and(
+        minradius <= points_radius, 
+        points_radius <= maxradius
+    )
+    pointcloud = pointcloud[radius_mask]
 
     # remove points outside of fov
     angles = np.arctan2(pointcloud[:,0], pointcloud[:,1]) * RAD_TO_DEG
@@ -408,3 +617,4 @@ def voxel_downsample(points, voxel_size=0.1):
     # Convert back to numpy array
     points_downsampled = np.asarray(pcd_downsampled.points)
     return points_downsampled
+

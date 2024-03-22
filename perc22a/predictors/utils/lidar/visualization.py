@@ -197,7 +197,7 @@ def update_visualizer_window(
         window.poll_events()
         window.update_renderer()
     else:
-        o3d.visualization.draw_geometries(objects)
+        o3d.visualization.draw_geometries(objects, window_name=f"{points.shape[0]} points")
 
 
 def color_matrix(fns=None, pcs=None):

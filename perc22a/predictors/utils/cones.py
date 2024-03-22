@@ -7,6 +7,7 @@ All Predictor algorithm's .predict(...) method should return this datt type
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 # TODO: deprecate add_*_points_cone, instead should just loop and add
 
@@ -71,6 +72,40 @@ class Cones:
 
         return
         
+    def filter(self, function_filter):
+        filtered_cone_list_blue = []
+        filtered_cone_list_orange = []
+        filtered_cone_list_yellow = []
+
+        for cone in self.blue_cones:
+            if function_filter(cone): filtered_cone_list_blue.append(cone)
+        for cone in self.orange_cones:
+            if function_filter(cone): filtered_cone_list_orange.append(cone)
+        for cone in self.yellow_cones:
+            if function_filter(cone): filtered_cone_list_yellow.append(cone)
+
+        self.blue_cones = filtered_cone_list_blue
+        self.orange_cones = filtered_cone_list_orange
+        self.yellow_cones = filtered_cone_list_yellow
+
+        return
+    
+    def map(self, function_map):
+        filtered_cone_list_blue = []
+        filtered_cone_list_orange = []
+        filtered_cone_list_yellow = []
+
+        for cone in self.blue_cones:
+            filtered_cone_list_blue.append(function_map(cone))
+        for cone in self.orange_cones:
+            filtered_cone_list_orange.append(function_map(cone))
+        for cone in self.yellow_cones:
+            filtered_cone_list_yellow.append(function_map(cone))
+
+        self.blue_cones = filtered_cone_list_blue
+        self.orange_cones = filtered_cone_list_orange
+        self.yellow_cones = filtered_cone_list_yellow
+        
 
     def to_numpy(self):
         """Returns all cones added to Cones objet
@@ -116,3 +151,26 @@ class Cones:
             )
 
         return cones
+    
+    def plot2d(self, ax=None, show=True, title="", label=""):
+
+        blue_cones, yellow_cones, orange_cones = self.to_numpy()
+
+        if ax is None:
+            ax = plt.gca()
+
+        ax.scatter(blue_cones[:, 0], blue_cones[:, 1], c="blue")
+        ax.scatter(yellow_cones[:, 0], yellow_cones[:, 1], c="gold")
+        ax.scatter(orange_cones[:, 0], orange_cones[:, 1], c="orange")
+        ax.scatter([0], [0], c="red")
+        ax.set_aspect('equal', adjustable='box')
+        ax.set_title(title)
+
+        cones = np.concatenate([blue_cones, yellow_cones, orange_cones])
+        for i in range(cones.shape[0]):
+            ax.annotate(label, (cones[i, 0], cones[i, 1]))
+
+        if show:
+            plt.show()
+
+        return
