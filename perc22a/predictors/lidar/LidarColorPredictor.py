@@ -20,7 +20,7 @@ class LidarColorPredictor(Predictor):
         
         # initialize lidar predictor
         self.lp = LidarPredictor()
-        self.yp = YOLOv5Predictor()
+        self.yp = YOLOv5Predictor(camera="zed2")
         # initialize for moving between global and camera frame
         self.transformer = PoseTransformations()
 
@@ -70,7 +70,7 @@ class LidarColorPredictor(Predictor):
         # coords = self.wi_transformer.world_to_image(points)
 
         lp_cones = self.lp.predict(data)
-        orig_lp_cones = self.transformer.transform_cones("zed", lp_cones, inverse=True)
+        orig_lp_cones = self.transformer.transform_cones("zed2", lp_cones, inverse=True)
         blue_arr, yellow_arr, orange_arr = orig_lp_cones.to_numpy()
 
         # lp_cones = self.yp.predict(data)
@@ -93,7 +93,7 @@ class LidarColorPredictor(Predictor):
         for i in range(coords.shape[0]):
             x = int(coords[i,0])
             y = int(coords[i,1])
-            window = 20
+            window = 5
             # color = self.get_color_from_pixel(data, x, y, window)
             # if color == "blue":
             #     img[x:x+window, y:y+window, :] = [255, 0, 0, 255]
