@@ -45,6 +45,12 @@ CV2_COLORS = {
     cfg.COLORS.ORANGE: [0, 150, 255],
 }
 
+CV2_COLORS_CUSTOM = {
+    cfg.COLORS.BLUE: [255, 191, 0, 255],
+    cfg.COLORS.YELLOW: [7, 238, 255, 255],
+    cfg.COLORS.ORANGE: [0, 150, 255, 255],
+}
+
 DEBUG = False
 
 
@@ -173,6 +179,54 @@ class YOLOv5Predictor(Predictor):
                 cones.add_orange_cone(x, y, z)
 
         return self.transformer.transform_cones(self.sensor_name, cones)
+    
+    def get_bounding_boxes(self, data: DataInstance):
+        result = []
+        self.left_img = data[self.img_datatype]
+        self.boxes = self.model(self.left_img[:, :, [2, 1, 0]], size=640)
+        for box in self.boxes.xyxy[0]:
+            color_id = int(box[-1].item())
+            top_left = (int(box[0]), int(box[1]))
+            bottom_right = (int(box[2]), int(box[3]))
+            color_str = self.boxes.names[color_id]
+            if color_str == "yellow_cone":
+                color = cfg.COLORS.YELLOW
+            elif color_str == "blue_cone":
+                color = cfg.COLORS.BLUE
+            elif color_str == "orange_cone" or color_str == "large_orange_cone":
+                color = cfg.COLORS.ORANGE
+            else:
+                color = cfg.COLORS.UNKNOWN
+            c = CV2_COLORS_CUSTOM[color]
+            result.append((top_left, bottom_right, c))
+            self.left_img  = cv2.rectangle(self.left_img , top_left, bottom_right, c, 1)
+        # cv2.imshow(f"boxes", self.left_img)
+        print(result)
+        return result
+    
+    def get_bounding_image(self, data: DataInstance):
+        result = []
+        self.left_img = data[self.img_datatype]
+        self.boxes = self.model(self.left_img[:, :, [2, 1, 0]], size=640)
+        for box in self.boxes.xyxy[0]:
+            color_id = int(box[-1].item())
+            top_left = (int(box[0]), int(box[1]))
+            bottom_right = (int(box[2]), int(box[3]))
+            color_str = self.boxes.names[color_id]
+            if color_str == "yellow_cone":
+                color = cfg.COLORS.YELLOW
+            elif color_str == "blue_cone":
+                color = cfg.COLORS.BLUE
+            elif color_str == "orange_cone" or color_str == "large_orange_cone":
+                color = cfg.COLORS.ORANGE
+            else:
+                color = cfg.COLORS.UNKNOWN
+            c = CV2_COLORS_CUSTOM[color]
+            result.append((top_left, bottom_right, c))
+            self.left_img  = cv2.rectangle(self.left_img , top_left, bottom_right, c, 1)
+        # cv2.imshow(f"boxes", self.left_img)
+        print(result)
+        return self.left_img
 
     def display(self):
         # code for visualizePrediction() in og

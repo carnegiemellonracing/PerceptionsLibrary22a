@@ -18,10 +18,10 @@ sensors:
                     y: 0.8636,
                     z: 0.88265
                   },
-        orientation: {theta_x: 1.5, #0
+        orientation: {theta_x: 0, #1.5
                       theta_y: 0, 
-                      # theta_z: 25
-                      theta_z: 19
+                      theta_z: 22, # 25
+                      # theta_z: 19
                     },
       focal_params: {
                       x: 687.14,

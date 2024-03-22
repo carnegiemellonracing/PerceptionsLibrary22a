@@ -6,7 +6,7 @@ from perc22a.predictors.lidar.LidarColorPredictor import LidarColorPredictor
 
 def main():
     # initialize data loader and lidar predictor
-    dl = DataLoader("perc22a/data/raw/three-laps-reverse-subset")
+    dl = DataLoader("perc22a/data/raw/three-laps-large")
     lp = LidarColorPredictor()
 
 
