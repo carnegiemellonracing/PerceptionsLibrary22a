@@ -73,6 +73,31 @@ def augment_cones(cones: Cones, mult=8, var=0.35):
 
     return Cones.from_numpy(blue, yellow, orange)
 
+def augment_dataset_circle(X, deg=20, radius=2):
+    DEG_TO_RAD = np.pi / 180
+    radian = deg * DEG_TO_RAD
+    angles = np.arange(0, 2 * np.pi, step=radian)
+
+    N = X.shape[0]
+
+    # create duplicate points
+    num_angles = angles.shape[0]
+    X_extra = np.concatenate([X] * num_angles)
+    angles = np.repeat(angles, N)
+
+    X_extra[:, 0] += radius * np.cos(angles)
+    X_extra[:, 1] += radius * np.sin(angles)
+    return np.concatenate([X, X_extra])
+
+def augment_cones_circle(cones: Cones, deg=20, radius=2):
+    blue, yellow, orange = cones.to_numpy()
+
+    blue = augment_dataset_circle(blue, deg=deg, radius=radius) 
+    yellow = augment_dataset_circle(yellow, deg=deg, radius=radius) 
+    orange = augment_dataset_circle(orange, deg=deg, radius=radius) 
+    
+    return Cones.from_numpy(blue, yellow, orange)
+
 def cones_to_xy(cones: Cones):
     blue_cones, yellow_cones, orange_cones = cones.to_numpy()
     blue_cones[:, 2] = 0
@@ -88,8 +113,10 @@ def cones_to_midline(cones: Cones):
         return []
 
     # augment dataset to make it better for SVM training  
+    
+    # TODO: currently no augmentations - use deg=10 and radius=1-2 ish (maybe 1.5)
+    cones = augment_cones_circle(cones, deg=180, radius=0) 
     supplement_cones(cones)
-    cones = augment_cones(cones)
 
     X, y = cones_to_xy(cones)
 
