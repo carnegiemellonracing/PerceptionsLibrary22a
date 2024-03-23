@@ -115,7 +115,7 @@ def cones_to_midline(cones: Cones):
     # augment dataset to make it better for SVM training  
     
     # TODO: currently no augmentations - use deg=10 and radius=1-2 ish (maybe 1.5)
-    cones = augment_cones_circle(cones, deg=180, radius=0) 
+    cones = augment_cones_circle(cones, deg=10, radius=1.2) 
     supplement_cones(cones)
 
     X, y = cones_to_xy(cones)

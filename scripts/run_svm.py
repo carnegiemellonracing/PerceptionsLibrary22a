@@ -35,7 +35,7 @@ def main():
         merger.add(cones_zed, PipelineType.ZED_PIPELINE)
         merger.add(cones_zed2, PipelineType.ZED2_PIPELINE)
         merger.add(cones_lidar, PipelineType.LIDAR)
-        merged_cones = merger.merge()
+        merged_cones = merger.merge() 
 
         t.start("spline")
         midline_points = cones_to_midline(merged_cones)
