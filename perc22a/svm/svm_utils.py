@@ -1,5 +1,6 @@
 
 from perc22a.predictors.utils.cones import Cones
+from perc22a.utils.Timer import Timer
 
 from sklearn import svm
 import numpy as np
@@ -8,6 +9,8 @@ import matplotlib.pyplot as plt
 from sklearn.inspection import DecisionBoundaryDisplay
 
 DEBUG_SVM = False
+DEBUG_PRED = False
+DEBUG_POINTS = False
 
 def debug_svm(cones: Cones, X, y, clf):
 
@@ -50,14 +53,38 @@ def debug_svm(cones: Cones, X, y, clf):
 
     pass
 
+def debug_points(points):
+
+    points = np.array(points)
+    print(points.shape)
+
+    plt.plot(points[:, 0], points[:, 1], c="red")
+    plt.scatter(points[:, 0], points[:, 1], c="orange", s=10)
+    plt.scatter([0], [0], c="green")
+    plt.xlim(-6, 6)
+    plt.ylim(-3, 10)
+
+    plt.show()
+
+    pass
+
+def debug_pred(pred):
+    for i in range(pred.shape[0]):
+        for j in range(pred.shape[1]):
+            print(int(pred[i,j]), end="")
+        print()
+    
+    return
+
 def augment_dataset(X, mult=4, var=0.5):
+    '''duplicates a dataset by multiplier and adds random noise to points'''
     X = np.concatenate([X] * mult).astype(np.float64)
     X += np.random.randn(X.shape[0], X.shape[1]) * var
 
     return X
 
 def supplement_cones(cones: Cones):
-    '''does in place'''
+    '''does in place, adds cones around origin to ground an SVM classifier'''
     cones.add_blue_cone(-1, 0, 0)
     cones.add_yellow_cone(1, 0, 0)
 
@@ -65,6 +92,8 @@ def supplement_cones(cones: Cones):
     cones.add_yellow_cone(1, 1, 0) 
 
 def augment_cones(cones: Cones, mult=8, var=0.35):
+    '''duplicates the cones by some multiplier and adds Gaussian noise with 
+    some varaince'''
     blue, yellow, orange = cones.to_numpy()
 
     blue = augment_dataset(blue, mult=mult, var=var)
@@ -74,6 +103,8 @@ def augment_cones(cones: Cones, mult=8, var=0.35):
     return Cones.from_numpy(blue, yellow, orange)
 
 def augment_dataset_circle(X, deg=20, radius=2):
+    '''for each sample in X, adds additional points on circle of specified radius
+    where circle lies on the first two dimensions of sample'''
     DEG_TO_RAD = np.pi / 180
     radian = deg * DEG_TO_RAD
     angles = np.arange(0, 2 * np.pi, step=radian)
@@ -90,6 +121,8 @@ def augment_dataset_circle(X, deg=20, radius=2):
     return np.concatenate([X, X_extra])
 
 def augment_cones_circle(cones: Cones, deg=20, radius=2):
+    '''for each cone in ones, adds additional cones of same color on circle
+    around cone with specified radius, separated by degrees'''
     blue, yellow, orange = cones.to_numpy()
 
     blue = augment_dataset_circle(blue, deg=deg, radius=radius) 
@@ -99,6 +132,9 @@ def augment_cones_circle(cones: Cones, deg=20, radius=2):
     return Cones.from_numpy(blue, yellow, orange)
 
 def cones_to_xy(cones: Cones):
+    '''Converts cones to a dataset representation (X, y) where y is vector
+    of 0/1 labels where 0 corresponds to blue and 1 corresponds to yellow
+    '''
     blue_cones, yellow_cones, orange_cones = cones.to_numpy()
     blue_cones[:, 2] = 0
     yellow_cones[:, 2] = 1
@@ -106,8 +142,74 @@ def cones_to_xy(cones: Cones):
     data = np.vstack([blue_cones, yellow_cones]) 
     return data[:, :2], data[:, -1]
 
+def get_spline_start_idx(points):
+    '''gets index of point with lowest y-axis value in points'''
+    # get points that are all the lowest
+    min_y = np.min(points[:, 1])
+    idxs = np.where(points[:, 1] == min_y)[0]
+
+    # take the point that is closest to x = 0
+    closest_x_idx = np.argmin(abs(points[idxs, 0]))
+    return idxs[closest_x_idx]
+
+def get_closest_point_idx(points, curr_point):
+    '''gets index of point in points closest to curr_point and returns the dist'''
+    assert(points.shape[1] == curr_point.shape[0])
+    sq_dists = np.sum((points - curr_point) ** 2, axis=1)
+    idx = np.argmin(sq_dists)
+    return idx, np.sqrt(sq_dists[idx])
+
+def sort_boundary_points(points, max_spline_length=17.5):
+    '''sorts boundary points by starting from the lowest point and 
+    iteratively takes closest point from iteration's current point
+    takes approx: 7-8ms
+
+    can additionallyn limit the number of points that are being ran on 
+    '''
+
+    # TODO: recalculating distances each iteration
+    # might be better to calculate all pair-wise distances at start
+    # and then iteratively removing from the dataset for each iteration
+
+    # TODO: integrate spacing of 50cm here instead of repeating it
+    # TODO: integrate maximum length of spline
+
+    spline_length = 0
+    points = np.array(points)
+    sorted_points = []
+
+    # start from the lowest point along the y-axis
+    idx = get_spline_start_idx(points)
+    curr_point = points[idx, :]
+    rem_points = np.delete(points, idx, axis=0)
+
+    print("in sort_boundary_points")
+
+    # add starting point to sorted points
+    sorted_points.append(curr_point)
+
+    while rem_points.shape[0] > 0 and spline_length < max_spline_length:
+
+        # find closest point to curr_point
+        idx, d = get_closest_point_idx(rem_points, curr_point)
+        spline_length += d
+
+        # update iterates
+        curr_point = rem_points[idx, :]
+        rem_points = np.delete(rem_points, idx, axis=0)
+
+        # add closest point to sorted points
+        sorted_points.append(curr_point)
+
+    print(spline_length < max_spline_length)
+    print(spline_length)
+    print(len(sorted_points))
+    return np.array(sorted_points)
+
 def cones_to_midline(cones: Cones):
 
+    timer = Timer()
+    timer.start("\taugtrain")
     blue_cones, yellow_cones, _ = cones.to_numpy()
     if len(blue_cones) == 0 or len(yellow_cones) == 0:
         return []
@@ -115,13 +217,17 @@ def cones_to_midline(cones: Cones):
     # augment dataset to make it better for SVM training  
     
     # TODO: currently no augmentations - use deg=10 and radius=1-2 ish (maybe 1.5)
-    cones = augment_cones_circle(cones, deg=10, radius=1.2) 
+
     supplement_cones(cones)
+    cones = augment_cones_circle(cones, deg=10, radius=1.2) 
 
     X, y = cones_to_xy(cones)
 
     model = svm.SVC(kernel='poly', degree=3, C=10, coef0=1.0)
     model.fit(X, y)
+
+    timer.end("\taugtrain")
+    timer.start("\tpredict")
 
     if DEBUG_SVM:
         debug_svm(cones, X, y, model)
@@ -131,19 +237,33 @@ def cones_to_midline(cones: Cones):
     y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
     xx, yy = np.meshgrid(np.arange(x_min, x_max, step),
                         np.arange(y_min, y_max, step))
-    
-    Z = model.predict(np.c_[xx.ravel(), yy.ravel()])
+
+    svm_input = np.c_[xx.ravel(), yy.ravel()]
+    Z = model.predict(svm_input)
     Z = Z.reshape(xx.shape)
 
+    if DEBUG_PRED:
+        debug_pred(Z)
+
+    timer.end("\tpredict")
+    timer.start("\tboundary")
+
     boundary_points = []
-    for i in range(1, len(xx)):
-        for j in range(1, len(xx[0])):
-            if Z[i][j] != Z[i-1][j-1]:
+    for i in range(1, len(xx) - 1):
+        for j in range(1, len(xx[0]) - 1):
+            if Z[i][j] != Z[i-1][j-1] or Z[i][j] != Z[i+1][j-1]:
                 boundary_points.append([xx[i][j], yy[i][j]])
 
+    timer.end("\tboundary")
+
+    timer.start("old-sort")
     def norm_func(x): return np.sqrt(x[0]**4 + x[1]**2)
-    boundary_points.sort(key=norm_func)
-    # print(boundary_points)
+    # boundary_points.sort(key=norm_func)
+    timer.end("old-sort")
+
+    timer.start("new-sort")
+    boundary_points = sort_boundary_points(boundary_points)
+    timer.end("new-sort")
 
     downsampled = []
     accumulated_dist = 0
@@ -158,6 +278,9 @@ def cones_to_midline(cones: Cones):
         
         if accumulated_dist > 0.55:
             accumulated_dist = 0
+
+    if DEBUG_POINTS:
+        debug_points(boundary_points) 
     
     downsampled = np.array(list(downsampled))
     # print(downsampled)

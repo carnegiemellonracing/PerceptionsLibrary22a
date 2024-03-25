@@ -27,7 +27,8 @@ def main():
 
     dl = DataLoader("perc22a/data/raw/three-laps-large")
 
-    for i in range(20, len(dl)):
+    for i in range(115, len(dl)):
+        print(i)
         cones_zed = sp1.predict(dl[i])
         cones_zed2 = sp2.predict(dl[i])
         cones_lidar = lp.predict(dl[i])
