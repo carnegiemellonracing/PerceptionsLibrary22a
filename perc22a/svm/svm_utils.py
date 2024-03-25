@@ -56,7 +56,6 @@ def debug_svm(cones: Cones, X, y, clf):
 def debug_points(points):
 
     points = np.array(points)
-    print(points.shape)
 
     plt.plot(points[:, 0], points[:, 1], c="red")
     plt.scatter(points[:, 0], points[:, 1], c="orange", s=10)
@@ -183,8 +182,6 @@ def sort_boundary_points(points, max_spline_length=17.5):
     curr_point = points[idx, :]
     rem_points = np.delete(points, idx, axis=0)
 
-    print("in sort_boundary_points")
-
     # add starting point to sorted points
     sorted_points.append(curr_point)
 
@@ -201,15 +198,10 @@ def sort_boundary_points(points, max_spline_length=17.5):
         # add closest point to sorted points
         sorted_points.append(curr_point)
 
-    print(spline_length < max_spline_length)
-    print(spline_length)
-    print(len(sorted_points))
     return np.array(sorted_points)
 
 def cones_to_midline(cones: Cones):
 
-    timer = Timer()
-    timer.start("\taugtrain")
     blue_cones, yellow_cones, _ = cones.to_numpy()
     if len(blue_cones) == 0 or len(yellow_cones) == 0:
         return []
@@ -222,8 +214,6 @@ def cones_to_midline(cones: Cones):
 
     model = svm.SVC(kernel='poly', degree=3, C=10, coef0=1.0)
     model.fit(X, y)
-
-    timer.end("\taugtrain")
 
     if DEBUG_SVM:
         debug_svm(cones, X, y, model)
@@ -244,15 +234,16 @@ def cones_to_midline(cones: Cones):
     if DEBUG_PRED:
         debug_pred(Z)
 
-    timer.start("\tboundary")
-
-    boundary_points = []
-    for i in range(1, len(xx) - 1):
-        for j in range(1, len(xx[0]) - 1):
-            if Z[i][j] != Z[i-1][j-1] or Z[i][j] != Z[i+1][j-1]:
-                boundary_points.append([xx[i][j], yy[i][j]])
-
-    timer.end("\tboundary")
+    # get top-left corner (TL) and bottom-right (BR) corner of Z
+    Z_TL = Z[:-1, :-1]
+    Z_BR = Z[1:, :-1]
+    Z_C = Z[1:, 1:]
+    XX_C = xx[1:, 1:]
+    YY_C = yy[1:, 1:]
+    idxs = np.where(np.logical_or(Z_C != Z_TL, Z_C != Z_BR))
+    boundary_xx = XX_C[idxs].reshape((-1, 1))
+    boundary_yy = YY_C[idxs].reshape((-1, 1))
+    boundary_points = np.concatenate([boundary_xx, boundary_yy], axis=1)
 
     # sort the points in the order of a spline
     boundary_points = sort_boundary_points(boundary_points)
