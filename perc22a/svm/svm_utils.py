@@ -213,11 +213,8 @@ def cones_to_midline(cones: Cones):
     blue_cones, yellow_cones, _ = cones.to_numpy()
     if len(blue_cones) == 0 or len(yellow_cones) == 0:
         return []
-
-    # augment dataset to make it better for SVM training  
     
-    # TODO: currently no augmentations - use deg=10 and radius=1-2 ish (maybe 1.5)
-
+    # augment dataset to make it better for SVM training  
     supplement_cones(cones)
     cones = augment_cones_circle(cones, deg=10, radius=1.2) 
 
@@ -227,11 +224,11 @@ def cones_to_midline(cones: Cones):
     model.fit(X, y)
 
     timer.end("\taugtrain")
-    timer.start("\tpredict")
 
     if DEBUG_SVM:
         debug_svm(cones, X, y, model)
 
+    # TODO: prediction takes 20-30+ ms, need to figure out how to optimize
     step = 0.1
     x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
     y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
@@ -239,13 +236,14 @@ def cones_to_midline(cones: Cones):
                         np.arange(y_min, y_max, step))
 
     svm_input = np.c_[xx.ravel(), yy.ravel()]
+
     Z = model.predict(svm_input)
     Z = Z.reshape(xx.shape)
+
 
     if DEBUG_PRED:
         debug_pred(Z)
 
-    timer.end("\tpredict")
     timer.start("\tboundary")
 
     boundary_points = []
@@ -256,15 +254,10 @@ def cones_to_midline(cones: Cones):
 
     timer.end("\tboundary")
 
-    timer.start("old-sort")
-    def norm_func(x): return np.sqrt(x[0]**4 + x[1]**2)
-    # boundary_points.sort(key=norm_func)
-    timer.end("old-sort")
-
-    timer.start("new-sort")
+    # sort the points in the order of a spline
     boundary_points = sort_boundary_points(boundary_points)
-    timer.end("new-sort")
 
+    # downsample the points
     downsampled = []
     accumulated_dist = 0
     for i in range(1, len(boundary_points)):
