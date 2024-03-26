@@ -7,11 +7,11 @@ from perc22a.predictors.utils.cones import Cones
 
 
 # conversion from meters to pixels
-PIXELS_PER_M = 70
+PIXELS_PER_M = 35
 
 # image space
-DIMS = np.array([720, 540]) * 2
-ORIGIN = np.array([600, 270]) * 2
+DIMS = (np.array([720, 540]) * 1.5).astype(np.int64)
+ORIGIN = (np.array([600, 270]) * 1.).astype(np.int64)
 
 # sizes of drawable objects (in meters)
 AXIS_LONG_M = 1
