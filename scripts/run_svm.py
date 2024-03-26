@@ -11,7 +11,9 @@ from perc22a.predictors.utils.cones import Cones
 from perc22a.predictors.utils.vis.Vis2D import Vis2D
 from perc22a.utils.Timer import Timer
 
-from perc22a.svm.svm_utils import cones_to_midline, augment_dataset, augment_cones
+from perc22a.svm.svm_utils import cones_to_midline
+
+import numpy as np
 
 def main():
     sp1 = YOLOv5Predictor(camera="zed")
@@ -25,7 +27,7 @@ def main():
 
     dl = DataLoader("perc22a/data/raw/three-laps-large")
 
-    for i in range(20, len(dl)):
+    for i in range(40, len(dl)):
         cones_zed = sp1.predict(dl[i])
         cones_zed2 = sp2.predict(dl[i])
         cones_lidar = lp.predict(dl[i])
@@ -33,8 +35,8 @@ def main():
         merger.add(cones_zed, PipelineType.ZED_PIPELINE)
         merger.add(cones_zed2, PipelineType.ZED2_PIPELINE)
         merger.add(cones_lidar, PipelineType.LIDAR)
-        merged_cones = merger.merge()
-        
+        merged_cones = merger.merge() 
+
         t.start("spline")
         midline_points = cones_to_midline(merged_cones)
         t.end("spline")
