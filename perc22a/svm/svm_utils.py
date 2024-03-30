@@ -84,11 +84,11 @@ def augment_dataset(X, mult=4, var=0.5):
 
 def supplement_cones(cones: Cones):
     '''does in place, adds cones around origin to ground an SVM classifier'''
-    cones.add_blue_cone(-1, 0, 0)
-    cones.add_yellow_cone(1, 0, 0)
+    cones.add_blue_cone(-2, -1, 0)
+    cones.add_yellow_cone(2, -1, 0)
 
-    cones.add_blue_cone(-1, 1, 0)
-    cones.add_yellow_cone(1, 1, 0) 
+    # cones.add_blue_cone(-1, 1, 0)
+    # cones.add_yellow_cone(1, 1, 0) 
 
 def augment_cones(cones: Cones, mult=8, var=0.35):
     '''duplicates the cones by some multiplier and adds Gaussian noise with 
