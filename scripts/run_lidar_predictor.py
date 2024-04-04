@@ -13,28 +13,26 @@ from perc22a.predictors.lidar.LidarPredictor import LidarPredictor
 
 def main():
     # initialize data loader and lidar predictor
-    dl = DataLoader("perc22a/data/raw/three-laps-large")
+    dl = DataLoader("perc22a/data/raw/track-testing-09-29")
     lp = LidarPredictor()
 
     # Create a profiler object
     profiler = cProfile.Profile()
-
-    #import pdb; pdb.set_trace();
- 
-    for i in range(44, len(dl)):
-        print(i)
-        # load the i-th image from track testing run
-        # profiler.enable()
-        # cones = lp.predict(dl[i])
-        # profiler.disable()
-        # profiler.print_stats()
-        start = time.time()
-        cones, profiler = lp.profile_predict(dl[i])
-        end = time.time()
-        print(f"Predict Time Elapsed: {end-start}")
-        # profiler.print_stats()
-        print(cones)
-        lp.display()
+    while True:
+        for i in range(44, 160):
+            print(i)
+            # load the i-th image from track testing run
+            # profiler.enable()
+            # cones = lp.predict(dl[i])
+            # profiler.disable()
+            # profiler.print_stats()
+            start = time.time()
+            cones, profiler = lp.profile_predict(dl[i])
+            end = time.time()
+            print(f"Predict Time Elapsed: {end-start}")
+            # profiler.print_stats()
+            print(cones)
+            lp.display()
 
 
     # start = time.time()

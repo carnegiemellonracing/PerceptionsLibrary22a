@@ -38,7 +38,7 @@ LIDAR_DEBUG = False
 
 class LidarPredictor(Predictor):
     def __init__(self):
-        # self.window = vis.init_visualizer_window()
+        self.window = vis.init_visualizer_window()
         self.sensor_name = "lidar"
         self.transformer = PoseTransformations()
         self.timer = Timer()
@@ -91,6 +91,7 @@ class LidarPredictor(Predictor):
         # points_ground_plane = filter.box_range(
         #     points, xmin=-10, xmax=10, ymin=-3, ymax=20, zmin=-1, zmax=1
         # )
+        all_points = points
         points_ground_plane = filter.fov_range(points, fov=180, minradius=0, maxradius=20)
         # vis.update_visualizer_window(None, points_ground_plane)
         # self.timer.start("predict")
@@ -170,12 +171,12 @@ class LidarPredictor(Predictor):
         # self.timer.end("predict")
 
         # visualize points
-        # vis.update_visualizer_window(
-        #     None,
-        #     points=points_cluster_subset,
-        #     pred_cones=cone_centers,
-        #     colors_cones=cone_colors,
-        # )
+        vis.update_visualizer_window(
+            self.window,
+            points=all_points,
+            pred_cones=cone_centers,
+            colors_cones=cone_colors,
+        )
 
         # create a Cones object to return
         cones = Cones()

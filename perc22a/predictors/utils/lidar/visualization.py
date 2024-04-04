@@ -101,7 +101,7 @@ def create_point_vis(points, colors=None):
 
 
 def create_cylinder_vis(
-    cylinder_centers, colors=[0, 1, 0], radius=0.2, height=0.4, resolution=10
+    cylinder_centers, colors=[0, 1, 0], radius=0.2, height=0.4, resolution=15
 ):
     """
     Creates a list of Open3D LineSet meshes of cylinders whose centers
@@ -176,7 +176,7 @@ def update_visualizer_window(
     # calculate the new geometries
     objects = []
 
-    objects.append(create_axis_vis())
+    # objects.append(create_axis_vis(size=0.25))
     objects.append(create_point_vis(points, colors))
     if plane is not None:
         objects.append(create_plane_vis(plane, ymin=0))
