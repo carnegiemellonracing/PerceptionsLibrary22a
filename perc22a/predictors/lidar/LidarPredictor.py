@@ -129,6 +129,10 @@ class LidarPredictor(Predictor):
         )
         # self.timer.end("plane-fit")
 
+        if points_filtered_ground.shape[0] == 0 or len(points_filtered_ground.shape) != 2:
+            return Cones()
+        points_filtered_ground = points_filtered_ground[:,:3]
+
         #vis.update_visualizer_window(None, points_cluster)
         # # Original call using random_subset
         # points_cluster_subset = filter.random_subset(points_cluster, 0.03)
