@@ -42,6 +42,7 @@ class LidarPredictor(Predictor):
         self.sensor_name = "lidar"
         self.transformer = PoseTransformations()
         self.timer = Timer()
+        self.filter_error_count = 0
         pass
 
     def profile_predict(self, data):
@@ -129,12 +130,20 @@ class LidarPredictor(Predictor):
         )
         # self.timer.end("plane-fit")
 
+        if points_filtered_ground.shape[0] == 0 or len(points_filtered_ground.shape) != 2:
+            return Cones()
+        points_filtered_ground = points_filtered_ground[:,:3]
+
         #vis.update_visualizer_window(None, points_cluster)
         # # Original call using random_subset
         # points_cluster_subset = filter.random_subset(points_cluster, 0.03)
         # self.timer.start("downsample")
         voxel_size = 0.1  # Example voxel size
-        points_cluster_subset = filter.voxel_downsample(points_filtered_ground, voxel_size)
+        try:
+            points_cluster_subset = filter.voxel_downsample(points_filtered_ground, voxel_size)
+        except:
+            self.filter_error_count += 1
+            return Cones()
         # self.timer.end("downsample")
 
         # print("Random Subset: ", (time.time() - start) * 1000)
@@ -187,6 +196,7 @@ class LidarPredictor(Predictor):
             elif c == 0:
                 cones.add_blue_cone(x, y, z)
 
+        print(self.filter_error_count)
         return self.transformer.transform_cones(self.sensor_name, cones)
 
 

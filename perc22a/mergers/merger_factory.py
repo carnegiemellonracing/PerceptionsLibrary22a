@@ -6,6 +6,12 @@ Functions for constructing mergers with specific properties
 from perc22a.mergers.BaseMerger import BaseMerger
 from perc22a.mergers.PipelineType import PipelineType
 
+def create_any_merger():
+    '''simple merger that requires a single pipeline'''
+    return BaseMerger(
+        required_pipelines=[]
+    )
+
 # TODO: add in parameters to influence the ZED filter distance
 def create_lidar_merger():
     '''simple merger that requires the LiDAR pipeline'''

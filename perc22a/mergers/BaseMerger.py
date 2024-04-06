@@ -58,21 +58,21 @@ class BaseMerger(Merger):
         return
 
     def reset(self):
-        self.total_cones = 0
+        self.total_cones = {p: 0 for p in PipelineType}
         self.pipeline_cones = {p: Cones() for p in PipelineType}
         self.seen_pipelines_set = set()
 
         return
 
     def add(self, cones: Cones, pipeline: PipelineType):
-        self.total_cones += len(cones)
-        self.pipeline_cones[pipeline].add_cones(cones)
+        self.total_cones[pipeline] = len(cones)
+        self.pipeline_cones[pipeline] = cones
         self.seen_pipelines_set.add(pipeline)
 
         return
 
     def sufficient(self) -> bool:
-        non_zero_cones = len(self.pipeline_cones) > 0
+        non_zero_cones = sum(self.total_cones.values()) > 0
         seen_required_cones = self.required_pipelines_set.issubset(self.seen_pipelines_set)
         return non_zero_cones and seen_required_cones
     
