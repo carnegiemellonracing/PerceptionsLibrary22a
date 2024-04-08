@@ -5,7 +5,7 @@ import numpy as np
 import time
 
 
-class SimCones:
+class ConeSim:
 
     def __init__(self, v_start=2, v_space=3, n_rows=4, width=4.5, period=10, mag=1, scale=0.5):
         '''
