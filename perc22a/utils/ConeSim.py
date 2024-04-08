@@ -1,13 +1,14 @@
 from perc22a.predictors.utils.vis.Vis2D import Vis2D
 from perc22a.predictors.utils.cones import Cones
 
+import math
 import numpy as np
 import time
 
 
 class ConeSim:
 
-    def __init__(self, v_start=2, v_space=3, n_rows=4, width=4.5, period=10, mag=1, scale=0.5):
+    def __init__(self, v_start=2, v_space=3, n_rows=4, width=4.5, period=10, mag=1, scale=0.5, noise_var=0.001):
         '''
         Arguments:
             v_start (float):    starting y-value of closest row of cones from the car
@@ -17,6 +18,7 @@ class ConeSim:
             period (float):     seconds it takes for a single cycle of cone motion to happen
             mag (float):        amount of spacing in meters that cones oscillate
             scale (float):      add MAG * SCALE to magnitude for row
+            noise_var (float):  variance for gaussian noise added to cone positions
         '''
 
         self.v_start = v_start
@@ -26,6 +28,7 @@ class ConeSim:
         self.period = period
         self.mag = mag
         self.scale = scale
+        self.noise_var = noise_var
 
         self.vis = Vis2D()
 
@@ -38,6 +41,10 @@ class ConeSim:
         self.orig_yellow = orig_yellow.astype(np.float64)
 
         return
+    
+    def _add_noise(self, arr):
+        noise = np.random.randn(*arr.shape) * math.sqrt(self.noise_var)
+        return arr + noise
 
     def get_cones(self):
         '''
@@ -52,6 +59,9 @@ class ConeSim:
         mag = self.mag * (self.scale * np.arange(0, self.n_rows) + 1)
         blue[:, 0] += mag * np.cos((delta / self.period) * (np.pi * 2))
         yellow[:, 0] += mag * np.cos((delta / self.period) * (np.pi * 2))
+
+        blue = self._add_noise(blue)
+        yellow = self._add_noise(yellow)
 
         
         cones = Cones.from_numpy(blue, yellow, np.empty((0,3)))
