@@ -5,15 +5,6 @@ from perc22a.utils.SimCones import SimCones
 import numpy as np
 import time
 
-V_START = 2
-V_SPACE = 3
-N_ROWS = 2
-WIDTH = 4.5
-
-PERIOD = 10
-MAG = 1
-SCALE = 2
-
 def main():
 
     vis = Vis2D()
