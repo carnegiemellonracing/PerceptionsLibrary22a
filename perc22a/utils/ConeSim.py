@@ -8,7 +8,7 @@ import time
 
 class ConeSim:
 
-    def __init__(self, v_start=2, v_space=3, n_rows=4, width=4.5, period=10, mag=1, scale=0.5, noise_var=0.001):
+    def __init__(self, v_start=2, v_space=3, n_rows=4, width=4.5, period=25, mag=1, scale=0.5, noise_var=0.001):
         '''
         Arguments:
             v_start (float):    starting y-value of closest row of cones from the car
