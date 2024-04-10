@@ -42,8 +42,7 @@ class LidarPredictor(Predictor):
         self.sensor_name = "lidar"
         self.transformer = PoseTransformations()
         self.timer = Timer()
-        self.filter_error_count = 0
-        pass
+        return
 
     def profile_predict(self, data):
         profiler = cProfile.Profile()
@@ -51,6 +50,7 @@ class LidarPredictor(Predictor):
         cones = self.predict(data)
         profiler.disable()
         return cones, profiler
+
     def required_data(self):
         return [DataType.HESAI_POINTCLOUD]
 
@@ -62,16 +62,24 @@ class LidarPredictor(Predictor):
         return points
 
     def predict(self, data) -> Cones:
+        if DEBUG_TIME: self.timer.start("predict")
+        if DEBUG_TIME: self.timer.start("\tinit-process")
+
         # coordinate frame points to perceptions coordinates system
-        points = self._transform_points(data[DataType.HESAI_POINTCLOUD])
+        points = data[DataType.HESAI_POINTCLOUD]
         points = points[~np.any(points == 0, axis=1)]
         points = points[~np.all(points == 0, axis=1)]
         points = points[~np.any(np.isnan(points), axis=-1)]
         points = points[:, :3]
+        points = self._transform_points(points)
         self.points = points
 
         # transfer to origin of car
         points = self.transformer.to_origin(self.sensor_name, points, inverse=False)
+
+        if DEBUG_TIME: self.timer.end("\tinit-process")
+        if DEBUG_TIME: self.timer.start("\tfilter")
+        if DEBUG_TIME: self.timer.start("\t\tfov-range")
 
         points_ground_plane = filter.fov_range(
             points, 
@@ -79,43 +87,53 @@ class LidarPredictor(Predictor):
             minradius=0, 
             maxradius=INIT_PC_MAX_RADIUS
         )
-
-        # avoid crashing sometimes
-        if points_ground_plane.shape[0] == 0:
-            return Cones()
+        
+        if DEBUG_TIME: self.timer.end("\t\tfov-range")
+        if DEBUG_TIME: self.timer.start("\t\tground-removal")
 
         points_filtered_ground = filter.GraceAndConrad(
             points_ground_plane, 
             points_ground_plane, 
-            0.1, 
-            10, 
-            0.13
+            SMART_GROUND_FILTER_SLICE_RADIANS, 
+            SMART_GROUND_FILTER_SLICE_BINS, 
+            SMART_GROUND_FILTER_HEIGHT_THRESHOLD
         )
        
+        if DEBUG_TIME: self.timer.end("\t\tground-removal")
+        if DEBUG_TIME: self.timer.start("\t\tnaive-plane-fit")
+
         _, _, ground_planevals = filter.plane_fit(
             points,
             points_ground_plane,
             return_mask=True,
-            boxdim=5,
-            height_threshold=0.12,
+            boxdim=NAIVE_PLANE_FIT_BOX_DIM,
+            height_threshold=NAIVE_PLANE_FIT_HEIGHT_THRESHOLD,
         )
+
+        if DEBUG_TIME: self.timer.end("\t\tnaive-plane-fit")
+        if DEBUG_TIME: self.timer.start("\t\tvoxel-downsample")
 
         points_cluster_subset = filter.voxel_downsample(
             points_filtered_ground, 
             DOWNSAMPLE_VOXEL_SIZE
         )
 
+        if DEBUG_TIME: self.timer.end("\t\tvoxel-downsample")
+        if DEBUG_TIME: self.timer.end("\tfilter")
+        if DEBUG_TIME: self.timer.start("\tcluster")
+
         # predict cone positions 
         cone_centers = cluster.predict_cones_z(
             points_cluster_subset,
             ground_planevals,
-            height_threshold=0.5,
+            height_threshold=MAX_CLUSTER_HEIGHT_THRESHOLD,
         )
 
-        # color cones and return them
-        cone_output, cone_centers, cone_colors = color.color_cones(cone_centers)
+        if DEBUG_TIME: self.timer.end("\tcluster")
+        if DEBUG_TIME: self.timer.start("\tcoloring")
 
-        # correct the positions of the cones to the center of mass of the car
+        # color cones and correct them
+        cone_output, cone_centers, cone_colors = color.color_cones(cone_centers)
         cone_output = cluster.correct_clusters(cone_output)
 
         # create a Cones object to return
@@ -128,7 +146,14 @@ class LidarPredictor(Predictor):
             elif c == 0:
                 cones.add_blue_cone(x, y, z)
 
-        return self.transformer.transform_cones(self.sensor_name, cones)
+        if DEBUG_TIME: self.timer.end("\tcoloring")
+        if DEBUG_TIME: self.timer.start("\ttransform")
+
+        cones = self.transformer.transform_cones(self.sensor_name, cones)
+
+        if DEBUG_TIME: self.timer.end("\ttransform")
+        if DEBUG_TIME: self.timer.end("predict")
+        return cones
 
 
     def display(self):
