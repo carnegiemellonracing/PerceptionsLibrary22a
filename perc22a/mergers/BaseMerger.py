@@ -11,10 +11,14 @@ from perc22a.mergers.PipelineType import PipelineType
 from perc22a.predictors.utils.vis.Vis3D import Vis3D
 from perc22a.predictors.utils.vis.Vis2D import Vis2D
 
+from perc22a.mergers.constants import \
+    MAX_MERGE_DISTANCE, \
+    ZED_DIST_LIMIT, \
+    LIDAR_DIST_LIMIT
+
 import numpy as np
 from typing import List
 
-MAX_TOLERATED_DIFFERENCE = 1
 
 def create_dist_filter(dist):
     def dist_filter(tup):
@@ -40,8 +44,8 @@ class BaseMerger(Merger):
     def __init__(
             self, 
             required_pipelines: List[PipelineType] = [],
-            zed_dist_limit=10,
-            lidar_dist_limit=20,
+            zed_dist_limit=ZED_DIST_LIMIT,
+            lidar_dist_limit=LIDAR_DIST_LIMIT,
             debug=False
         ):
         self.required_pipelines_set = set(required_pipelines)
@@ -105,7 +109,7 @@ class BaseMerger(Merger):
         for i in all_cones:
             duplicateCones = [i]
             for j in all_cones:
-                if i != j and self.dist(i, j)  < MAX_TOLERATED_DIFFERENCE:
+                if i != j and self.dist(i, j)  < MAX_MERGE_DISTANCE:
                     duplicateCones.append(j)
 
             # TODO: could speed up this computation for computing cone distances 

@@ -28,29 +28,6 @@ CLUSTER_DEBUG = False
 # HELPER FUNCTIONS #
 ####################
 
-
-def run_hdbscan(points, eps=1, min_samples=1):
-    """
-    runs hdbscan on a point cloud and returns the resulting
-    fitted clusterer -- has information that is accessible in the follow way
-        1. clusterer.labels_ = assigned cluster for each point
-        2. clusterer.probabilities_  = probability each point in its cluster
-
-    Input: points - np.array of shape (N, 3) where the 3 columns are
-                    (x, y, z) coordinates representing a point cloud
-           eps - the distance epsilon for creating new clusters (look at HDBSCAN documentation)
-           min_samples - the minimum number of samples allowed to form a cluster
-    Output: clusterer - hdbscan.HDBSCAN object that is fit on points
-    """
-    clusterer = cluster.HDBSCAN(
-        min_cluster_size=min_samples,
-        gen_min_span_tree=True,
-        cluster_selection_epsilon=eps,
-    )
-    clusterer.fit(points)
-    return clusterer
-
-
 def run_dbscan(points, eps=0.5, min_samples=1):
     """
     identical to run_hdbscan but runs using DBSCAN from sklearn library
@@ -68,50 +45,6 @@ def run_dbscan(points, eps=0.5, min_samples=1):
     clusterer.probabilities_ = np.ones(clusterer.labels_.shape)
 
     return clusterer
-
-
-# ! testing out vectorized version
-def compute_centers(points, labels, probs):
-    points = points[:, :3]
-    unique_labels = np.unique(labels)
-    centroids = np.array(
-        [
-            np.average(points[labels == label], weights=probs[labels == label], axis=0)
-            for label in unique_labels
-            if label != -1
-        ]
-    )
-    return centroids
-
-
-def compute_centers_unvectorized(points, labels, probs):
-    """Computes the center of each of the clusters that are described by points and labels
-
-    Args:
-        points (np.ndarray of shape (N,3)): array of points
-        labels (np.ndarray of shape (N,)): labels of cluster id for each point
-        probs (np.ndarray of shape (N,)): probability each point is in its cluster
-
-    Returns:
-        centroids (np.ndarray of shape (C,3)): array of positions
-        that the clusters for each cluster, orderd from cluster 0 to cluster n-1
-    """
-    points = points[:, :3]
-    n_clusters = np.max(labels) + 1
-    centroids = []
-
-    for i in range(n_clusters):
-        # for each cluster estimate its centroid from its points
-        idxs = np.where(labels == i)[0]
-        cluster_points = points[idxs]
-        cluster_probs = probs[idxs]
-
-        scale = np.sum(cluster_probs)
-        center = np.sum(cluster_points * cluster_probs, axis=0) / scale
-
-        centroids.append(center)
-
-    return np.array(centroids)
 
 
 def filter_centers(all_points, clustering_points, centers, labels, probs):
@@ -279,7 +212,6 @@ def get_centroids_z(
     ground_planevals,
     probs=None,
     filter_distant=True,
-    radius_threshold=0.2,
     dist_threshold=0.2,
     x_threshold_scale=2,
     height_threshold=0,
@@ -330,6 +262,8 @@ def get_centroids_z(
                         clusters calculated from the points and given labels
 
     """
+
+    # TODO: not evne using x_threshold_scale and dist_threshold
 
     # hyperparameter: if centroid has average distance > dist_threshold
     # from cluster points and filter_distant true, then do not add it to result
@@ -447,68 +381,15 @@ def get_centroids_z(
 #####################################
 
 
-def cluster_points(points, hdbscan=False, eps=1, min_samples=1):
-    # only care about (X, Y, Z) coordinates of points
-    points = points[:, :3]
-
-    # run HDBSCAN and get the resulting labels and probabilities
-    if hdbscan:
-        clusterer = run_hdbscan(points, eps=eps, min_samples=min_samples)
-    else:
-        clusterer = run_dbscan(points, eps=eps, min_samples=min_samples)
-
-    labels = clusterer.labels_.reshape((-1, 1))
-    probs = clusterer.probabilities_.reshape((-1, 1))
-    centers = compute_centers(points, labels, probs)
-
-    return centers, labels, probs
-
-
-def predict_cones(points, hdbscan=False, get_colors=None):
-    """
-    predicts the centers of cones given a point cloud
-    by running some clustering algorithm (in this implementation HDBSCAN)
-    and then predicting the cone centers (using get_centroids)
-
-    Input: points - np.array of shape (N, M) where M >= 3 and the first 3
-                    columns of points represent X, Y, Z coordinates of
-                    point cloud points of same units
-    Output: centroids - np.array of shape (C, 3) where there were C
-                        C predicted cone centers from the point cloud
-                        represented by points
-    """
-
-    # only care about (X, Y, Z) coordinates of points
-    points = points[:, :3]
-
-    # run HDBSCAN and get the resulting labels and probabilities
-    if hdbscan:
-        clusterer = run_hdbscan(points)
-    else:
-        clusterer = run_dbscan(points)
-    labels = clusterer.labels_.reshape((-1, 1))
-    probs = clusterer.probabilities_.reshape((-1, 1))
-
-    # get the cone centers and return
-    centroids = get_centroids(points, labels, probs)
-
-    if get_colors:
-        colors = np.hstack([labels, labels, labels]) / np.max(labels)
-        return centroids, colors
-    else:
-        return centroids
-
-
 def predict_cones_z(
     points,
     ground_planevals,
-    hdbscan=False,
     scalar=1,
-    dist_threshold=0.2,
-    x_threshold_scale=1,
-    height_threshold=0,
-    x_bound=10,
-    x_dist=1,
+    dist_threshold=0.6,
+    x_threshold_scale=0.15,
+    height_threshold=0.5,
+    x_bound=20,
+    x_dist=3,
 ):
     """
     predicts the centers of cones given a point cloud
@@ -550,12 +431,8 @@ def predict_cones_z(
     endscal = scalar * (abs(zmax))
     points[:, 2] /= endscal
 
-    # run HDBSCAN and get the resulting labels and probabilities
-    # print(np.any(np.isnan(points)))
-    if hdbscan:
-        clusterer = run_hdbscan(points, min_samples=2)
-    else:
-        clusterer = run_dbscan(points, min_samples=2, eps=0.3)
+
+    clusterer = run_dbscan(points, min_samples=2, eps=0.3)
     labels = clusterer.labels_.reshape((-1, 1))
     probs = clusterer.probabilities_.reshape((-1, 1))
 
