@@ -31,7 +31,7 @@ import perc22a.predictors.utils.lidar.color as color
 from perc22a.utils.Timer import Timer
 
 # constants
-from perc22a.predictors.lidar.constants import *
+from perc22a.predictors.lidar.fms_constants import *
 
 # general imports
 import numpy as np
