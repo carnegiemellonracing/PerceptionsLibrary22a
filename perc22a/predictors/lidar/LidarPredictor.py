@@ -68,7 +68,6 @@ class LidarPredictor(Predictor):
         # coordinate frame points to perceptions coordinates system
         points = data[DataType.HESAI_POINTCLOUD]
         points = points[~np.any(points == 0, axis=1)]
-        points = points[~np.all(points == 0, axis=1)]
         points = points[~np.any(np.isnan(points), axis=-1)]
         points = points[:, :3]
         points = self._transform_points(points)
