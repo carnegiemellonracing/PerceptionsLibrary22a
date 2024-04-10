@@ -129,6 +129,8 @@ class LidarPredictor(Predictor):
         if DEBUG_TIME: self.timer.end("\t\tvoxel-downsample")
         if DEBUG_TIME: self.timer.end("\tfilter")
         if DEBUG_TIME: self.timer.start("\tcluster")
+        if VIS_PRE_CLUSTER_POINTS:
+            vis.update_visualizer_window(None, points_cluster_subset)
 
         # predict cone positions 
         cone_centers = cluster.predict_cones_z(
