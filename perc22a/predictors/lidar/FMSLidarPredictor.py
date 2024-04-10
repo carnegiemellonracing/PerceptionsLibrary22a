@@ -131,7 +131,7 @@ class FMSLidarPredictor(Predictor):
             height_threshold=MAX_CLUSTER_HEIGHT_THRESHOLD,
         )
 
-        if DEBUG_TIME: self.timer.end("\tcluster")
+        if DEBUG_TIME: self.timer.end("\tcluster", msg=str(len(points_cluster_subset)))
         if DEBUG_TIME: self.timer.start("\tcoloring")
 
         # color cones and correct them
