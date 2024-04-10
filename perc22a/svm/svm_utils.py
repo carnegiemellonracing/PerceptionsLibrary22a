@@ -203,7 +203,7 @@ def sort_boundary_points(points, max_spline_length=17.5):
 def cones_to_midline(cones: Cones):
 
     blue_cones, yellow_cones, _ = cones.to_numpy()
-    if len(blue_cones) == 0 or len(yellow_cones) == 0:
+    if len(blue_cones) == 0 and len(yellow_cones) == 0:
         return []
     
     # augment dataset to make it better for SVM training  
