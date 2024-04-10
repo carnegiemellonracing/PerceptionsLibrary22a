@@ -43,7 +43,13 @@ class FMSLidarPredictor(Predictor):
         self.sensor_name = "lidar"
         self.transformer = PoseTransformations()
         self.timer = Timer()
-        self.vis = Vis3D()
+
+        self.use_old_vis = True
+        if self.use_old_vis:
+            self.window = vis.init_visualizer_window()
+        else:
+            self.vis = Vis3D()
+
         return
 
     def profile_predict(self, data):
@@ -88,6 +94,11 @@ class FMSLidarPredictor(Predictor):
             minradius=0, 
             maxradius=INIT_PC_MAX_RADIUS
         )
+        points_ground_plane = filter.box_range(
+            points_ground_plane,
+            xmin=-INIT_PC_BOX_RANGE,
+            xmax=INIT_PC_BOX_RANGE
+        )
         
         if DEBUG_TIME: self.timer.end("\t\tfov-range")
         if DEBUG_TIME: self.timer.start("\t\tground-removal")
@@ -122,6 +133,8 @@ class FMSLidarPredictor(Predictor):
 
         if DEBUG_TIME: self.timer.end("\t\tvoxel-downsample")
         if DEBUG_TIME: self.timer.end("\tfilter")
+        if VIS_PRE_CLUSTER_POINTS:
+            vis.update_visualizer_window(None, points_cluster_subset)
         if DEBUG_TIME: self.timer.start("\tcluster")
 
         # predict cone positions 
@@ -137,6 +150,7 @@ class FMSLidarPredictor(Predictor):
         # color cones and correct them
         cone_output, cone_centers, cone_colors = color.color_cones(cone_centers)
         cone_output = cluster.correct_clusters(cone_output)
+        self.cone_output_arr = cone_output
 
         # create a Cones object to return
         cones = Cones()
@@ -161,8 +175,11 @@ class FMSLidarPredictor(Predictor):
 
     def display(self):
 
-        self.vis.set_points(self.points_cluster_subset)
-        self.vis.set_cones(self.cones)
-        self.vis.update()
+        if self.use_old_vis:
+            vis.update_visualizer_window(self.window, self.points_cluster_subset, self.cone_output_arr)
+        else:
+            self.vis.set_points(self.points_cluster_subset)
+            self.vis.set_cones(self.cones)
+            self.vis.update()
 
         return
