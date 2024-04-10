@@ -19,4 +19,6 @@ DOWNSAMPLE_VOXEL_SIZE = 0.1
 MAX_CLUSTER_HEIGHT_THRESHOLD = 0.5
 
 # time
-DEBUG_TIME = True 
+DEBUG_TIME = True
+
+# vis debugging

@@ -21,6 +21,7 @@ from perc22a.predictors.utils.cones import Cones
 from perc22a.predictors.utils.transform.transform import PoseTransformations
 
 # visualization and core lidar algorithm functions
+from perc22a.predictors.utils.vis.Vis3D import Vis3D
 import perc22a.predictors.utils.lidar.visualization as vis
 import perc22a.predictors.utils.lidar.filter as filter
 import perc22a.predictors.utils.lidar.cluster as cluster
@@ -42,6 +43,7 @@ class LidarPredictor(Predictor):
         self.sensor_name = "lidar"
         self.transformer = PoseTransformations()
         self.timer = Timer()
+        self.vis = Vis3D()
         return
 
     def profile_predict(self, data):
@@ -116,6 +118,7 @@ class LidarPredictor(Predictor):
             points_filtered_ground, 
             DOWNSAMPLE_VOXEL_SIZE
         )
+        self.points_cluster_subset = points_cluster_subset
 
         if DEBUG_TIME: self.timer.end("\t\tvoxel-downsample")
         if DEBUG_TIME: self.timer.end("\tfilter")
@@ -149,6 +152,7 @@ class LidarPredictor(Predictor):
         if DEBUG_TIME: self.timer.start("\ttransform")
 
         cones = self.transformer.transform_cones(self.sensor_name, cones)
+        self.cones = cones
 
         if DEBUG_TIME: self.timer.end("\ttransform")
         if DEBUG_TIME: self.timer.end("predict")
@@ -156,4 +160,9 @@ class LidarPredictor(Predictor):
 
 
     def display(self):
+
+        self.vis.set_points(self.points_cluster_subset)
+        self.vis.set_cones(self.cones)
+        self.vis.update()
+
         return
