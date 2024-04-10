@@ -43,7 +43,13 @@ class LidarPredictor(Predictor):
         self.sensor_name = "lidar"
         self.transformer = PoseTransformations()
         self.timer = Timer()
-        self.vis = Vis3D()
+
+        self.use_old_vis = True
+        if self.use_old_vis:
+            self.window = vis.init_visualizer_window()
+        else:
+            self.vis = Vis3D()
+
         return
 
     def profile_predict(self, data):
@@ -137,6 +143,7 @@ class LidarPredictor(Predictor):
         # color cones and correct them
         cone_output, cone_centers, cone_colors = color.color_cones(cone_centers)
         cone_output = cluster.correct_clusters(cone_output)
+        self.cone_output_arr = cone_output
 
         # create a Cones object to return
         cones = Cones()
@@ -161,8 +168,11 @@ class LidarPredictor(Predictor):
 
     def display(self):
 
-        self.vis.set_points(self.points_cluster_subset)
-        self.vis.set_cones(self.cones)
-        self.vis.update()
+        if self.use_old_vis:
+            vis.update_visualizer_window(self.window, self.points_cluster_subset, self.cone_output_arr)
+        else:
+            self.vis.set_points(self.points_cluster_subset)
+            self.vis.set_cones(self.cones)
+            self.vis.update()
 
         return
