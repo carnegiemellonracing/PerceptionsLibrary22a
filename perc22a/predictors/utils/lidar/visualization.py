@@ -158,6 +158,7 @@ def display_point_cloud(pc, colors=None, cones=None):
 def init_visualizer_window(name="Point Cloud Visualization"):
     vis = o3d.visualization.Visualizer()
     vis.create_window(window_name=name, width=960, height=540, left=1000)
+    vis.get_render_option().background_color = [10/255, 10/266, 10/255]
     return vis
 
 
