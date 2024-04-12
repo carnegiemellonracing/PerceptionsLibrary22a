@@ -106,15 +106,16 @@ def augment_dataset_circle(X, deg=20, radius=2):
     where circle lies on the first two dimensions of sample'''
     DEG_TO_RAD = np.pi / 180
     radian = deg * DEG_TO_RAD
-    angles = np.arange(0, 2 * np.pi, step=radian)
+    angles = np.arange(0, 2 * np.pi, step=radian).astype(np.float64)
 
     N = X.shape[0]
 
     # create duplicate points
     num_angles = angles.shape[0]
-    X_extra = np.concatenate([X] * num_angles)
-    angles = np.repeat(angles, N)
+    X_extra = np.concatenate([X] * num_angles).astype(np.float64)
+    angles = np.repeat(angles, N).astype(np.float64)
 
+    radius = float(radius)
     X_extra[:, 0] += radius * np.cos(angles)
     X_extra[:, 1] += radius * np.sin(angles)
     return np.concatenate([X, X_extra])
