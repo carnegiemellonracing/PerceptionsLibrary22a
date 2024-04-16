@@ -12,7 +12,7 @@ import numpy as np
 class DataInstance:
 
     def __init__(self, required_types=None):
-        # define dictionary for storing data
+        # define dictionary for storing numpy arrays
         self.data = {}
 
         # define list of required types necessary for DataInstance to save

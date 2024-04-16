@@ -19,4 +19,7 @@ class DataType(Enum):
     # hesai pointcloud data
     HESAI_POINTCLOUD = "points"
 
+    # gps related data
+    GPS_POSE = "pose"
+
     # add other data here ...
