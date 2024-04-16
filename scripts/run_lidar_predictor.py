@@ -21,18 +21,14 @@ def main():
     #import pdb; pdb.set_trace();
  
     for i in range(44, len(dl)):
-        print(i)
+        # print(i)
         # load the i-th image from track testing run
-        # profiler.enable()
-        # cones = lp.predict(dl[i])
-        # profiler.disable()
-        # profiler.print_stats()
         timer.start("Predict Time Elapsed")
         cones, profiler = lp.profile_predict(dl[i])
         timer.end("Predict Time Elapsed")
         # profiler.print_stats()
-        print(cones)
-        # lp.display()
+        # print(cones)
+        lp.display()
 
 
     # start = time.time()

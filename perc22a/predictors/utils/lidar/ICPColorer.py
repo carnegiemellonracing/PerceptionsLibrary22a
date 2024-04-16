@@ -1,26 +1,164 @@
 
+# perc22 imports
 from perc22a.predictors.utils.cones import Cones
+from perc22a.utils.Timer import Timer
+
+# general imports
+import numpy as np
+import open3d as o3d
+import matplotlib.pyplot as plt
+
 
 class ICPColorer:
+    # TODO: determine what is the best merging policy?
+    #   1. do it like counting and take the color with the highest count
+    #   2. do we assume that the existing state is correct and ignore the old state
+    #       in this case, what do if error in new incoming cone?
+
+    # TODO: could accumulate transformations to get more cones in state
 
     def __init__(self):
-        self.prev_cones = None
+        self.cones_state_arr = None
+
+        # search correspondences over 1m radius
+        self.icp_max_correspondence_dist = 1
+        self.icp_estimation_method = o3d.pipelines.registration.TransformationEstimationPointToPoint()
+        self.icp_max_iters = 30
+        self.icp_criteria = o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=self.icp_max_iters)
+
+        # for debugging
+        self.timer = Timer()
 
         pass
 
+    def _debug_correspondences(self, src_pos, target_pos, correspondences):
+
+        for i in range(len(correspondences)):
+            src_idx, target_idx = correspondences[i,:]
+
+            points = np.array([src_pos[src_idx], target_pos[target_idx]])
+            plt.scatter(points[:, 0], points[:, 1])
+
+        plt.show()
+
+        pass
+
+    def _cones_to_pc_arr(self, cones: Cones):
+        blue, yellow, _ = cones.to_numpy()
+
+        b0, b1 = np.zeros((blue.shape[0], 1)), np.ones((blue.shape[0], 1))
+        y1 = np.ones((yellow.shape[0], 1))
+
+        # x, y, z, yellow-count, total-count
+        blue = np.concatenate([blue, b0, b1], axis=1)
+        yellow = np.concatenate([yellow, y1, y1], axis=1)
+
+        return np.concatenate([blue, yellow], axis=0)
+    
+    def _pc_arr_to_pc(self, pc_arr):
+        pcd = o3d.geometry.PointCloud()
+        pcd.points = o3d.utility.Vector3dVector(pc_arr[:, :3])
+        return pcd
+    
+    def _icp_correspondence(self, prev_cone_pc_arr, curr_cone_pc_arr):
+        # use ICP to align previous cone with target current cones
+
+        # convert to open3d PointCloud objects
+        prev_pcd = self._pc_arr_to_pc(prev_cone_pc_arr)
+        curr_pcd = self._pc_arr_to_pc(curr_cone_pc_arr)
+
+        # perform icp
+        # TODO: using gps to inform init transformation would be good
+        # might make it faster, but already lwk kinda fast
+
+        reg_p2p = o3d.pipelines.registration.registration_icp(
+            prev_pcd, curr_pcd,
+            self.icp_max_correspondence_dist,
+            estimation_method=self.icp_estimation_method,
+            criteria=self.icp_criteria
+        )
+        correspondences = np.asarray(reg_p2p.correspondence_set)
+
+        # self._debug_correspondences(prev_cone_pc_arr, curr_cone_pc_arr, correspondences)
+        return correspondences
+    
+    def _update_state_prob(self, cones_state_arr, new_cone_arr, correspondences):
+
+        # NOTE: this is where the primary update policy is implemented
+        # and how merging past estimates works with merging current estimates
+
+        # 3 groups
+        # in correspondence set (update positions and update counts)
+        # cone in cone state not in correspondence set (remove from state)
+        # cone in new cones (add into state, initialize counts)
+
+        state_corr = correspondences[:, 0]
+        new_corr = correspondences[:, 1]
+
+        # 1. update cones found in the correspondence set
+        corr_state_cones = cones_state_arr[state_corr, :]
+        corr_new_cones = new_cone_arr[new_corr, :]
+
+        # for each corr new cone, update counts with correlated state cones
+        corr_new_cones[:, 3] += corr_state_cones[:, 3]
+        corr_new_cones[:, 4] += corr_state_cones[:, 4]
+
+        # 2. add new cones not found in the correspondence set
+        new_uncorr_mask = np.ones(new_cone_arr.shape[0], dtype=bool)
+        new_uncorr_mask[new_corr] = False
+
+        uncorr_new_cones = new_cone_arr[new_uncorr_mask, :]
+
+        # now merge correlated and uncorrelated new cones for updated state
+        new_state_arr = np.concatenate([corr_new_cones, uncorr_new_cones], axis=0)
+        return new_state_arr
+
+
+    def _state_to_cones_prob(self, cones_state_arr):
+
+        # get indices for blue and yellow cones based on predictions
+        yellow_prob = cones_state_arr[:, 3] / cones_state_arr[:, 4]
+        blue_idxs = np.where(yellow_prob < 0.5)
+        yellow_idxs = np.where(yellow_prob >= 0.5)
+
+        blue_cones_arr = cones_state_arr[blue_idxs][:, :3]
+        yellow_cones_arr = cones_state_arr[yellow_idxs][:, :3]
+        orange_cones_arr = np.zeros((0, 3))
+
+        return Cones.from_numpy(blue_cones_arr, yellow_cones_arr, orange_cones_arr)
+    
 
     def recolor(self, cones: Cones):
-        if self.prev_cones is None:
+        if self.cones_state_arr is None:
             self.prev_cones = cones
+            self.cones_state_arr = self._cones_to_pc_arr(cones)
             return cones
-
-        # save current cones for next iteration as prev_cones 
-        curr_cones = cones.copy()
         
-        self.prev_cones.plot2d(show=False, label="p")
-        cones.plot2d(show=True, label="c")
+        self.timer.start("recolor")
 
-        # create some new cones
-        self.prev_cones = curr_cones
+        # save input cones for next iteration's prev_cones 
+        new_cones = cones
+        input_cones = cones.copy()
 
+        # self.prev_cones.plot2d(show=False, label="p")
+        # cones.plot2d(show=True, label="c")
+
+        # convert cones into a point cloud of cones
+        new_cone_pc_arr = self._cones_to_pc_arr(new_cones)
+
+        # perform icp to get correspondences
+        corr = self._icp_correspondence(self.cones_state_arr, new_cone_pc_arr)  
+
+        # create some new cones and update prior cone state
+        self.prev_cones = input_cones
+        self.cones_state_arr = self._update_state_prob(
+            self.cones_state_arr,
+            new_cone_pc_arr,
+            corr
+        )
+
+        # convert existing state into a Cones object
+        cones = self._state_to_cones_prob(self.cones_state_arr)
+
+        self.timer.end("recolor")
         return cones
