@@ -3,18 +3,17 @@ import pstats
 
 # perceptions specific imports
 # general python imports
-import time
 
-import cv2
-
+from perc22a.utils.Timer import Timer
 from perc22a.data.utils.dataloader import DataLoader
 from perc22a.predictors.lidar.LidarPredictor import LidarPredictor
 
 
 def main():
     # initialize data loader and lidar predictor
-    dl = DataLoader("perc22a/data/raw/three-laps-large")
+    dl = DataLoader("perc22a/data/raw/tt-4-6-lidar")
     lp = LidarPredictor()
+    timer = Timer()
 
     # Create a profiler object
     profiler = cProfile.Profile()
@@ -28,10 +27,9 @@ def main():
         # cones = lp.predict(dl[i])
         # profiler.disable()
         # profiler.print_stats()
-        start = time.time()
+        timer.start("Predict Time Elapsed")
         cones, profiler = lp.profile_predict(dl[i])
-        end = time.time()
-        print(f"Predict Time Elapsed: {end-start}")
+        timer.end("Predict Time Elapsed")
         # profiler.print_stats()
         print(cones)
         lp.display()

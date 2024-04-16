@@ -161,7 +161,6 @@ class LidarPredictor(Predictor):
         if DEBUG_TIME: self.timer.end("\tcoloring")
         if DEBUG_TIME: self.timer.start("\ttransform")
 
-        cones = self.transformer.transform_cones(self.sensor_name, cones)
         self.cones = cones
 
         if DEBUG_TIME: self.timer.end("\ttransform")
