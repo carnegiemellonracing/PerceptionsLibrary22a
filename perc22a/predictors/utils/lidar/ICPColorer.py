@@ -17,13 +17,13 @@ class ICPColorer:
 
     # TODO: could accumulate transformations to get more cones in state
 
-    def __init__(self):
+    def __init__(self, max_correspondence_dist=1, max_iters=30):
         self.cones_state_arr = None
 
         # search correspondences over 1m radius
-        self.icp_max_correspondence_dist = 1
+        self.icp_max_correspondence_dist = max_correspondence_dist
         self.icp_estimation_method = o3d.pipelines.registration.TransformationEstimationPointToPoint()
-        self.icp_max_iters = 30
+        self.icp_max_iters = max_iters
         self.icp_criteria = o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=self.icp_max_iters)
 
         # for debugging
