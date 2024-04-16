@@ -32,7 +32,7 @@ def main():
         timer.end("Predict Time Elapsed")
         # profiler.print_stats()
         print(cones)
-        lp.display()
+        # lp.display()
 
 
     # start = time.time()

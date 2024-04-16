@@ -174,3 +174,7 @@ class Cones:
             plt.show()
 
         return
+    
+    def copy(self):
+        '''returns deep copy of current cone object as '''
+        return Cones.from_numpy(*self.to_numpy())
