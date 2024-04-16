@@ -1,3 +1,19 @@
+'''ICPColorer.py
+
+This file contains a class for using prior color estimates of cones to inform
+and recolor new/incoming cone color estimates. The current implementation
+uses ICP to determine correspondences between cones that have been seen (in state)
+and new incoming cones. 
+
+Then, each cone in the state has a counter for the
+number of timesteps/prediction iterations they have been in the state
+and another counter for the number of times the lidar coloring part of
+the pipeline predicted them as yellow. Then, for cones that obtain
+correspondences, their counts are updated based on the pipeline's color
+predictions at that iteration. Cones in state that are not seen in the new
+set of cones are discarded, and cones that haven't found an associated cone
+in the existing state are added as a new cone to the state.
+'''
 
 # perc22 imports
 from perc22a.predictors.utils.cones import Cones
@@ -16,6 +32,7 @@ class ICPColorer:
     #       in this case, what do if error in new incoming cone?
 
     # TODO: could accumulate transformations to get more cones in state
+    # TODO: maybe just use ICP to inform decision about seed for lidar coloring?
 
     # TODO: weaknesses
     #   1. if a cone disappears, it's counts get totally refreshed which isn't good
