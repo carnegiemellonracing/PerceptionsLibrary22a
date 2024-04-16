@@ -17,6 +17,11 @@ class ICPColorer:
 
     # TODO: could accumulate transformations to get more cones in state
 
+    # TODO: weaknesses
+    #   1. if a cone disappears, it's counts get totally refreshed which isn't good
+    #   2. if looking at side, then new cones coming in might propogate wrong color
+    #   - need uncorrelated cones to at least get colors from corresponded colors
+
     def __init__(self, max_correspondence_dist=1, max_iters=30):
         self.cones_state_arr = None
 
