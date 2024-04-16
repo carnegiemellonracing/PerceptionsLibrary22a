@@ -134,14 +134,9 @@ class ICPColorer:
             self.cones_state_arr = self._cones_to_pc_arr(cones)
             return cones
         
-        self.timer.start("recolor")
-
         # save input cones for next iteration's prev_cones 
         new_cones = cones
         input_cones = cones.copy()
-
-        # self.prev_cones.plot2d(show=False, label="p")
-        # cones.plot2d(show=True, label="c")
 
         # convert cones into a point cloud of cones
         new_cone_pc_arr = self._cones_to_pc_arr(new_cones)
@@ -160,5 +155,4 @@ class ICPColorer:
         # convert existing state into a Cones object
         cones = self._state_to_cones_prob(self.cones_state_arr)
 
-        self.timer.end("recolor")
         return cones

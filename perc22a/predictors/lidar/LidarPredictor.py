@@ -162,7 +162,8 @@ class LidarPredictor(Predictor):
                 cones.add_blue_cone(x, y, z)
 
         # recolor using ICP and prior predictions
-        cones = self.colorer.recolor(cones)
+        if USE_ICP_RECOLORING:
+            cones = self.colorer.recolor(cones)
 
         if DEBUG_TIME: self.timer.end("\tcoloring")
         if DEBUG_TIME: self.timer.start("\ttransform")
