@@ -13,5 +13,5 @@ class ICPColorer:
         if self.prev_cones is None:
             self.prev_cones = cones
             return cones
-        
+
         return cones
