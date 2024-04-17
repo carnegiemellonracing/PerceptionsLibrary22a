@@ -42,11 +42,6 @@ def main():
     # time.sleep(10000)
 
 if __name__ == "__main__":
-    profiler = cProfile.Profile()
-    profiler.enable()
     main()
-    profiler.disable()
-    stats = pstats.Stats(profiler).sort_stats("cumtime")
-    stats.dump_stats("profile_results.prof")  # Save to a file
 
 #! have to run "snakeviz profile_results.prof" in the terminal to view the results
