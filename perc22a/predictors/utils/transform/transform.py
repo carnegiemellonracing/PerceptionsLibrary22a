@@ -64,6 +64,25 @@ def make_RZ(rad):
 def make_T(dx, dy, dz):
     return np.array([[1, 0, 0, dx], [0, 1, 0, dy], [0, 0, 1, dz], [0, 0, 0, 1]])
 
+def multiply_matrices_large(M, D, max_size=2**14):
+    num_rows = M.shape[0]
+    result = np.zeros_like(M)
+
+    if num_rows <= max_size:
+        result = M @ D
+    else:
+        num_chunks = -(-num_rows // max_size)
+        chunk_size = num_rows // num_chunks
+
+        for i in range(num_chunks):
+            start = i * chunk_size
+            end = min((i + 1) * chunk_size, num_rows)
+            chunk = M[start:end, :]
+
+            result[start:end, :] = chunk @ D
+
+    return result
+
 
 class PoseTransformations:
     # stereo_cam = config['stereo']
@@ -133,7 +152,8 @@ class PoseTransformations:
         # transform points and inhomegenize
         # points_transformed = (M @ points_homogenous.T).T
         print(points_homogenous.shape, M.shape)
-        points_transformed = np.matmul(points_homogenous, M.T)
+        # points_transformed = np.matmul(points_homogenous, M.T)
+        points_transformed = multiply_matrices_large(points_homogenous, M.T)
         result = self._inhomogenize(points_transformed)
 
         return result
