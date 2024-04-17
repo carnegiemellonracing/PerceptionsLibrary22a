@@ -131,7 +131,9 @@ class PoseTransformations:
 
 
         # transform points and inhomegenize
-        points_transformed = (M @ points_homogenous.T).T
+        # points_transformed = (M @ points_homogenous.T).T
+        print(points_homogenous.shape, M.shape)
+        points_transformed = np.matmul(points_homogenous, M.T)
         result = self._inhomogenize(points_transformed)
 
         return result
