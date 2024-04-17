@@ -131,7 +131,6 @@ def color_cones(centers):
     algorithm should check track bounds so that we are not creating
     incorrect predictions
     """
-    timer.start("color")
     
     # TODO: get a better algorithm for selecting the first point!!!
     # TODO: get a better algorithm for selecting the next point!!!
@@ -295,6 +294,4 @@ def color_cones(centers):
 
     cone_output = np.hstack([all_centers[:, :2], color_ids])
 
-
-    timer.end("color")
     return cone_output, all_centers, colors
