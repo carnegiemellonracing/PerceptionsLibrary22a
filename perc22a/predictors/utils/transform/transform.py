@@ -19,6 +19,8 @@ TRANSFORM_DIR_NAME = os.path.dirname(__file__)
 
 DEG_TO_RAD = np.pi / 180
 
+USE_CHUNK_MULT = True
+
 
 def c(x):
     return np.cos(x)
@@ -151,7 +153,10 @@ class PoseTransformations:
 
 
         # transform points and inhomegenize
-        points_transformed = multiply_matrices_large(points_homogenous, M.T)
+        if USE_CHUNK_MULT:
+            points_transformed = multiply_matrices_large(points_homogenous, M.T)
+        else:
+            points_transformed = points_homogenous @ M.T
         result = self._inhomogenize(points_transformed)
 
         return result
@@ -169,7 +174,10 @@ class PoseTransformations:
         
 
         # transform points and inhomegenize
-        points_transformed = (M @ points_homogenous.T).T
+        if USE_CHUNK_MULT:
+            points_transformed = multiply_matrices_large(points_homogenous, M.T)
+        else:
+            points_transformed = points_homogenous @ M.T
         result = self._inhomogenize(points_transformed)
 
         return result
