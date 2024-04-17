@@ -65,6 +65,7 @@ def make_T(dx, dy, dz):
     return np.array([[1, 0, 0, dx], [0, 1, 0, dy], [0, 0, 1, dz], [0, 0, 0, 1]])
 
 def multiply_matrices_large(M, D, max_size=2**14):
+    assert(D.shape[0] == D.shape[1])
     num_rows = M.shape[0]
     result = np.zeros_like(M)
 
