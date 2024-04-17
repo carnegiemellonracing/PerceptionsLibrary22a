@@ -47,11 +47,11 @@ class LidarPredictor(Predictor):
         self.transformer = PoseTransformations()
         self.timer = Timer()
 
-        self.use_old_vis = False 
-        if self.use_old_vis:
-            self.window = vis.init_visualizer_window()
-        else:
-            self.vis = Vis3D()
+        # self.use_old_vis = False 
+        # if self.use_old_vis:
+        #     self.window = vis.init_visualizer_window()
+        # else:
+        #     self.vis = Vis3D()
 
         return
 

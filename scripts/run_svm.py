@@ -11,7 +11,7 @@ from perc22a.predictors.utils.cones import Cones
 from perc22a.predictors.utils.vis.Vis2D import Vis2D
 from perc22a.utils.Timer import Timer
 
-from perc22a.svm.svm_utils import cones_to_midline
+from perc22a.svm.SVM import SVM
 
 import numpy as np
 
@@ -26,6 +26,7 @@ def main():
     merger = BaseMerger(required_pipelines=[], debug=True, zed_dist_limit=10, lidar_dist_limit=10)
 
     dl = DataLoader("perc22a/data/raw/three-laps-large")
+    svm = SVM()
 
     for i in range(40, len(dl)):
         cones_zed = sp1.predict(dl[i])
@@ -38,7 +39,7 @@ def main():
         merged_cones = merger.merge() 
 
         t.start("spline")
-        midline_points = cones_to_midline(merged_cones)
+        midline_points = svm.cones_to_midline(merged_cones)
         t.end("spline")
 
         vis.set_cones(merged_cones)
