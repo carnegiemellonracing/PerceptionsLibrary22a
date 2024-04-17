@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import perc22a.predictors.utils.lidar.visualization as vis
-import pdb
+
+from perc22a.utils.Timer import Timer
 
 C2RGB = {
     "blue": [7, 61, 237],  # cone color: Blue RYB
@@ -43,15 +44,10 @@ def next_point_simple(curr_point, yellow, points, dir, max_angle_diff=np.pi / 3.
     # compute the distances and angles of all points relative to curr_point
     deltas = points[:, 1:] - curr_point[1:]
 
-    raangles = np.empty(len(deltas))
-    for i in range(len(deltas)):
-        delta = deltas[i]
-        cos_theta = np.arccos(np.dot(currburr, delta) / (np.linalg.norm(delta)))
-        cross_prod = np.cross(currburr, delta)
-        if cross_prod > 0:
-            cos_theta = -cos_theta
-        raangles[i] = cos_theta
-
+    deep_currburr = np.array(currburr).reshape((-1, 1))
+    deep_cos_thetas = np.arccos((deltas @ deep_currburr) / np.linalg.norm(deltas, axis=-1, keepdims=True)).reshape(-1)
+    deep_cross_prods = np.cross(deep_currburr.T, deltas, axis=-1)
+    raangles = np.where(deep_cross_prods > 0, -deep_cos_thetas, deep_cos_thetas)
 
     dists = np.sqrt(np.sum(deltas**2, axis=1))
     angles2 = np.arctan2(deltas[:, 1], deltas[:, 0])
@@ -135,6 +131,8 @@ def color_cones(centers):
     algorithm should check track bounds so that we are not creating
     incorrect predictions
     """
+    timer.start("color")
+    
     # TODO: get a better algorithm for selecting the first point!!!
     # TODO: get a better algorithm for selecting the next point!!!
     # TODO: when performing a scan, should we rotate the centers for a better direction?
@@ -214,11 +212,13 @@ def color_cones(centers):
 
     # YELLOW cone path
     # get closest, right point and update
+    count = 0
     if seed_yellow_point is not None:
         # init path search
         point_curr = seed_yellow_point
         angle = np.pi / 2
 
+        yellow_cone_iter = 0
         while True:
             # get new point
             point_new, angle_new = next_point_simple(
@@ -240,18 +240,24 @@ def color_cones(centers):
 
             # remove from points
             centers_remaining = centers_remaining[centers_remaining[:, 0] != cidx]
+            count += 1
+
+            yellow_cone_iter += 1
 
     # BLUE cone path
     left_points, _ = split_by_y(centers_remaining)
     seed_blue_point, centers_remaining, colors = get_seed(
         left_points, centers_remaining, colors, "blue"
     )
+    count = 0
     if seed_blue_point is not None:
         # init path search
         point_curr = seed_blue_point
         angle = np.pi / 2
 
+        blue_cone_iter = 0
         while True:
+
             # get new point
             point_new, angle_new = next_point_simple(
                 point_curr, False, centers_remaining, angle, max_angle_diff=max_angle_diff
@@ -268,6 +274,10 @@ def color_cones(centers):
 
             # remove from points
             centers_remaining = centers_remaining[centers_remaining[:, 0] != cidx]
+            count += 1
+
+            blue_cone_iter += 1
+            
 
     # create colors as final output
     c2id = {"yellow": 1, "blue": 0, "nocolor": -1}
@@ -284,4 +294,7 @@ def color_cones(centers):
     #pdb.set_trace()
 
     cone_output = np.hstack([all_centers[:, :2], color_ids])
+
+
+    timer.end("color")
     return cone_output, all_centers, colors
