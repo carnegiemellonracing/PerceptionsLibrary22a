@@ -72,8 +72,9 @@ def multiply_matrices_large(M, D, max_size=2**14):
     if num_rows <= max_size:
         result = M @ D
     else:
+        # the below line is the equivalent of ceil(num_rows / max_size)
         num_chunks = -(-num_rows // max_size)
-        chunk_size = num_rows // num_chunks
+        chunk_size = max_size
 
         for i in range(num_chunks):
             start = i * chunk_size
@@ -121,7 +122,6 @@ class PoseTransformations:
         T = make_T(dx, dy, dz)
         res = T @ RZ @ RY @ RX
 
-
         return res
     
     #ripped from other classes
@@ -151,9 +151,6 @@ class PoseTransformations:
 
 
         # transform points and inhomegenize
-        # points_transformed = (M @ points_homogenous.T).T
-        print(points_homogenous.shape, M.shape)
-        # points_transformed = np.matmul(points_homogenous, M.T)
         points_transformed = multiply_matrices_large(points_homogenous, M.T)
         result = self._inhomogenize(points_transformed)
 
