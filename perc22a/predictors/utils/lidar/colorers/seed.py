@@ -40,7 +40,7 @@ def debug_seed(cones_pos, seed_cones: Cones, remaining_cone_pos):
 
 def closest_to_origin(points):
     '''returns index of point in (N, D) matrix closest to origin along with distance'''
-    dists = np.sum(points ** 2, axis=1)
+    dists = np.sqrt(np.sum(points ** 2, axis=1))
     idx = np.argmin(dists)
     return idx, dists[idx]
 
