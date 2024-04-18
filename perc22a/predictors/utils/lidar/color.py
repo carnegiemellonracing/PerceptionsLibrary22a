@@ -37,7 +37,7 @@ def next_point_simple(curr_point, yellow, points, dir, max_angle_diff=np.pi / 3.
 
     #change angle to y axis not x axis
 
-    max_dist = 8
+    max_dist = 5
 
     # to ignore the index
     points_index = points[:, 0].reshape((-1, 1))
@@ -306,10 +306,9 @@ def recolor_cones_with_svm(cones: Cones, svm_model):
 
     # get the seed positions from the svm model
     seed_cones, remaining_centers = seed_cones_svm(centers, svm_model, max_seed_dist=12.5)
-    debug_seed(centers, seed_cones, remaining_centers)
 
     all_centers = remaining_centers
-    centers = centers[:, :2]
+    centers = remaining_centers[:, :2]
 
     N = centers.shape[0]
 
@@ -396,5 +395,4 @@ def recolor_cones_with_svm(cones: Cones, svm_model):
         elif c == 0:
             cones.add_blue_cone(x, y, z)
 
-    cones.plot2d()
     return cones    

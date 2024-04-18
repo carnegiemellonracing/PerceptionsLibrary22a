@@ -142,6 +142,8 @@ class LidarPredictor(Predictor):
         if DEBUG_TIME: self.timer.end("\tcluster", msg=f"({str(num_cluster_points)} points)")
         if DEBUG_TIME: self.timer.start("\tcoloring")
 
+        cone_centers[:, 0] *= -1
+
         # color cones and correct them
         cone_output, cone_centers, cone_colors = color.color_cones(cone_centers)
         cone_output = cluster.correct_clusters(cone_output)

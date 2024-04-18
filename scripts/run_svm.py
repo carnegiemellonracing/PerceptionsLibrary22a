@@ -16,25 +16,25 @@ from perc22a.svm.SVM import SVM
 import numpy as np
 
 def main():
-    sp1 = YOLOv5Predictor(camera="zed")
-    sp2 = YOLOv5Predictor(camera="zed2")
+    # sp1 = YOLOv5Predictor(camera="zed")
+    # sp2 = YOLOv5Predictor(camera="zed2")
     lp = LidarPredictor()
     t = Timer()
-    vis = Vis2D()
+    # vis = Vis2D()
 
     # create merger
-    merger = BaseMerger(required_pipelines=[], debug=True, zed_dist_limit=10, lidar_dist_limit=10)
+    merger = BaseMerger(required_pipelines=[], debug=True, zed_dist_limit=20, lidar_dist_limit=20)
 
-    dl = DataLoader("perc22a/data/raw/three-laps-large")
+    dl = DataLoader("perc22a/data/raw/tt-4-6-lidar")
     svm = SVM()
 
     for i in range(40, len(dl)):
-        cones_zed = sp1.predict(dl[i])
-        cones_zed2 = sp2.predict(dl[i])
+        # cones_zed = sp1.predict(dl[i])
+        # cones_zed2 = sp2.predict(dl[i])
         cones_lidar = lp.predict(dl[i])
 
-        merger.add(cones_zed, PipelineType.ZED_PIPELINE)
-        merger.add(cones_zed2, PipelineType.ZED2_PIPELINE)
+        # merger.add(cones_zed, PipelineType.ZED_PIPELINE)
+        # merger.add(cones_zed2, PipelineType.ZED2_PIPELINE)
         merger.add(cones_lidar, PipelineType.LIDAR)
         merged_cones = merger.merge() 
 
@@ -42,11 +42,11 @@ def main():
         midline_points = svm.cones_to_midline(merged_cones)
         t.end("spline")
 
-        vis.set_cones(merged_cones)
+        # vis.set_cones(merged_cones)
 
-        if len(midline_points) > 0:
-            vis.set_points(midline_points)
-            vis.update()        
+        # if len(midline_points) > 0:
+        #     vis.set_points(midline_points)
+        #     vis.update()        
 
         merger.reset()
 

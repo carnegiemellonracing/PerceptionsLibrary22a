@@ -274,16 +274,16 @@ class SVM():
         
         # augment dataset to make it better for SVM training  
         self.supplement_cones(cones)
-        cones = self.augment_cones_circle(cones, deg=10, radius=1.2) 
+        aug_cones = self.augment_cones_circle(cones, deg=10, radius=1.2) 
 
-        X, y = self.cones_to_xy(cones)
+        X, y = self.cones_to_xy(aug_cones)
 
         model = svm.SVC(kernel='poly', degree=3, C=10, coef0=1.0)
         model.fit(X, y)
         self.proposed_svm_model = model
 
         if DEBUG_SVM:
-            self.debug_svm(cones, X, y, model)
+            self.debug_svm(aug_cones, X, y, model)
 
         # TODO: prediction takes 20-30+ ms, need to figure out how to optimize
         step = 0.1
@@ -338,5 +338,9 @@ class SVM():
 
         curr_timestep_spline = self.outlier_rejection(curr_timestep_spline)
         self.prev_spline = curr_timestep_spline
+
+        self.vis.set_cones(cones)
+        self.vis.set_points(curr_timestep_spline)
+        self.vis.update()
 
         return curr_timestep_spline
