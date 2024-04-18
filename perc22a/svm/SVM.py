@@ -18,7 +18,9 @@ class SVM():
 
         # Outlier rejection parameters
         self.decay_factor = 0.95 #TODO: TUNE EMPIRICALLY
-        self.outlier_threshold = 1.0 #TODO: FIND EMPIRICALLY
+        self.outlier_threshold = 0.55 #TODO: FIND EMPIRICALLY
+        self.skip_count_refresh = 3
+        self.skip_count = 0
 
     def debug_svm(self, cones: Cones, X, y, clf):
 
@@ -237,10 +239,12 @@ class SVM():
         heuristic = abs(heuristic)
         print(heuristic)
         
-        if heuristic < self.outlier_threshold:
+        if heuristic < self.outlier_threshold or self.skip_count >= self.skip_count_refresh:
+            self.skip_count = 0
             return curr_timestep_spline
         else:
             print("SKIPPED")
+            self.skip_count += 1
             return self.prev_spline
 
     def cones_to_midline(self, cones: Cones):
