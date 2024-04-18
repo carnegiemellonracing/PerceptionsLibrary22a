@@ -14,8 +14,6 @@ respectively.
 from perc22a.predictors.utils.cones import Cones
 from perc22a.svm.SVM import BLUE_LABEL, YELLOW_LABEL
 
-from perc22a.predictors.utils.lidar.colorers.constants import *
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -57,7 +55,7 @@ def split_by_xsign(points):
 
     return left_points.reshape((-1, D)), right_points.reshape((-1, D))
 
-def seed_cones_naive(cones_pos):
+def seed_cones_naive(cones_pos, max_seed_dist=7):
     '''Naive implementation of getting the seed
 
     Closest cone to the left of the car (if any) is blue.
@@ -74,7 +72,7 @@ def seed_cones_naive(cones_pos):
         closest_idx, closest_dist = closest_to_origin(left_cones_pos)
 
         # add only if within trustworthy distance
-        if closest_dist <= SEED_NAIVE_MAX_DIST:
+        if closest_dist <= max_seed_dist:
             closest_pos = left_cones_pos[closest_idx, :]
             seed_cones.add_blue_cone(closest_pos[0], closest_pos[1], closest_pos[2])
             left_cones_pos = np.delete(left_cones_pos, closest_idx, axis=0)
@@ -83,7 +81,7 @@ def seed_cones_naive(cones_pos):
         closest_idx, closest_dist = closest_to_origin(right_cones_pos)
 
         # add only if within trustworthy distance
-        if closest_dist <= SEED_NAIVE_MAX_DIST:
+        if closest_dist <= max_seed_dist:
             closest_pos = right_cones_pos[closest_idx, :]
             seed_cones.add_yellow_cone(closest_pos[0], closest_pos[1], closest_pos[2])
             right_cones_pos = np.delete(right_cones_pos, closest_idx, axis=0)
@@ -93,7 +91,7 @@ def seed_cones_naive(cones_pos):
     return seed_cones, remaining_cones_pos
 
 
-def seed_cones_svm(cones_pos, svm_model):
+def seed_cones_svm(cones_pos, svm_model, max_seed_dist=10):
     '''uses SVM to determine seed by predicting yellow and blue cones and
     taking closest blue and closest yellow within reasonable distance'''
 
@@ -110,7 +108,7 @@ def seed_cones_svm(cones_pos, svm_model):
         closest_blue_idx, closest_blue_dist = closest_to_origin(blue_cones_pos)
 
         # add only if within trustworthy distance
-        if closest_blue_dist <= SEED_SVM_MAX_DIST:
+        if closest_blue_dist <= max_seed_dist:
             closest_pos = blue_cones_pos[closest_blue_idx, :]
             seed_cones.add_blue_cone(closest_pos[0], closest_pos[1], closest_pos[2])
             blue_cones_pos = np.delete(blue_cones_pos, closest_blue_idx, axis=0)
@@ -119,7 +117,7 @@ def seed_cones_svm(cones_pos, svm_model):
         closest_yellow_idx, closest_yellow_dist = closest_to_origin(yellow_cones_pos)
 
         # add only if within trustworthy distance
-        if closest_yellow_dist <= SEED_SVM_MAX_DIST:
+        if closest_yellow_dist <= max_seed_dist:
             closest_pos = yellow_cones_pos[closest_yellow_idx, :]
             seed_cones.add_yellow_cone(closest_pos[0], closest_pos[1], closest_pos[2])
             yellow_cones_pos = np.delete(yellow_cones_pos, closest_yellow_idx, axis=0)
