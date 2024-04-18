@@ -266,6 +266,8 @@ class SVM():
 
     def cones_to_midline(self, cones: Cones):
 
+        cones = self.recolor(cones)
+
         blue_cones, yellow_cones, _ = cones.to_numpy()
         if len(blue_cones) == 0 and len(yellow_cones) == 0:
             return []
