@@ -26,7 +26,7 @@ import perc22a.predictors.utils.lidar.visualization as vis
 import perc22a.predictors.utils.lidar.filter as filter
 import perc22a.predictors.utils.lidar.cluster as cluster
 import perc22a.predictors.utils.lidar.color as color
-from perc22a.predictors.utils.lidar.ICPColorer import ICPColorer
+from perc22a.predictors.utils.lidar.colorers.ICPColorer import ICPColorer
 
 # timer utilities
 from perc22a.utils.Timer import Timer
