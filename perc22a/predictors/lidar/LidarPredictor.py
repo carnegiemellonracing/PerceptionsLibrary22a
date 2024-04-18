@@ -4,8 +4,6 @@ This file contains the implementation of the perceptions predictions algorithm
 that is solely dependent on raw LiDAR point clouds.
 """
 
-import cProfile
-
 import numpy as np
 np.set_printoptions(threshold=np.inf)
 
