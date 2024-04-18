@@ -26,7 +26,6 @@ import perc22a.predictors.utils.lidar.visualization as vis
 import perc22a.predictors.utils.lidar.filter as filter
 import perc22a.predictors.utils.lidar.cluster as cluster
 import perc22a.predictors.utils.lidar.color as color
-from perc22a.predictors.utils.lidar.colorers.ICPColorer import ICPColorer
 
 # timer utilities
 from perc22a.utils.Timer import Timer
@@ -43,7 +42,6 @@ class LidarPredictor(Predictor):
         # self.window = vis.init_visualizer_window()
         self.sensor_name = "lidar"
 
-        self.colorer = ICPColorer()
         self.transformer = PoseTransformations()
         self.timer = Timer()
 
@@ -158,12 +156,6 @@ class LidarPredictor(Predictor):
             elif c == 0:
                 cones.add_blue_cone(x, y, z)
         if DEBUG_TIME: self.timer.end("\tcoloring")
-
-        # recolor using ICP and prior predictions
-        if DEBUG_TIME: self.timer.start("\trecoloring")
-        if USE_ICP_RECOLORING:
-            cones = self.colorer.recolor(cones)
-        if DEBUG_TIME: self.timer.end("\trecoloring", msg=f"({len(cones)} cones)")
 
         self.cones = cones
 

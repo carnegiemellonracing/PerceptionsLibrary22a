@@ -18,7 +18,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def debug_seed(seed_cones: Cones, remaining_cone_pos):
+def debug_seed(cones_pos, seed_cones: Cones, remaining_cone_pos):
 
     plt.scatter(remaining_cone_pos[:, 0], remaining_cone_pos[:, 1], c="black")
     
@@ -49,7 +49,7 @@ def split_by_xsign(points):
     If no such points with negative y or no such points with positive y,
     then will return empty (0, d) array for respective return value
     '''
-    N, D = points.shape
+    _, D = points.shape
     left_points = points[np.where(points[:, 0] < 0)]
     right_points = points[np.where(points[:, 1] >= 0)]
 
@@ -61,7 +61,7 @@ def seed_cones_naive(cones_pos, max_seed_dist=7):
     Closest cone to the left of the car (if any) is blue.
     Closest cone to the right of the car (if any) is yellow. 
     '''
-
+    assert(cones_pos.ndim == 2 and cones_pos.shape[1] == 3)
     left_cones_pos, right_cones_pos = split_by_xsign(cones_pos)
 
     # initialize Cone object for returning seeds
