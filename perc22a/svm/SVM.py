@@ -1,6 +1,7 @@
 
 from perc22a.predictors.utils.cones import Cones
 from perc22a.utils.Timer import Timer
+from perc22a.predictors.utils.vis.Vis2D import Vis2D
 
 from sklearn import svm
 import numpy as np
@@ -12,6 +13,9 @@ DEBUG_SVM = False
 DEBUG_PRED = False
 DEBUG_POINTS = False
 
+BLUE_LABEL = 0
+YELLOW_LABEL = 1
+
 class SVM():
     def __init__(self):
         self.prev_spline = None
@@ -21,6 +25,10 @@ class SVM():
         self.outlier_threshold = 0.55 #TODO: FIND EMPIRICALLY
         self.skip_count_refresh = 3
         self.skip_count = 0
+
+        # recoloring cones
+        self.prev_svm_model = None
+        self.vis = Vis2D()
 
     def debug_svm(self, cones: Cones, X, y, clf):
 
@@ -146,8 +154,8 @@ class SVM():
         of 0/1 labels where 0 corresponds to blue and 1 corresponds to yellow
         '''
         blue_cones, yellow_cones, orange_cones = cones.to_numpy()
-        blue_cones[:, 2] = 0
-        yellow_cones[:, 2] = 1
+        blue_cones[:, 2] = BLUE_LABEL
+        yellow_cones[:, 2] = YELLOW_LABEL
 
         data = np.vstack([blue_cones, yellow_cones]) 
         return data[:, :2], data[:, -1]
@@ -241,11 +249,34 @@ class SVM():
         
         if heuristic < self.outlier_threshold or self.skip_count >= self.skip_count_refresh:
             self.skip_count = 0
+            self.prev_svm_model = self.proposed_svm_model
             return curr_timestep_spline
         else:
             print("SKIPPED")
             self.skip_count += 1
             return self.prev_spline
+        
+    def recolor(self, cones: Cones):
+        if self.prev_svm_model == None:
+            return cones
+        
+        blue, yellow, orange = cones.to_numpy()
+
+        cone_pos = np.concatenate([blue, yellow], axis=0)
+        cone_pos = cone_pos[:, :2]
+
+        predicted_cone_colors = self.prev_svm_model.predict(cone_pos)
+        
+        blue_updated_idx = np.where(predicted_cone_colors == BLUE_LABEL)[0]
+        yellow_updated_idx = np.where(predicted_cone_colors == YELLOW_LABEL)[0]
+        
+        blue = np.zeros((blue_updated_idx.shape[0], 3))
+        yellow = np.zeros((yellow_updated_idx.shape[0], 3))
+        blue[:, :2] = cone_pos[blue_updated_idx, :]
+        yellow[:, :2] = cone_pos[yellow_updated_idx, :]
+
+        recolored_cones = Cones.from_numpy(blue, yellow, orange)
+        return recolored_cones
 
     def cones_to_midline(self, cones: Cones):
 
@@ -261,6 +292,7 @@ class SVM():
 
         model = svm.SVC(kernel='poly', degree=3, C=10, coef0=1.0)
         model.fit(X, y)
+        self.proposed_svm_model = model
 
         if DEBUG_SVM:
             self.debug_svm(cones, X, y, model)
