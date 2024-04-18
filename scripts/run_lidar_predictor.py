@@ -31,6 +31,7 @@ def main():
             # profiler.print_stats()
             # print(cones)
             lp.display()
+            import pdb; pdb.set_trace()
 
 
     # start = time.time()

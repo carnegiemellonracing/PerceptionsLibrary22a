@@ -18,6 +18,9 @@ DOWNSAMPLE_VOXEL_SIZE = 0.1
 # cluster parameters
 MAX_CLUSTER_HEIGHT_THRESHOLD = 0.5
 
+# coloring
+USE_NEW_COLORING = True
+
 # time
 DEBUG_TIME = False
 

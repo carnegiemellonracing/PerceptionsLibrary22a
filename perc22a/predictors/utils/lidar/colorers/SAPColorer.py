@@ -9,7 +9,7 @@ from perc22a.predictors.utils.cones import Cones
 
 from perc22a.predictors.utils.lidar.colorers.ColorerInterface import Colorer
 import perc22a.predictors.utils.lidar.colorers.seed as seed
-from perc22a.predictors.utils.lidar.colorers.propagate import PropagatorNaive
+from perc22a.predictors.utils.lidar.colorers.propagate import PropagatorNaive, PropagateDirection
 
 from perc22a.predictors.utils.lidar.colorers.constants import *
 
@@ -60,18 +60,18 @@ class SAPColorer(Colorer):
         yellow_dist_sq = np.sum(yellow ** 2)
         return BLUE_STR if blue_dist_sq < yellow_dist_sq else YELLOW_STR
         
-    def _init_propogator(self, seed_cone_pos):
+    def _init_propagator(self, seed_cone_pos):
         if self.propagator_name == PROPAGATE_NAIVE_NAME:
             return PropagatorNaive(seed_cone_pos)
         else:
-            return None
+            return PropagateDirection(seed_cone_pos)
         
-    def _propogate(self, cones: Cones, seed_cone_pos, remaining_cones_pos, color):
+    def _propagate(self, cones: Cones, seed_cone_pos, remaining_cones_pos, color):
 
-        propogator = self._init_propogator(seed_cone_pos)
+        propagator = self._init_propagator(seed_cone_pos)
 
         while True:
-            idx = propogator.propogate(remaining_cones_pos)
+            idx = propagator.propagate(remaining_cones_pos)
             # propogator.debug(seed_cone_pos, remaining_cones_pos, idx)
 
             if idx is None:
@@ -95,10 +95,14 @@ class SAPColorer(Colorer):
         # return empty cones if necessary
         if cones_pos.shape[0] == 0:
             return Cones()
-
+        
+        print("first", cones_pos.shape[0])
+        
         # initialize the seed
         seed_cones, remaining_cones_pos = self._seed(cones_pos)
         blue, yellow, orange = seed_cones.to_numpy()
+
+        print("second", remaining_cones_pos.shape[0])
 
         if len(seed_cones) == 0:
             return Cones()
@@ -111,8 +115,9 @@ class SAPColorer(Colorer):
         other_seed = yellow if closer_color == BLUE_STR else blue
 
         # start propagating with the closer color
-        if closer_seed is not None:
-            cones, remaining_cones_pos = self._propogate(
+        if closer_seed is not None and closer_seed.shape[0] > 0:
+            print(remaining_cones_pos.shape[0])
+            cones, remaining_cones_pos = self._propagate(
                 seed_cones,
                 closer_seed,
                 remaining_cones_pos,
@@ -120,8 +125,9 @@ class SAPColorer(Colorer):
             )
 
         # propogate non-closer color
-        if other_color is not None:
-            cones, remaining_cones_pos = self._propogate(
+        if other_color is not None and other_seed.shape[0] > 0:
+            print(remaining_cones_pos.shape[0])
+            cones, remaining_cones_pos = self._propagate(
                 cones,
                 other_seed,
                 remaining_cones_pos,

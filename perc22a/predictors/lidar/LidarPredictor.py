@@ -40,7 +40,7 @@ class LidarPredictor(Predictor):
         # self.window = vis.init_visualizer_window()
         self.sensor_name = "lidar"
 
-        self.colorer = SAPColorer(seed="seed_naive", propogate="propagate_naive")
+        self.colorer = SAPColorer(seed="seed_naive", propogate="propagate_direction")
         self.transformer = PoseTransformations()
         self.timer = Timer()
 
@@ -140,23 +140,24 @@ class LidarPredictor(Predictor):
         if DEBUG_TIME: self.timer.start("\tcoloring")
 
         cone_centers = cluster.correct_clusters(cone_centers)
-        cones = self.colorer.color(cone_centers)
 
-        # color cones and correct them
-        # cone_output, cone_centers, cone_colors = color.color_cones(cone_centers)
-        # cone_output = cluster.correct_clusters(cone_output)
-        # self.cone_output_arr = cone_output
-        # self.cone_colors = cone_colors
+        if USE_NEW_COLORING:
+            cones = self.colorer.color(cone_centers)
+        else:
+            # color cones and correct them
+            cone_output, cone_centers, cone_colors = color.color_cones(cone_centers)
+            self.cone_output_arr = cone_output
+            self.cone_colors = cone_colors
 
-        # # create a Cones object to return
-        # cones = Cones()
-        # for i in range(cone_output.shape[0]):
-        #     x, y, c = cone_output[i, :]
-        #     z = cone_centers[i, 2]
-        #     if c == 1:
-        #         cones.add_yellow_cone(x, y, z)
-        #     elif c == 0:
-        #         cones.add_blue_cone(x, y, z)
+            # create a Cones object to return
+            cones = Cones()
+            for i in range(cone_output.shape[0]):
+                x, y, c = cone_output[i, :]
+                z = cone_centers[i, 2]
+                if c == 1:
+                    cones.add_yellow_cone(x, y, z)
+                elif c == 0:
+                    cones.add_blue_cone(x, y, z)
         if DEBUG_TIME: self.timer.end("\tcoloring")
 
         self.cones = cones
