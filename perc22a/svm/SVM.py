@@ -343,9 +343,9 @@ class SVM():
         curr_timestep_spline = self.outlier_rejection(curr_timestep_spline)
         self.prev_spline = curr_timestep_spline
 
-        # self.vis.set_cones(cones)
-        # if len(curr_timestep_spline) > 0:
-            # self.vis.set_points(curr_timestep_spline)
-            # self.vis.update()
+        self.vis.set_cones(cones)
+        if len(curr_timestep_spline) > 0:
+            self.vis.set_points(curr_timestep_spline)
+            self.vis.update()
 
         return curr_timestep_spline
