@@ -182,17 +182,6 @@ def color_cones(centers):
                 dists = np.sqrt(np.sum((points[:, 1:3] @ S) ** 2, axis=1))
                 i = np.argmin(dists)
 
-
-            # raangles = np.empty(len(points))
-            # for i in range(len(points)):
-            #     delta = points[i, 1:]
-            #     print(delta)
-            #     cos_theta = np.arctan2(delta[1], delta[0])
-            #     raangles[i] = cos_theta
-
-            # if color == "yellow": idx = np.argmin(raangles)
-            # else: idx = np.argmax(raangles)
-
             point_curr = points[i, :]
             cidx = int(point_curr[0])
             centers_remaining = centers_remaining[centers_remaining[:, 0] != cidx]
@@ -211,23 +200,18 @@ def color_cones(centers):
 
     # YELLOW cone path
     # get closest, right point and update
-    count = 0
     if seed_yellow_point is not None:
         # init path search
         point_curr = seed_yellow_point
         angle = np.pi / 2
 
-        yellow_cone_iter = 0
         while True:
             # get new point
             point_new, angle_new = next_point_simple(
                 point_curr, True, centers_remaining, angle, max_angle_diff=max_angle_diff
             )
 
-            #pdb.set_trace()
-
             if point_new is None:
-                # print("hello")
                 break
 
             # update color and state
@@ -239,22 +223,17 @@ def color_cones(centers):
 
             # remove from points
             centers_remaining = centers_remaining[centers_remaining[:, 0] != cidx]
-            count += 1
-
-            yellow_cone_iter += 1
 
     # BLUE cone path
     left_points, _ = split_by_y(centers_remaining)
     seed_blue_point, centers_remaining, colors = get_seed(
         left_points, centers_remaining, colors, "blue"
     )
-    count = 0
     if seed_blue_point is not None:
         # init path search
         point_curr = seed_blue_point
         angle = np.pi / 2
 
-        blue_cone_iter = 0
         while True:
 
             # get new point
@@ -273,9 +252,6 @@ def color_cones(centers):
 
             # remove from points
             centers_remaining = centers_remaining[centers_remaining[:, 0] != cidx]
-            count += 1
-
-            blue_cone_iter += 1
             
 
     # create colors as final output
