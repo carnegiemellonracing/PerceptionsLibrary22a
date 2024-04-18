@@ -15,6 +15,8 @@ DEBUG_SVM = False
 DEBUG_PRED = False
 DEBUG_POINTS = False
 
+RECOLOR_USING_SVM = True
+
 BLUE_LABEL = 0
 YELLOW_LABEL = 1
 
@@ -31,6 +33,7 @@ class SVM():
         # recoloring cones
         self.prev_svm_model = None
         self.vis = Vis2D()
+        self.timer = Timer()
 
     def debug_svm(self, cones: Cones, X, y, clf):
 
@@ -266,7 +269,8 @@ class SVM():
 
     def cones_to_midline(self, cones: Cones):
 
-        cones = self.recolor(cones)
+        if RECOLOR_USING_SVM:
+            cones = self.recolor(cones)
 
         blue_cones, yellow_cones, _ = cones.to_numpy()
         if len(blue_cones) == 0 and len(yellow_cones) == 0:
@@ -339,8 +343,9 @@ class SVM():
         curr_timestep_spline = self.outlier_rejection(curr_timestep_spline)
         self.prev_spline = curr_timestep_spline
 
-        self.vis.set_cones(cones)
-        self.vis.set_points(curr_timestep_spline)
-        self.vis.update()
+        # self.vis.set_cones(cones)
+        # if len(curr_timestep_spline) > 0:
+            # self.vis.set_points(curr_timestep_spline)
+            # self.vis.update()
 
         return curr_timestep_spline
