@@ -22,27 +22,30 @@ YELLOW_STR = "yellow"
 class SAPColorer(Colorer):
     # TODO: desirable to have track that satisfies propogator properties
 
-    def __init__(self, seed=SEED_NAIVE_NAME, propogate=PROPOGATE_NAIVE_NAME):
+    def __init__(self, seed=SEED_NAIVE_NAME, propogate=PROPAGATE_NAIVE_NAME):
         '''Initializes seed and propogate colorer
 
-        seed: can be "naive" or "svm"
-        propogate: can be "naive" or "direction"
+        seed: can be "seed_naive" or "seed_svm"
+        propogate: can be "propagate_naive" or "propagate_direction"
         '''
         assert(seed == SEED_NAIVE_NAME or seed == SEED_SVM_NAME)
-        assert(propogate == PROPOGATE_NAIVE_NAME or propogate == PROPOGATE_DIRECTION_NAME)
+        assert(propogate == PROPAGATE_NAIVE_NAME or propogate == PROPAGATE_DIRECTION_NAME)
 
         self.svm_model = None
 
-        self.propogator_name = propogate
+        self.propagator_name = propogate
         self.seed_name = seed
 
         return
     
     def _seed(self, cones_pos):
         if self.seed_name == SEED_NAIVE_NAME or self.svm_model is None:
-            return seed.seed_cones_naive(cones_pos)
+            seed_cones, remaining_cones = seed.seed_cones_naive(cones_pos)
         else:
-            return seed.seed_cones_svm(cones_pos, self.svm_model)
+            seed_cones, remaining_cones = seed.seed_cones_svm(cones_pos, self.svm_model)
+
+        # seed.debug_seed(cones_pos, seed_cones, remaining_cones)
+        return seed_cones, remaining_cones
         
     def _closer_seed_color(self, seed_cones: Cones):
         blue, yellow, orange = seed_cones.to_numpy()
@@ -58,7 +61,7 @@ class SAPColorer(Colorer):
         return BLUE_STR if blue_dist_sq < yellow_dist_sq else YELLOW_STR
         
     def _init_propogator(self, seed_cone_pos):
-        if self.seed_name == PROPOGATE_NAIVE_NAME:
+        if self.propagator_name == PROPAGATE_NAIVE_NAME:
             return PropagatorNaive(seed_cone_pos)
         else:
             return None
@@ -69,6 +72,7 @@ class SAPColorer(Colorer):
 
         while True:
             idx = propogator.propogate(remaining_cones_pos)
+            # propogator.debug(seed_cone_pos, remaining_cones_pos, idx)
 
             if idx is None:
                 break
@@ -96,6 +100,9 @@ class SAPColorer(Colorer):
         seed_cones, remaining_cones_pos = self._seed(cones_pos)
         blue, yellow, orange = seed_cones.to_numpy()
 
+        if len(seed_cones) == 0:
+            return Cones()
+
         # determine which of the two seeds are closer
         closer_color = self._closer_seed_color(seed_cones)
         other_color = YELLOW_STR if closer_color == BLUE_STR else BLUE_STR
@@ -118,7 +125,7 @@ class SAPColorer(Colorer):
                 cones,
                 other_seed,
                 remaining_cones_pos,
-                closer_color
+                other_color
             )
 
         return cones

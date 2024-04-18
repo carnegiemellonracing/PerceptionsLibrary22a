@@ -51,17 +51,20 @@ def split_by_xsign(points):
     '''
     _, D = points.shape
     left_points = points[np.where(points[:, 0] < 0)]
-    right_points = points[np.where(points[:, 1] >= 0)]
+    right_points = points[np.where(points[:, 0] >= 0)]
 
     return left_points.reshape((-1, D)), right_points.reshape((-1, D))
 
-def seed_cones_naive(cones_pos, max_seed_dist=7):
+def seed_cones_naive(cones_pos, max_seed_dist=15):
     '''Naive implementation of getting the seed
 
     Closest cone to the left of the car (if any) is blue.
     Closest cone to the right of the car (if any) is yellow. 
     '''
     assert(cones_pos.ndim == 2 and cones_pos.shape[1] == 3)
+    # NOTE: max_seed_dist needs to be modified based off of xscale
+    xscale = 1.1
+
     left_cones_pos, right_cones_pos = split_by_xsign(cones_pos)
 
     # initialize Cone object for returning seeds
@@ -69,7 +72,9 @@ def seed_cones_naive(cones_pos, max_seed_dist=7):
 
     # determine the closest cones on eithe rside from origin
     if left_cones_pos.shape[0] > 0:
-        closest_idx, closest_dist = closest_to_origin(left_cones_pos)
+        modified_left_cones_pos = np.array(left_cones_pos)
+        modified_left_cones_pos[:, 0] *= xscale
+        closest_idx, closest_dist = closest_to_origin(modified_left_cones_pos)
 
         # add only if within trustworthy distance
         if closest_dist <= max_seed_dist:
@@ -78,7 +83,9 @@ def seed_cones_naive(cones_pos, max_seed_dist=7):
             left_cones_pos = np.delete(left_cones_pos, closest_idx, axis=0)
 
     if right_cones_pos.shape[0] > 0:
-        closest_idx, closest_dist = closest_to_origin(right_cones_pos)
+        modified_right_cones_pos = np.array(right_cones_pos)
+        modified_right_cones_pos[:, 0] *= xscale
+        closest_idx, closest_dist = closest_to_origin(modified_right_cones_pos)
 
         # add only if within trustworthy distance
         if closest_dist <= max_seed_dist:

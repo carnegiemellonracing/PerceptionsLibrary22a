@@ -3,5 +3,5 @@
 SEED_NAIVE_NAME = "seed_naive"
 SEED_SVM_NAME = "seed_svm"
 
-PROPOGATE_NAIVE_NAME = "propogate_naive"
-PROPOGATE_DIRECTION_NAME = "propogate_direction"
+PROPAGATE_NAIVE_NAME = "propagate_naive"
+PROPAGATE_DIRECTION_NAME = "propagate_direction"

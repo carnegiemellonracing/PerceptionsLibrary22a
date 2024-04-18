@@ -14,6 +14,7 @@ All propogate functions will return an index of the next cone among the k
 to propogate the color to.
 '''
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 class PropagatorNaive:
@@ -42,3 +43,11 @@ class PropagatorNaive:
             return min_dist_idx
         else:
             return None
+        
+    def debug(self, seed_cone_pos, cones_pos, idx):
+        plt.scatter(seed_cone_pos[0, 0], seed_cone_pos[0, 1], c="red") 
+        plt.scatter(cones_pos[:,0], cones_pos[:,1], c="black")
+        plt.scatter([cones_pos[idx,0]], [cones_pos[idx,1]], c="orange")
+        plt.show()
+
+        pass
