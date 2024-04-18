@@ -3,6 +3,8 @@ from perc22a.predictors.utils.cones import Cones
 from perc22a.utils.Timer import Timer
 from perc22a.predictors.utils.vis.Vis2D import Vis2D
 
+import perc22a.predictors.utils.lidar.color as color
+
 from sklearn import svm
 import numpy as np
 import matplotlib.pyplot as plt
@@ -260,23 +262,7 @@ class SVM():
         if self.prev_svm_model == None:
             return cones
         
-        blue, yellow, orange = cones.to_numpy()
-
-        cone_pos = np.concatenate([blue, yellow], axis=0)
-        cone_pos = cone_pos[:, :2]
-
-        predicted_cone_colors = self.prev_svm_model.predict(cone_pos)
-        
-        blue_updated_idx = np.where(predicted_cone_colors == BLUE_LABEL)[0]
-        yellow_updated_idx = np.where(predicted_cone_colors == YELLOW_LABEL)[0]
-        
-        blue = np.zeros((blue_updated_idx.shape[0], 3))
-        yellow = np.zeros((yellow_updated_idx.shape[0], 3))
-        blue[:, :2] = cone_pos[blue_updated_idx, :]
-        yellow[:, :2] = cone_pos[yellow_updated_idx, :]
-
-        recolored_cones = Cones.from_numpy(blue, yellow, orange)
-        return recolored_cones
+        return color.recolor_cones_with_svm(cones, self.prev_svm_model)
 
     def cones_to_midline(self, cones: Cones):
 
