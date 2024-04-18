@@ -1,8 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import perc22a.predictors.utils.lidar.visualization as vis
+from perc22a.predictors.utils.lidar.seed import seed_cones_svm, debug_seed
 
 from perc22a.utils.Timer import Timer
+from perc22a.predictors.utils.cones import Cones
 
 C2RGB = {
     "blue": [7, 61, 237],  # cone color: Blue RYB
@@ -271,3 +273,128 @@ def color_cones(centers):
     cone_output = np.hstack([all_centers[:, :2], color_ids])
 
     return cone_output, all_centers, colors
+
+
+
+def recolor_cones_with_svm(cones: Cones, svm_model):
+    """
+    assumes that centers is N x 3
+
+    very similar to the above algorithm, but seeds are first found
+    using the SVM model to make propagation more consistent.
+
+    algorithm should check track bounds so that we are not creating
+    incorrect predictions
+    """
+
+    
+    # TODO: get a better algorithm for selecting the first point!!!
+    # TODO: get a better algorithm for selecting the next point!!!
+    # TODO: when performing a scan, should we rotate the centers for a better direction?
+    #import pdb; pdb.set_trace()
+    if len(cones) == 0:
+        return Cones()
+
+    # convert the cones to center positions
+    blue, yellow, _ = cones.to_numpy()
+    centers = np.concatenate([blue, yellow], axis=0) 
+
+    max_angle_diff = np.pi / 2.5
+
+    # NOTE: these center filtering steps should be center filtering stages
+    centers = centers[centers[:, 1] >= 0]
+
+    # get the seed positions from the svm model
+    seed_cones, remaining_centers = seed_cones_svm(centers, svm_model, max_seed_dist=12.5)
+    debug_seed(centers, seed_cones, remaining_centers)
+
+    all_centers = remaining_centers
+    centers = centers[:, :2]
+
+    N = centers.shape[0]
+
+    # add index to centers
+    idxs = np.arange(N).reshape((-1, 1))
+    centers = np.hstack([idxs, centers])
+
+    # default colors
+    colors = ["nocolor"] * N
+    centers_remaining = centers
+
+    # seeding points
+    blue_seed, yellow_seed, _ = seed_cones.to_numpy()
+
+    seed_yellow_point = None if yellow_seed.shape[0] == 0 else np.array([-1, yellow_seed[0,0], yellow_seed[0,1]])
+    seed_blue_point = None if blue_seed.shape[0] == 0 else np.array([-1, blue_seed[0,0], blue_seed[0,1]])
+
+    # YELLOW cone path
+    if seed_yellow_point is not None:
+        # init path search
+        point_curr = seed_yellow_point
+        angle = np.pi / 2
+
+        while True:
+            # get new point
+            point_new, angle_new = next_point_simple(
+                point_curr, True, centers_remaining, angle, max_angle_diff=max_angle_diff
+            )
+
+            if point_new is None:
+                break
+
+            # update color and state
+            cidx = int(point_new[0])
+            colors[cidx] = "yellow"
+
+            point_curr = point_new
+            angle = angle_new
+
+            # remove from points
+            centers_remaining = centers_remaining[centers_remaining[:, 0] != cidx]
+
+    # BLUE cone path
+    if seed_blue_point is not None:
+        # init path search
+        point_curr = seed_blue_point
+        angle = np.pi / 2
+
+        while True:
+
+            # get new point
+            point_new, angle_new = next_point_simple(
+                point_curr, False, centers_remaining, angle, max_angle_diff=max_angle_diff
+            )
+            if point_new is None:
+                break
+
+            # update color and state
+            cidx = int(point_new[0])
+            colors[cidx] = "blue"
+
+            point_curr = point_new
+            angle = angle_new
+
+            # remove from points
+            centers_remaining = centers_remaining[centers_remaining[:, 0] != cidx]
+            
+
+    # create colors as final output
+    c2id = {"yellow": 1, "blue": 0, "nocolor": -1}
+
+    color_ids = np.array([c2id[c] for c in colors]).reshape((-1, 1))
+    colors = np.array([C2RGB[c] for c in colors]) / 255
+
+
+    cone_output = np.hstack([all_centers[:, :2], color_ids])
+
+    cones = seed_cones
+    for i in range(cone_output.shape[0]):
+        x, y, c = cone_output[i, :]
+        z = all_centers[i, 2]
+        if c == 1:
+            cones.add_yellow_cone(x, y, z)
+        elif c == 0:
+            cones.add_blue_cone(x, y, z)
+
+    cones.plot2d()
+    return cones    
