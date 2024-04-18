@@ -93,6 +93,7 @@ class ICPColorer:
         # TODO: using gps to inform init transformation would be good
         # might make it faster, but already lwk kinda fast
 
+        self.timer.start("icp")
         reg_p2p = o3d.pipelines.registration.registration_icp(
             prev_pcd, curr_pcd,
             self.icp_max_correspondence_dist,
@@ -100,6 +101,7 @@ class ICPColorer:
             criteria=self.icp_criteria
         )
         correspondences = np.asarray(reg_p2p.correspondence_set)
+        self.timer.end("icp")
 
         # self._debug_correspondences(prev_cone_pc_arr, curr_cone_pc_arr, correspondences)
         return correspondences

@@ -39,7 +39,7 @@ import numpy as np
 from typing import List
 
 class LidarPredictor(Predictor):
-    def __init__(self):
+    def __init__(self, debug=False):
         # self.window = vis.init_visualizer_window()
         self.sensor_name = "lidar"
 
@@ -47,20 +47,15 @@ class LidarPredictor(Predictor):
         self.transformer = PoseTransformations()
         self.timer = Timer()
 
-        # self.use_old_vis = False 
-        # if self.use_old_vis:
-        #     self.window = vis.init_visualizer_window()
-        # else:
-        #     self.vis = Vis3D()
+        self.debug = debug
+        if self.debug:
+            self.use_old_vis = False 
+            if self.use_old_vis:
+                self.window = vis.init_visualizer_window()
+            else:
+                self.vis = Vis3D()
 
         return
-
-    def profile_predict(self, data):
-        profiler = cProfile.Profile()
-        profiler.enable()
-        cones = self.predict(data)
-        profiler.disable()
-        return cones, profiler
 
     def required_data(self):
         return [DataType.HESAI_POINTCLOUD]
@@ -83,8 +78,9 @@ class LidarPredictor(Predictor):
         points = points[:, :3]
         points = self._transform_points(points)
         self.points = points
+        self.num_points = self.points.shape[0]
 
-        # transfer to origin of car
+        # # transfer to origin of car
         points = self.transformer.to_origin(self.sensor_name, points, inverse=False)
 
         if DEBUG_TIME: self.timer.end("\tinit-process")
@@ -135,14 +131,15 @@ class LidarPredictor(Predictor):
             vis.update_visualizer_window(None, points_cluster_subset)
         if DEBUG_TIME: self.timer.start("\tcluster")
 
-        # predict cone positions 
+        # predict cone position
+        num_cluster_points = points_cluster_subset.shape[0] 
         cone_centers = cluster.predict_cones_z(
             points_cluster_subset,
             ground_planevals,
             height_threshold=MAX_CLUSTER_HEIGHT_THRESHOLD,
         )
 
-        if DEBUG_TIME: self.timer.end("\tcluster", msg=str(len(points_cluster_subset)))
+        if DEBUG_TIME: self.timer.end("\tcluster", msg=f"({str(num_cluster_points)} points)")
         if DEBUG_TIME: self.timer.start("\tcoloring")
 
         # color cones and correct them
@@ -166,15 +163,16 @@ class LidarPredictor(Predictor):
         if DEBUG_TIME: self.timer.start("\trecoloring")
         if USE_ICP_RECOLORING:
             cones = self.colorer.recolor(cones)
-        if DEBUG_TIME: self.timer.end("\trecoloring")
+        if DEBUG_TIME: self.timer.end("\trecoloring", msg=f"({len(cones)} cones)")
 
         self.cones = cones
 
-        if DEBUG_TIME: self.timer.end("predict")
+        if DEBUG_TIME: self.timer.end("predict", msg=f"({self.num_points} points)")
         return cones
 
 
     def display(self):
+        assert(self.debug)
 
         if self.use_old_vis:
             vis.update_visualizer_window(self.window, self.points_cluster_subset, self.cone_output_arr, self.cone_colors)

@@ -19,6 +19,8 @@ TRANSFORM_DIR_NAME = os.path.dirname(__file__)
 
 DEG_TO_RAD = np.pi / 180
 
+USE_CHUNK_MULT = True
+
 
 def c(x):
     return np.cos(x)
@@ -64,6 +66,27 @@ def make_RZ(rad):
 def make_T(dx, dy, dz):
     return np.array([[1, 0, 0, dx], [0, 1, 0, dy], [0, 0, 1, dz], [0, 0, 0, 1]])
 
+def multiply_matrices_large(M, D, max_size=2**14):
+    assert(D.shape[0] == D.shape[1])
+    num_rows = M.shape[0]
+    result = np.zeros_like(M)
+
+    if num_rows <= max_size:
+        result = M @ D
+    else:
+        # the below line is the equivalent of ceil(num_rows / max_size)
+        num_chunks = -(-num_rows // max_size)
+        chunk_size = max_size
+
+        for i in range(num_chunks):
+            start = i * chunk_size
+            end = min((i + 1) * chunk_size, num_rows)
+            chunk = M[start:end, :]
+
+            result[start:end, :] = chunk @ D
+
+    return result
+
 
 class PoseTransformations:
     # stereo_cam = config['stereo']
@@ -101,7 +124,6 @@ class PoseTransformations:
         T = make_T(dx, dy, dz)
         res = T @ RZ @ RY @ RX
 
-
         return res
     
     #ripped from other classes
@@ -131,7 +153,10 @@ class PoseTransformations:
 
 
         # transform points and inhomegenize
-        points_transformed = (M @ points_homogenous.T).T
+        if USE_CHUNK_MULT:
+            points_transformed = multiply_matrices_large(points_homogenous, M.T)
+        else:
+            points_transformed = points_homogenous @ M.T
         result = self._inhomogenize(points_transformed)
 
         return result
@@ -149,7 +174,10 @@ class PoseTransformations:
         
 
         # transform points and inhomegenize
-        points_transformed = (M @ points_homogenous.T).T
+        if USE_CHUNK_MULT:
+            points_transformed = multiply_matrices_large(points_homogenous, M.T)
+        else:
+            points_transformed = points_homogenous @ M.T
         result = self._inhomogenize(points_transformed)
 
         return result
