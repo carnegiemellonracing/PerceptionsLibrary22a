@@ -1,0 +1,93 @@
+'''seed.py
+
+Contains utility functions for getting the seed that will initialize the 
+coloring process for Colorers.
+
+Functions for getting the seed can be found below.
+
+All seed functions take in at least a numpy array of cone positions and they
+return a (Cones, np.ndarray) tuple containing the seeded cones (at most
+1 blue and 1 yellow, if any for either) and the remaining unseeded cones
+respectively.
+'''
+
+from perc22a.predictors.utils.cones import Cones
+
+from perc22a.svm.SVM import BLUE_LABEL, YELLOW_LABEL
+
+import numpy as np
+
+def closest_to_origin(points):
+    '''returns index of point in (N, D) matrix closest to origin along with distance'''
+    dists = np.sum(points ** 2, axis=1)
+    idx = np.argmin(dists)
+    return idx, dists[idx]
+
+def split_by_xsign(points):
+    '''returns two np array of points, those with negative x and positive x
+    If no such points with negative y or no such points with positive y,
+    then will return empty (0, d) array for respective return value
+    '''
+    N, D = points.shape
+    left_points = points[np.where(points[:, 0] < 0)]
+    right_points = points[np.where(points[:, 1] >= 0)]
+
+    return left_points.reshape((-1, D)), right_points.reshape((-1, D))
+
+def seed_cones_naive(cones_pos):
+    '''Naive implementation of getting the seed
+
+    Closest cone to the left of the car (if any) is blue.
+    Closest cone to the right of the car (if any) is yellow. 
+    '''
+
+    left_cones_pos, right_cones_pos = split_by_xsign(cones_pos)
+
+    # initialize Cone object for returning seeds
+    seed_cones = Cones()
+
+    # determine the closest cones on eithe rside from origin
+    if left_cones_pos.shape[0] > 0:
+        closest_idx, closest_dist = closest_to_origin(left_cones_pos)
+        closest_pos = left_cones_pos[closest_idx, :]
+        seed_cones.add_blue_cone(closest_pos[0], closest_pos[1], closest_pos[2])
+        left_cones_pos = np.delete(left_cones_pos, closest_idx, axis=0)
+
+    if right_cones_pos.shape[0] > 0:
+        closest_idx, closest_dist = closest_to_origin(right_cones_pos)
+        closest_pos = right_cones_pos[closest_idx, :]
+        seed_cones.add_yellow_cone(closest_pos[0], closest_pos[1], closest_pos[2])
+        right_cones_pos = np.delete(right_cones_pos, closest_idx, axis=0)
+
+    # remerge the remaining cones
+    remaining_cones_pos = np.concatenate([left_cones_pos, right_cones_pos], axis=0)
+    return seed_cones, remaining_cones_pos
+
+
+def seed_cones_svm(cones_pos, svm_model):
+
+    # predict the colors of all cones
+    pred_labels = svm_model.predict(cones_pos[:, :2])
+    blue_cones_pos = cones_pos[np.where(pred_labels == BLUE_LABEL)]
+    yellow_cones_pos = cones_pos[np.where(pred_labels == YELLOW_LABEL)]
+
+    # initialize Cone object for returning seeds
+    seed_cones = Cones()
+
+    # determine the closest cones for each color predicted by SVM
+    if blue_cones_pos.shape[0] > 0:
+        closest_blue_idx, closest_blue_dist = closest_to_origin(blue_cones_pos)
+
+        closest_pos = blue_cones_pos[closest_blue_idx, :]
+        seed_cones.add_blue_cone(closest_pos[0], closest_pos[1], closest_pos[2])
+        blue_cones_pos = np.delete(blue_cones_pos, closest_blue_idx, axis=0)
+    if yellow_cones_pos.shape[0] > 0:
+        closest_yellow_idx, closest_yellow_dist = closest_to_origin(yellow_cones_pos)
+
+        closest_pos = yellow_cones_pos[closest_yellow_idx, :]
+        seed_cones.add_yellow_cone(closest_pos[0], closest_pos[1], closest_pos[2])
+        yellow_cones_pos = np.delete(yellow_cones_pos, closest_yellow_idx, axis=0)
+
+    # remerge the remaining cones
+    remaining_cones_pos = np.concatenate([blue_cones_pos, yellow_cones_pos], axis=0)
+    return seed_cones, remaining_cones_pos
