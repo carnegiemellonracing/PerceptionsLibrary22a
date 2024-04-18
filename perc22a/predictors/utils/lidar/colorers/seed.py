@@ -12,10 +12,31 @@ respectively.
 '''
 
 from perc22a.predictors.utils.cones import Cones
-
 from perc22a.svm.SVM import BLUE_LABEL, YELLOW_LABEL
 
 import numpy as np
+import matplotlib.pyplot as plt
+
+
+def debug_seed(seed_cones: Cones, remaining_cone_pos):
+
+    plt.scatter(remaining_cone_pos[:, 0], remaining_cone_pos[:, 1], c="black")
+    
+    blue_cones, yellow_cones, _ = seed_cones.to_numpy()
+    assert(blue_cones.shape[0] <= 1 and yellow_cones.shape[0] <= 1)
+
+    if blue_cones.shape[0] == 1:
+        plt.scatter([blue_cones[0, 0]], [blue_cones[0, 1]], c="blue")
+    if yellow_cones.shape[0] == 1:
+        plt.scatter([yellow_cones[0, 0]], [yellow_cones[0, 1]], c="gold")
+
+    plt.scatter([0], [0], c="red")
+    
+    plt.grid()
+    plt.show()
+
+    return
+
 
 def closest_to_origin(points):
     '''returns index of point in (N, D) matrix closest to origin along with distance'''
