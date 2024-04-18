@@ -96,13 +96,9 @@ class SAPColorer(Colorer):
         if cones_pos.shape[0] == 0:
             return Cones()
         
-        print("first", cones_pos.shape[0])
-        
         # initialize the seed
         seed_cones, remaining_cones_pos = self._seed(cones_pos)
         blue, yellow, orange = seed_cones.to_numpy()
-
-        print("second", remaining_cones_pos.shape[0])
 
         if len(seed_cones) == 0:
             return Cones()
@@ -116,7 +112,6 @@ class SAPColorer(Colorer):
 
         # start propagating with the closer color
         if closer_seed is not None and closer_seed.shape[0] > 0:
-            print(remaining_cones_pos.shape[0])
             cones, remaining_cones_pos = self._propagate(
                 seed_cones,
                 closer_seed,

@@ -22,7 +22,7 @@ def main():
  
     while True:
         # originally 44
-        for i in range(103, 235):
+        for i in range(44, 235):
             # load the i-th image from track testing run
             print(i)
             timer.start("Predict Time Elapsed")
@@ -31,7 +31,6 @@ def main():
             # profiler.print_stats()
             # print(cones)
             lp.display()
-            import pdb; pdb.set_trace()
 
 
     # start = time.time()
