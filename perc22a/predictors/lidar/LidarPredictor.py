@@ -162,6 +162,7 @@ class LidarPredictor(Predictor):
         # recolor using ICP and prior predictions
         if DEBUG_TIME: self.timer.start("\trecoloring")
         if USE_ICP_RECOLORING:
+            print("USING ICP")
             cones = self.colorer.recolor(cones)
         if DEBUG_TIME: self.timer.end("\trecoloring", msg=f"({len(cones)} cones)")
 

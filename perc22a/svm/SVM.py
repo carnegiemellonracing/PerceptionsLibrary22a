@@ -107,8 +107,8 @@ class SVM():
 
     def supplement_cones(self, cones: Cones):
         '''does in place, adds cones around origin to ground an SVM classifier'''
-        cones.add_blue_cone(-2, -1, 0)
-        cones.add_yellow_cone(2, -1, 0)
+        cones.add_blue_cone(-4, 0, 0)
+        cones.add_yellow_cone(4, 0, 0)
 
         # cones.add_blue_cone(-1, 1, 0)
         # cones.add_yellow_cone(1, 1, 0) 
@@ -248,8 +248,7 @@ class SVM():
         diffs = curr_timestep_spline - self.prev_spline
 
         # Calculate a weighted moving average of the differences
-        heuristic = np.ma.average(diffs, axis=0, weights=[self.decay_factor**i for i in range(diffs.shape[0])])[0]
-        heuristic = abs(heuristic)
+        heuristic = np.ma.average(np.abs(diffs), axis=0, weights=[self.decay_factor**i for i in range(diffs.shape[0])])[0]
         print(heuristic)
         
         if heuristic < self.outlier_threshold or self.skip_count >= self.skip_count_refresh:
@@ -270,6 +269,7 @@ class SVM():
     def cones_to_midline(self, cones: Cones):
 
         if RECOLOR_USING_SVM:
+            print("USING SVM RECOLORING")
             cones = self.recolor(cones)
 
         blue_cones, yellow_cones, _ = cones.to_numpy()
@@ -343,6 +343,7 @@ class SVM():
         curr_timestep_spline = self.outlier_rejection(curr_timestep_spline)
         self.prev_spline = curr_timestep_spline
 
+        print("USING SVM VIS")
         self.vis.set_cones(cones)
         if len(curr_timestep_spline) > 0:
             self.vis.set_points(curr_timestep_spline)
