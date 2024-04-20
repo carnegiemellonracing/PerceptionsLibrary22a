@@ -123,9 +123,11 @@ def icp(A, B, init_pose=None, max_iterations=20, tolerance=0.001, max_corr_dist=
         tolerance: convergence criteria
         max_corr_dist: max distance correspondences can have while fitting
     Output:
+        corr: (K, 2) array of indices of corresponding points between A and B (K <= min(A, B))
         T: final homogeneous transformation that maps A on to B
         distances: Euclidean distances (errors) of the nearest neighbor
         i: number of iterations to converge
+        tA: transformed A after performing ICP (approx. result of transforming A with T)
     '''
 
     # get number of dimensions
