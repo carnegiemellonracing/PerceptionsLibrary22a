@@ -26,7 +26,7 @@ class SVM():
 
         # Outlier rejection parameters
         self.decay_factor = 0.95 #TODO: TUNE EMPIRICALLY
-        self.outlier_threshold = 0.55 #TODO: FIND EMPIRICALLY
+        self.outlier_threshold = 200.55 #TODO: FIND EMPIRICALLY
         self.skip_count_refresh = 3
         self.skip_count = 0
 

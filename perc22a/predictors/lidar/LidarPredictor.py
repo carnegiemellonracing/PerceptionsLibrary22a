@@ -47,6 +47,9 @@ class LidarPredictor(Predictor):
         self.transformer = PoseTransformations()
         self.timer = Timer()
 
+        self.prev_cones = None
+        self.counter = 0
+
         self.debug = debug
         if self.debug:
             self.use_old_vis = False 
@@ -67,7 +70,16 @@ class LidarPredictor(Predictor):
 
         return points
 
-    def predict(self, data) -> Cones:
+    def recolor(self, curr_cones):
+        if self.prev_cones is None or self.prev_cones.quat is None or self.prev_cones.twist is None:
+            assert(curr_cones is not None)
+            return curr_cones
+        
+        prev_cones_in_curr = self.prev_cones.transform_to_future(curr_cones) # Cones()
+        curr_cones = curr_cones.merge_cones(prev_cones_in_curr)
+        return curr_cones
+    
+    def predict(self, data, quat, twist) -> Cones:
         if DEBUG_TIME: self.timer.start("predict")
         if DEBUG_TIME: self.timer.start("\tinit-process")
 
@@ -149,7 +161,7 @@ class LidarPredictor(Predictor):
         self.cone_colors = cone_colors
 
         # create a Cones object to return
-        cones = Cones()
+        cones = Cones(quat, twist)
         for i in range(cone_output.shape[0]):
             x, y, c = cone_output[i, :]
             z = cone_centers[i, 2]
@@ -165,8 +177,12 @@ class LidarPredictor(Predictor):
             print("USING ICP")
             cones = self.colorer.recolor(cones)
         if DEBUG_TIME: self.timer.end("\trecoloring", msg=f"({len(cones)} cones)")
+        
+        # cones = self.recolor(cones)
+        # self.counter += 1
 
-        self.cones = cones
+        assert(cones is not None)
+        self.prev_cones = cones
 
         if DEBUG_TIME: self.timer.end("predict", msg=f"({self.num_points} points)")
         return cones
