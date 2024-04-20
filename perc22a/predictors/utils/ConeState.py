@@ -26,6 +26,8 @@ import numpy as np
 import open3d as o3d
 import matplotlib.pyplot as plt
 
+np.set_printoptions(suppress=True, precision=3)
+
 
 class ConeState:
     # TODO: determine what is the best merging policy?
@@ -192,6 +194,10 @@ class ConeState:
     
 
     def update(self, cones: Cones):
+        if len(cones) == 0:
+            # TODO: is this the best behavior, should use prior state if possible?
+            return cones
+
         if self.cones_state_arr is None:
             self.prev_cones = cones
             self.cones_state_arr = self._cones_to_pc_arr(cones)
