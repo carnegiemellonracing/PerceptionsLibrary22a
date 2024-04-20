@@ -244,7 +244,7 @@ class ConeState:
         )
 
         # convert existing state into a Cones object
-        print(np.round(self.cones_state_arr, 3))
+        # print(np.round(self.cones_state_arr, 3))
         cones = self._state_to_cones_prob(self.cones_state_arr)
 
         return cones

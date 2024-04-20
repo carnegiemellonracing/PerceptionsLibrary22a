@@ -30,23 +30,36 @@ def main():
     dl = DataLoader("perc22a/data/raw/tt-4-6-lidar")
     svm = SVM()
 
-    for i in range(40, len(dl)):
+    for i in range(00, len(dl)):
+
+        t.start("time")
+        t.start("\tlidar")
         # perform prediction
         cones = lp.predict(dl[i])
+        t.end("\tlidar")
 
         # merge the cones together from other pipelines
         # TODO: is this necessary now?
+        t.start("\tmerge")
         merger.add(cones, PipelineType.LIDAR)
         cones = merger.merge() 
         merger.reset()
+        t.end("\tmerge")
 
         # color the cones
+        t.start("\tcolor")
         cones = svm.recolor(cones)
+        t.end("\tcolor")
 
+        t.start("\tstate")
         cones = state.update(cones)
+        t.end("\tstate")
 
         # convert cones to SVM midline points
+        t.start("\tmidline")
         midline_points = svm.cones_to_midline(cones)
+        t.end("\tmidline")
+        t.end("time")
 
         vis.set_cones(cones)
         if len(midline_points) > 0:
