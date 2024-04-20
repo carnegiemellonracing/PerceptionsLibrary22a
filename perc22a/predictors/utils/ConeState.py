@@ -125,6 +125,30 @@ class ConeState:
         # update the old positions of the cones using the transformation
         # useful for updating position of uncorrelated cones
         return transformed_src, corr
+    
+    def _filter_state(self, cones_state_arr):
+        '''Filters out stale cones based on criteria that cone has been seen
+        fewer times than it has been not correlated
+        '''
+
+        # TODO: at start of execution, car is standing still so seen_count
+        # accumulates to be extremely large, might need to cap it
+        seen_count = cones_state_arr[:, self.SEEN_COUNT_IDX]
+        no_corr_count = cones_state_arr[:, self.NO_CORR_COUNT_IDX]
+        is_fresh = seen_count - no_corr_count > 0
+
+        fresh_state_arr = cones_state_arr[is_fresh, :]
+        return fresh_state_arr
+    
+    def _filter_state_window(self, cones_state_arr, n=5):
+        '''Filters out stale cones based on criteria that cone has not bee
+        consecutively seen for n timesteps
+        '''
+        cons_no_corr_count = cones_state_arr[:, self.CONSECUTIVE_NO_CORR_COUNT_IDX]
+        is_fresh = cons_no_corr_count < n 
+
+        fresh_state_arr = cones_state_arr[is_fresh, :]
+        return fresh_state_arr
         
     
     def _update_state(self, cones_state_arr, new_cone_arr, correspondences):
@@ -167,9 +191,8 @@ class ConeState:
         # now merge correlated and uncorrelated new cones for updated state
         new_state_arr = np.concatenate([corr_state_cones, uncorr_state_cones, uncorr_new_cones], axis=0)
 
-
-        # TODO: filter stale cones
-
+        # filter stale cones
+        new_state_arr = self._filter_state_window(new_state_arr)
         
         return new_state_arr
 
@@ -177,6 +200,7 @@ class ConeState:
     def _state_to_cones_prob(self, cones_state_arr):
 
         # get indices for blue and yellow cones based on predictions
+        # TODO: need better tie-breaking scheme?
         yellow_prob = cones_state_arr[:, 3] / cones_state_arr[:, 4]
         blue_idxs = np.where(yellow_prob < 0.5)
         yellow_idxs = np.where(yellow_prob >= 0.5)
