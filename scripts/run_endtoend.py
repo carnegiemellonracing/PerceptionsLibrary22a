@@ -1,5 +1,3 @@
-from perc22a.predictors.stereo.YOLOv5Predictor import YOLOv5Predictor
-from perc22a.predictors.stereo.YOLOv5Predictor import YOLOv5Predictor
 from perc22a.predictors.lidar.LidarPredictor import LidarPredictor
 
 from perc22a.mergers.BaseMerger import BaseMerger
@@ -27,7 +25,7 @@ def main():
 
     state = ConeState()
 
-    dl = DataLoader("perc22a/data/raw/tt-4-6-lidar")
+    dl = DataLoader("perc22a/data/raw/three-laps-large")
     svm = SVM()
 
     for i in range(00, len(dl)):
@@ -58,7 +56,7 @@ def main():
         # convert cones to SVM midline points
         t.start("\tmidline")
         midline_points = svm.cones_to_midline(cones)
-        t.end("\tmidline")
+        t.start("\tmidline")
         t.end("time")
 
         vis.set_cones(cones)
