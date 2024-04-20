@@ -272,7 +272,18 @@ def color_cones(centers):
 
     cone_output = np.hstack([all_centers[:, :2], color_ids])
 
-    return cone_output, all_centers, colors
+    # convert colored cones to Cones() type
+    colored_cones = Cones()
+    for i in range(cone_output.shape[0]):
+        x, y, c = cone_output[i, :]
+        z = all_centers[i, 2]
+
+        if c == 1:
+            colored_cones.add_yellow_cone(x, y, z)
+        elif c == 0:
+            colored_cones.add_blue_cone(x, y, z)
+
+    return colored_cones
 
 
 
