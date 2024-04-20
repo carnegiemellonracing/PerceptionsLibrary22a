@@ -58,11 +58,20 @@ class LidarPredictor(Predictor):
         return [DataType.HESAI_POINTCLOUD]
 
     def _transform_points(self, points):
+        '''correct coordinate frame for Hesai points to perc22a coord frame'''
         points = points[:, :3]
         points = points[:, [1, 0, 2]]
         points[:, 0] = -points[:, 0]
 
         return points
+    
+    def _centers_to_cones(self, centers):
+        '''converts cone center positions to a cones object with blue cones'''
+        cones = Cones()
+        for i in range(centers.shape[0]):
+            x, y, z = centers[i, :]
+            cones.add_blue_cone(x, y, z)
+        return cones
 
     def predict(self, data) -> Cones:
         if DEBUG_TIME: self.timer.start("predict")
@@ -142,10 +151,7 @@ class LidarPredictor(Predictor):
         if DEBUG_TIME: self.timer.end("\tcluster", msg=f"({str(num_cluster_points)} points)")
 
         # no coloring of cones, default all of them to blue
-        cones = Cones()
-        for i in range(cone_centers.shape[0]):
-            x, y, z = cone_centers[i, :]
-            cones.add_blue_cone(x, y, z)
+        cones = self._centers_to_cones(cone_centers)
 
         self.cones = cones
 
