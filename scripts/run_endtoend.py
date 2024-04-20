@@ -11,6 +11,8 @@ from perc22a.predictors.utils.cones import Cones
 from perc22a.predictors.utils.vis.Vis2D import Vis2D
 from perc22a.utils.Timer import Timer
 
+from perc22a.predictors.utils.ConeState import ConeState
+
 from perc22a.svm.SVM import SVM
 
 import numpy as np
@@ -22,6 +24,8 @@ def main():
 
     # create merger
     merger = BaseMerger(required_pipelines=[], debug=True, zed_dist_limit=20, lidar_dist_limit=20)
+
+    state = ConeState()
 
     dl = DataLoader("perc22a/data/raw/tt-4-6-lidar")
     svm = SVM()
@@ -38,6 +42,8 @@ def main():
 
         # color the cones
         cones = svm.recolor(cones)
+
+        cones = state.update(cones)
 
         # convert cones to SVM midline points
         midline_points = svm.cones_to_midline(cones)
