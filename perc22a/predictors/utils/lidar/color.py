@@ -126,21 +126,25 @@ def plot(centers, colors):
     plt.gca().set_aspect("equal")
 
 
-def color_cones(centers):
+def color_cones(cones: Cones):
     """
     assumes that centers is N x 3
 
     algorithm should check track bounds so that we are not creating
     incorrect predictions
     """
-    
+   
     # TODO: get a better algorithm for selecting the first point!!!
     # TODO: get a better algorithm for selecting the next point!!!
     # TODO: when performing a scan, should we rotate the centers for a better direction?
-    #import pdb; pdb.set_trace()
-    if centers.shape[0] == 0:
-        return np.zeros((0, 3)), np.zeros((0, 3)), np.zeros((0, 3))
 
+    if len(cones) == 0:
+        return Cones()
+    
+    # convert cones to (N x 3) array
+    blue, yellow, _ = cones.to_numpy()
+    centers = np.concatenate([blue, yellow], axis=0) 
+ 
     max_angle_diff = np.pi / 2.5
 
     # NOTE: these center filtering steps should be center filtering stages
@@ -148,8 +152,6 @@ def color_cones(centers):
 
     all_centers = centers
     centers = centers[:, :2]
-
-    # pdb.set_trace()
 
     N = centers.shape[0]
 

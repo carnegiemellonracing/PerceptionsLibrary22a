@@ -261,7 +261,7 @@ class SVM():
         
     def recolor(self, cones: Cones):
         if self.prev_svm_model == None:
-            return cones
+            return color.color_cones(cones)
         
         return color.recolor_cones_with_svm(cones, self.prev_svm_model)
 
