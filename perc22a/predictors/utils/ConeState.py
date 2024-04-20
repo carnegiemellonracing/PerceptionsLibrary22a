@@ -30,6 +30,24 @@ np.set_printoptions(suppress=True, precision=3)
 
 
 class ConeState:
+    '''Maintains a state of the cones that are being produced by various
+    pipelines. In order to maintain additional metadata, the cones are 
+    represented as a numpy array in the `self.cones_state_arr` attribute
+    
+    The structure of a state array for a cone is described as follows.
+    
+    The state array representation is going to be as follows (N x 7) array
+        The 7 columns are defined as follows
+            0. x position of cone
+            1. y position of cone
+            2. z position of cone
+            3. # times cone has been seen as a yellow cone
+            4. # times cone has been received by .update() call
+            5. # times cone has not been seen (after being initially seen)
+            6. # times cone has not been consecutively seen
+    '''
+
+
     # TODO: determine what is the best merging policy?
     #   1. do it like counting and take the color with the highest count
     #   2. do we assume that the existing state is correct and ignore the old state
@@ -48,9 +66,7 @@ class ConeState:
 
         # search correspondences over 1m radius
         self.icp_max_correspondence_dist = max_correspondence_dist
-        self.icp_estimation_method = o3d.pipelines.registration.TransformationEstimationPointToPoint()
-        self.icp_max_iters = max_iters
-        self.icp_criteria = o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=self.icp_max_iters)
+        self.icp_max_iters = max_iters 
 
         # for debugging
         self.timer = Timer()
@@ -85,47 +101,19 @@ class ConeState:
 
         return
 
-    def _cones_to_pc_arr(self, cones: Cones):
+    def _cones_to_state_arr(self, cones: Cones):
+        '''Converts a new cones object to a state array representation'''
         blue, yellow, _ = cones.to_numpy()
 
         b0, b1 = np.zeros((blue.shape[0], 1)), np.ones((blue.shape[0], 1))
         y1 = np.ones((yellow.shape[0], 1))
 
-        # x, y, z, yellow-count, total-count
+        # x, y, z, yellow-count, seen-count, missed-count, consecutively-missed-count
         blue = np.concatenate([blue, b0, b1], axis=1)
         yellow = np.concatenate([yellow, y1, y1], axis=1)
 
         return np.concatenate([blue, yellow], axis=0)
-    
-    def _pc_arr_to_pc(self, pc_arr):
-        pcd = o3d.geometry.PointCloud()
-        pcd.points = o3d.utility.Vector3dVector(pc_arr[:, :3])
-        return pcd
-    
-    def _icp_correspondence_o3d(self, prev_cone_pc_arr, curr_cone_pc_arr):
-        # use ICP to align previous cone with target current cones
-
-        # convert to open3d PointCloud objects
-        prev_pcd = self._pc_arr_to_pc(prev_cone_pc_arr)
-        curr_pcd = self._pc_arr_to_pc(curr_cone_pc_arr)
-
-        # perform icp
-        # TODO: using gps to inform init transformation would be good
-        # might make it faster, but already lwk kinda fast
-
-        self.timer.start("icp")
-        reg_p2p = o3d.pipelines.registration.registration_icp(
-            prev_pcd, curr_pcd,
-            self.icp_max_correspondence_dist,
-            estimation_method=self.icp_estimation_method,
-            criteria=self.icp_criteria
-        )
-        correspondences = np.asarray(reg_p2p.correspondence_set)
-        self.timer.end("icp")
-
-        # self._debug_correspondences(prev_cone_pc_arr, curr_cone_pc_arr, correspondences)
-        return correspondences
-    
+       
     def _icp_correspondence_np(self, prev_cone_pc_arr, curr_cone_pc_arr):
         '''use own icp implementation that is singled threaded and pure NumPy'''
         
@@ -200,7 +188,7 @@ class ConeState:
 
         if self.cones_state_arr is None or self.cones_state_arr.shape[0] <= 1:
             self.prev_cones = cones
-            self.cones_state_arr = self._cones_to_pc_arr(cones)
+            self.cones_state_arr = self._cones_to_state_arr(cones)
             return cones
         
         # save input cones for next iteration's prev_cones 
@@ -208,7 +196,7 @@ class ConeState:
         input_cones = cones.copy()
 
         # convert cones into a point cloud of cones
-        new_cone_pc_arr = self._cones_to_pc_arr(new_cones)
+        new_cone_pc_arr = self._cones_to_state_arr(new_cones)
 
         # perform icp to get correspondences
         corr = self._icp_correspondence_np(self.cones_state_arr, new_cone_pc_arr)  
