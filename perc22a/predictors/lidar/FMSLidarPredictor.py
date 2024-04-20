@@ -6,9 +6,6 @@ that is solely dependent on raw LiDAR point clouds.
 
 import cProfile
 
-import numpy as np
-np.set_printoptions(threshold=np.inf)
-
 # interface
 from perc22a.predictors.interface.PredictorInterface import Predictor
 

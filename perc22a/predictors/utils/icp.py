@@ -124,6 +124,9 @@ def icp(A, B, init_pose=None, max_iterations=20, tolerance=0.001, max_corr_dist=
         # update the current source
         src = np.dot(T, src)
 
+        if np.any(np.isnan(src)):
+            import pdb; pdb.set_trace()
+
         # check error
         mean_error = np.mean(distances)
         if np.abs(prev_error - mean_error) < tolerance:
