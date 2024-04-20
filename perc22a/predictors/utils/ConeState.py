@@ -167,20 +167,15 @@ class ConeState:
         return Cones.from_numpy(blue_cones_arr, yellow_cones_arr, orange_cones_arr)
     
 
-    def update(self, cones: Cones):
-        if len(cones) == 0:
+    def update(self, new_cones: Cones):
+        if len(new_cones) == 0:
             # TODO: is this the best behavior, should use prior state if possible?
-            return cones
+            return new_cones
 
         if self.cones_state_arr is None or self.cones_state_arr.shape[0] <= 1:
-            self.prev_cones = cones
-            self.cones_state_arr = self._cones_to_state_arr(cones)
-            return cones
+            self.cones_state_arr = self._cones_to_state_arr(new_cones)
+            return new_cones
         
-        # save input cones for next iteration's prev_cones 
-        new_cones = cones
-        input_cones = cones.copy()
-
         # convert cones into a point cloud of cones
         new_cone_pc_arr = self._cones_to_state_arr(new_cones)
 
@@ -194,10 +189,9 @@ class ConeState:
             # return current cones without integrating into state
             # TODO: must determine if this is the appropriate behavior
             # typically occurs when many cones disappear or no cones available
-            return cones
+            return new_cones
 
         # create some new cones and update prior cone state
-        self.prev_cones = input_cones
         self.cones_state_arr = self._update_state_prob(
             self.cones_state_arr,
             new_cone_pc_arr,
