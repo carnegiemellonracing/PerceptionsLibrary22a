@@ -283,7 +283,7 @@ def GraceAndConrad (points, points_ground, alpha, num_bins, height_threshold):
     #import pdb; pdb.set_trace()
     #print(gracebrace)
     gracebrace = np.array(gracebrace)
-    return gracebrace
+    return gracebrace.reshape((-1, 3))
 
 def section_pointcloud (pointscloud, boxdim_x, boxdim_y):
     xmin = np.min(pointscloud[:, 0])
