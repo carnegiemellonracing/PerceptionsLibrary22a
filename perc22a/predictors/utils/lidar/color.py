@@ -305,7 +305,7 @@ def recolor_cones_with_svm(cones: Cones, svm_model):
     centers = centers[centers[:, 1] >= 0]
 
     # get the seed positions from the svm model
-    seed_cones, remaining_centers = seed_cones_svm(centers, svm_model, max_seed_dist=12.5)
+    seed_cones, remaining_centers = seed_cones_svm(centers, svm_model, max_seed_dist=8.5)
 
     all_centers = remaining_centers
     centers = remaining_centers[:, :2]
