@@ -64,6 +64,12 @@ class ConeState:
     def __init__(self, max_correspondence_dist=1.25, max_iters=30):
         self.cones_state_arr = None
 
+        # indices to represent the cone array
+        self.YELLOW_COUNT_IDX = 3
+        self.SEEN_COUNT_IDX = 4
+        self.NO_CORR_COUNT_IDX = 5
+        self.CONSECUTIVE_NO_CORR_COUNT_IDX = 6
+
         # search correspondences over 1m radius
         self.icp_max_correspondence_dist = max_correspondence_dist
         self.icp_max_iters = max_iters 
@@ -78,11 +84,11 @@ class ConeState:
         blue, yellow, _ = cones.to_numpy()
 
         b0, b1 = np.zeros((blue.shape[0], 1)), np.ones((blue.shape[0], 1))
-        y1 = np.ones((yellow.shape[0], 1))
+        y0, y1 = np.zeros((yellow.shape[0], 1)), np.ones((yellow.shape[0], 1))
 
         # x, y, z, yellow-count, seen-count, missed-count, consecutively-missed-count
-        blue = np.concatenate([blue, b0, b1], axis=1)
-        yellow = np.concatenate([yellow, y1, y1], axis=1)
+        blue = np.concatenate([blue, b0, b1, b0, b0], axis=1)
+        yellow = np.concatenate([yellow, y1, y1, y0, y0], axis=1)
 
         return np.concatenate([blue, yellow], axis=0)
        
