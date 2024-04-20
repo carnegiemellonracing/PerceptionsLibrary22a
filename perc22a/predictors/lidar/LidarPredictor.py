@@ -136,25 +136,16 @@ class LidarPredictor(Predictor):
             height_threshold=MAX_CLUSTER_HEIGHT_THRESHOLD,
         )
 
+        # TODO: is this correct?
+        cone_centers = cluster.correct_clusters(cone_centers)
+
         if DEBUG_TIME: self.timer.end("\tcluster", msg=f"({str(num_cluster_points)} points)")
-        if DEBUG_TIME: self.timer.start("\tcoloring")
 
-        # color cones and correct them
-        cone_output, cone_centers, cone_colors = color.color_cones(cone_centers)
-        cone_output = cluster.correct_clusters(cone_output)
-        self.cone_output_arr = cone_output
-        self.cone_colors = cone_colors
-
-        # create a Cones object to return
+        # no coloring of cones, default all of them to blue
         cones = Cones()
-        for i in range(cone_output.shape[0]):
-            x, y, c = cone_output[i, :]
-            z = cone_centers[i, 2]
-            if c == 1:
-                cones.add_yellow_cone(x, y, z)
-            elif c == 0:
-                cones.add_blue_cone(x, y, z)
-        if DEBUG_TIME: self.timer.end("\tcoloring")
+        for i in range(cone_centers.shape[0]):
+            x, y, z = cone_centers[i, :]
+            cones.add_blue_cone(x, y, z)
 
         self.cones = cones
 
