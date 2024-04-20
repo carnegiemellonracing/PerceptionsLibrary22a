@@ -152,7 +152,7 @@ class ConeState:
         return Cones.from_numpy(blue_cones_arr, yellow_cones_arr, orange_cones_arr)
     
 
-    def recolor(self, cones: Cones):
+    def update(self, cones: Cones):
         if self.cones_state_arr is None:
             self.prev_cones = cones
             self.cones_state_arr = self._cones_to_pc_arr(cones)
@@ -180,3 +180,6 @@ class ConeState:
         cones = self._state_to_cones_prob(self.cones_state_arr)
 
         return cones
+    
+    def get_svm_cones(self):
+        return None
