@@ -19,7 +19,7 @@ in the existing state are added as a new cone to the state.
 from perc22a.predictors.utils.cones import Cones
 from perc22a.utils.Timer import Timer
 
-from perc22a.predictors.utils.icp import icp 
+import perc22a.predictors.utils.icp as icp
 
 # general imports
 import numpy as np
@@ -73,34 +73,6 @@ class ConeState:
 
         pass
 
-    def _debug_correspondences(self, src_pos, target_pos, correspondences):
-
-        # get positions without correspondences
-        src_uncorr_mask = np.ones(src_pos.shape[0], dtype=bool)
-        src_uncorr_mask[correspondences[:, 0]] = False
-        target_uncorr_mask = np.ones(target_pos.shape[0], dtype=bool)
-        target_uncorr_mask[correspondences[:, 1]] = False
-
-        # plot the correspondences in colorful colors
-        for i in range(len(correspondences)):
-            src_idx, target_idx = correspondences[i,:]
-
-            points = np.array([src_pos[src_idx], target_pos[target_idx]])
-            plt.scatter(points[:, 0], points[:, 1])
-
-        # plot points without correspondences in black
-        for i in range(src_uncorr_mask.shape[0]):
-            if src_uncorr_mask[i]:
-                plt.scatter([src_pos[i,0]], [src_pos[i,1]], c="black")
-        
-        for i in range(target_uncorr_mask.shape[0]):
-            if target_uncorr_mask[i]:
-                plt.scatter([target_pos[i,0]], [target_pos[i,1]], c="black")
-
-        plt.show()
-
-        return
-
     def _cones_to_state_arr(self, cones: Cones):
         '''Converts a new cones object to a state array representation'''
         blue, yellow, _ = cones.to_numpy()
@@ -123,7 +95,7 @@ class ConeState:
 
         # perform icp
         # self.timer.start("icp")
-        corr, T, corr_dists, iters = icp(
+        corr, T, corr_dists, iters = icp.icp(
             src_points, dest_points,
             init_pose=None,
             max_iterations=self.icp_max_iters,
@@ -131,7 +103,7 @@ class ConeState:
         )
         # self.timer.end("icp")
 
-        # self._debug_correspondences(prev_cone_pc_arr, curr_cone_pc_arr, corr)
+        # icp.debug_correspondences(prev_cone_pc_arr, curr_cone_pc_arr, corr)
         return corr 
         
     
