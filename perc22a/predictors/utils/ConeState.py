@@ -86,25 +86,39 @@ class ConeState:
 
         return np.concatenate([blue, yellow], axis=0)
        
-    def _icp_correspondence_np(self, prev_cone_pc_arr, curr_cone_pc_arr):
-        '''use own icp implementation that is singled threaded and pure NumPy'''
+    def _icp_transform_and_corr(self, src_points, dest_points):
+        '''use own icp implementation that is singled threaded and pure NumPy
+
+        This function uses ICP to determine the transformation between two
+        sets of cones from their state arrays and also determines the 
+        correspondences between the two
+
+        Arguments:
+            - prev_cone_state_arr: state array of cones from prior timesteps
+                these cones have positions w.r.t. car at prior timestep
+            - curr_cone_state_arr: state array of cones from current timestep
         
-        # get source and target points (only concerned about x, y dimensions)
-        src_points = prev_cone_pc_arr[:, :2]
-        dest_points = curr_cone_pc_arr[:, :2]
+        Returns:
+            - transformed_prev_state: prior state of cones but with x and y
+                positions to be updated w.r.t. car at current timestep using ICP
+            - corr: (K x 2) integer nparray of indices representing
+                corresponences between prev and curr cone state arrays
+                note: (K <= min(# num prev cones, # num curr cones))
+        ''' 
 
         # perform icp
-        # self.timer.start("icp")
-        corr, T, corr_dists, iters = icp.icp(
+        corr, T, corr_dists, iters, transformed_src = icp.icp(
             src_points, dest_points,
             init_pose=None,
             max_iterations=self.icp_max_iters,
             max_corr_dist=self.icp_max_correspondence_dist
         )
-        # self.timer.end("icp")
 
-        # icp.debug_correspondences(prev_cone_pc_arr, curr_cone_pc_arr, corr)
-        return corr 
+        # icp.debug_correspondences(src_points, dest_points, corr)
+        
+        # update the old positions of the cones using the transformation
+        # useful for updating position of uncorrelated cones
+        return transformed_src, corr
         
     
     def _update_state_prob(self, cones_state_arr, new_cone_arr, correspondences):
@@ -170,8 +184,11 @@ class ConeState:
         # convert cones into a point cloud of cones
         new_cone_pc_arr = self._cones_to_state_arr(new_cones)
 
-        # perform icp to get correspondences
-        corr = self._icp_correspondence_np(self.cones_state_arr, new_cone_pc_arr)  
+        # use icp to get correspondences and set cone state w.r.t curr car pos
+        self.cones_state_arr[:, :2], corr = self._icp_transform_and_corr(
+            self.cones_state_arr[:, :2], 
+            new_cone_pc_arr[:, :2]
+        )  
         if corr is None:
             # if unable to find correspondences
             # return current cones without integrating into state
