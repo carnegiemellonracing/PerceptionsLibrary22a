@@ -15,9 +15,11 @@ set of cones are discarded, and cones that haven't found an associated cone
 in the existing state are added as a new cone to the state.
 '''
 
-# perc22 imports
+# perc22a imports
 from perc22a.predictors.utils.cones import Cones
 from perc22a.utils.Timer import Timer
+
+from perc22a.predictors.utils.icp import icp 
 
 # general imports
 import numpy as np
@@ -55,15 +57,31 @@ class ConeState:
 
     def _debug_correspondences(self, src_pos, target_pos, correspondences):
 
+        # get positions without correspondences
+        src_uncorr_mask = np.ones(src_pos.shape[0], dtype=bool)
+        src_uncorr_mask[correspondences[:, 0]] = False
+        target_uncorr_mask = np.ones(target_pos.shape[0], dtype=bool)
+        target_uncorr_mask[correspondences[:, 1]] = False
+
+        # plot the correspondences in colorful colors
         for i in range(len(correspondences)):
             src_idx, target_idx = correspondences[i,:]
 
             points = np.array([src_pos[src_idx], target_pos[target_idx]])
             plt.scatter(points[:, 0], points[:, 1])
 
+        # plot points without correspondences in black
+        for i in range(src_uncorr_mask.shape[0]):
+            if src_uncorr_mask[i]:
+                plt.scatter([src_pos[i,0]], [src_pos[i,1]], c="black")
+        
+        for i in range(target_uncorr_mask.shape[0]):
+            if target_uncorr_mask[i]:
+                plt.scatter([target_pos[i,0]], [target_pos[i,1]], c="black")
+
         plt.show()
 
-        pass
+        return
 
     def _cones_to_pc_arr(self, cones: Cones):
         blue, yellow, _ = cones.to_numpy()
@@ -82,7 +100,7 @@ class ConeState:
         pcd.points = o3d.utility.Vector3dVector(pc_arr[:, :3])
         return pcd
     
-    def _icp_correspondence(self, prev_cone_pc_arr, curr_cone_pc_arr):
+    def _icp_correspondence_o3d(self, prev_cone_pc_arr, curr_cone_pc_arr):
         # use ICP to align previous cone with target current cones
 
         # convert to open3d PointCloud objects
@@ -105,6 +123,27 @@ class ConeState:
 
         # self._debug_correspondences(prev_cone_pc_arr, curr_cone_pc_arr, correspondences)
         return correspondences
+    
+    def _icp_correspondence_np(self, prev_cone_pc_arr, curr_cone_pc_arr):
+        '''use own icp implementation that is singled threaded and pure NumPy'''
+        
+        # get source and target points (only concerned about x, y dimensions)
+        src_points = prev_cone_pc_arr[:, :2]
+        dest_points = curr_cone_pc_arr[:, :2]
+
+        # perform icp
+        self.timer.start("icp")
+        corr, T, corr_dists, iters = icp(
+            src_points, dest_points,
+            init_pose=None,
+            max_iterations=self.icp_max_iters,
+            max_corr_dist=self.icp_max_correspondence_dist
+        )
+        self.timer.end("icp")
+
+        # self._debug_correspondences(prev_cone_pc_arr, curr_cone_pc_arr, corr)
+        return corr 
+        
     
     def _update_state_prob(self, cones_state_arr, new_cone_arr, correspondences):
 
@@ -166,7 +205,7 @@ class ConeState:
         new_cone_pc_arr = self._cones_to_pc_arr(new_cones)
 
         # perform icp to get correspondences
-        corr = self._icp_correspondence(self.cones_state_arr, new_cone_pc_arr)  
+        corr = self._icp_correspondence_np(self.cones_state_arr, new_cone_pc_arr)  
 
         # create some new cones and update prior cone state
         self.prev_cones = input_cones
