@@ -117,15 +117,14 @@ def icp(A, B, init_pose=None, max_iterations=20, tolerance=0.001, max_corr_dist=
     for i in range(max_iterations):
         # find the nearest neighbors between the current source and destination points
         corr, distances = nearest_neighbor_corr(src[:m,:].T, dst[:m,:].T, max_corr_dist)
+        if corr.shape[0] == 0:
+            return None, None, None, None
 
         # compute the transformation between the current source and nearest destination points
         T,_,_ = best_fit_transform(src[:m,corr[:,0]].T, dst[:m,corr[:,1]].T)
 
         # update the current source
         src = np.dot(T, src)
-
-        if np.any(np.isnan(src)):
-            import pdb; pdb.set_trace()
 
         # check error
         mean_error = np.mean(distances)

@@ -43,7 +43,7 @@ class ConeState:
     #   2. if looking at side, then new cones coming in might propogate wrong color
     #   - need uncorrelated cones to at least get colors from corresponded colors
 
-    def __init__(self, max_correspondence_dist=1, max_iters=30):
+    def __init__(self, max_correspondence_dist=1.25, max_iters=30):
         self.cones_state_arr = None
 
         # search correspondences over 1m radius
@@ -198,7 +198,7 @@ class ConeState:
             # TODO: is this the best behavior, should use prior state if possible?
             return cones
 
-        if self.cones_state_arr is None:
+        if self.cones_state_arr is None or self.cones_state_arr.shape[0] <= 1:
             self.prev_cones = cones
             self.cones_state_arr = self._cones_to_pc_arr(cones)
             return cones
@@ -212,6 +212,12 @@ class ConeState:
 
         # perform icp to get correspondences
         corr = self._icp_correspondence_np(self.cones_state_arr, new_cone_pc_arr)  
+        if corr is None:
+            # if unable to find correspondences
+            # return current cones without integrating into state
+            # TODO: must determine if this is the appropriate behavior
+            # typically occurs when many cones disappear or no cones available
+            return cones
 
         # create some new cones and update prior cone state
         self.prev_cones = input_cones
