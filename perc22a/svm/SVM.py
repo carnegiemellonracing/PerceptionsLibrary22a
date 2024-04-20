@@ -279,7 +279,7 @@ class SVM():
 
         model = svm.SVC(kernel='poly', degree=3, C=10, coef0=1.0)
         model.fit(X, y)
-        self.proposed_svm_model = model
+        self.prev_svm_model = model
 
         if DEBUG_SVM:
             self.debug_svm(aug_cones, X, y, model)

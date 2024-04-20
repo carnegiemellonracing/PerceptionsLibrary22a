@@ -80,7 +80,6 @@ def nearest_neighbor_corr(src, dst, max_corr_dist=None):
     if max_corr_dist is not None:
         corr = corr[distances <= max_corr_dist, :]
 
-    print(corr.shape)
     return corr, distances
 
 

@@ -132,14 +132,14 @@ class ConeState:
         dest_points = curr_cone_pc_arr[:, :2]
 
         # perform icp
-        self.timer.start("icp")
+        # self.timer.start("icp")
         corr, T, corr_dists, iters = icp(
             src_points, dest_points,
             init_pose=None,
             max_iterations=self.icp_max_iters,
             max_corr_dist=self.icp_max_correspondence_dist
         )
-        self.timer.end("icp")
+        # self.timer.end("icp")
 
         # self._debug_correspondences(prev_cone_pc_arr, curr_cone_pc_arr, corr)
         return corr 
@@ -216,6 +216,7 @@ class ConeState:
         )
 
         # convert existing state into a Cones object
+        print(np.round(self.cones_state_arr, 3))
         cones = self._state_to_cones_prob(self.cones_state_arr)
 
         return cones
