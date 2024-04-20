@@ -6,9 +6,6 @@ that is solely dependent on raw LiDAR point clouds.
 
 import cProfile
 
-import numpy as np
-np.set_printoptions(threshold=np.inf)
-
 # interface
 from perc22a.predictors.interface.PredictorInterface import Predictor
 
@@ -64,11 +61,20 @@ class LidarPredictor(Predictor):
         return [DataType.HESAI_POINTCLOUD]
 
     def _transform_points(self, points):
+        '''correct coordinate frame for Hesai points to perc22a coord frame'''
         points = points[:, :3]
         points = points[:, [1, 0, 2]]
         points[:, 0] = -points[:, 0]
 
         return points
+    
+    def _centers_to_cones(self, centers):
+        '''converts cone center positions to a cones object with blue cones'''
+        cones = Cones()
+        for i in range(centers.shape[0]):
+            x, y, z = centers[i, :]
+            cones.add_blue_cone(x, y, z)
+        return cones
 
     def recolor(self, curr_cones):
         if self.prev_cones is None or self.prev_cones.quat is None or self.prev_cones.twist is None:
@@ -151,35 +157,13 @@ class LidarPredictor(Predictor):
             height_threshold=MAX_CLUSTER_HEIGHT_THRESHOLD,
         )
 
+        # TODO: is this correct?
+        cone_centers = cluster.correct_clusters(cone_centers)
+
         if DEBUG_TIME: self.timer.end("\tcluster", msg=f"({str(num_cluster_points)} points)")
-        if DEBUG_TIME: self.timer.start("\tcoloring")
 
-        # color cones and correct them
-        cone_output, cone_centers, cone_colors = color.color_cones(cone_centers)
-        cone_output = cluster.correct_clusters(cone_output)
-        self.cone_output_arr = cone_output
-        self.cone_colors = cone_colors
-
-        # create a Cones object to return
-        cones = Cones(quat, twist)
-        for i in range(cone_output.shape[0]):
-            x, y, c = cone_output[i, :]
-            z = cone_centers[i, 2]
-            if c == 1:
-                cones.add_yellow_cone(x, y, z)
-            elif c == 0:
-                cones.add_blue_cone(x, y, z)
-        if DEBUG_TIME: self.timer.end("\tcoloring")
-
-        # recolor using ICP and prior predictions
-        if DEBUG_TIME: self.timer.start("\trecoloring")
-        if USE_ICP_RECOLORING:
-            print("USING ICP")
-            cones = self.colorer.recolor(cones)
-        if DEBUG_TIME: self.timer.end("\trecoloring", msg=f"({len(cones)} cones)")
-        
-        # cones = self.recolor(cones)
-        # self.counter += 1
+        # no coloring of cones, default all of them to blue
+        cones = self._centers_to_cones(cone_centers)
 
         assert(cones is not None)
         self.prev_cones = cones

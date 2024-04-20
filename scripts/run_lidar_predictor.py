@@ -12,7 +12,7 @@ from perc22a.predictors.lidar.LidarPredictor import LidarPredictor
 def main():
     # initialize data loader and lidar predictor
     dl = DataLoader("perc22a/data/raw/tt-4-6-lidar")
-    lp = LidarPredictor(debug=False)
+    lp = LidarPredictor(debug=True)
     timer = Timer()
 
     # Create a profiler object
@@ -29,7 +29,7 @@ def main():
             timer.end("Predict Time Elapsed")
             # profiler.print_stats()
             # print(cones)
-            # lp.display()
+            lp.display()
 
 
     # start = time.time()

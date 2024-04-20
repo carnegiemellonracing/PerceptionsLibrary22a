@@ -12,10 +12,8 @@ respectively.
 '''
 
 from perc22a.predictors.utils.cones import Cones
-# from perc22a.svm.SVM import BLUE_LABEL, YELLOW_LABEL
-
-BLUE_LABEL = 0
-YELLOW_LABEL = 1
+from perc22a.svm.SVM import BLUE_LABEL, YELLOW_LABEL
+from perc22a.predictors.utils.vis.Vis2D import Vis2D
 
 import numpy as np
 import matplotlib.pyplot as plt

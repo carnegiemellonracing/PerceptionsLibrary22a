@@ -126,21 +126,25 @@ def plot(centers, colors):
     plt.gca().set_aspect("equal")
 
 
-def color_cones(centers):
+def color_cones(cones: Cones):
     """
     assumes that centers is N x 3
 
     algorithm should check track bounds so that we are not creating
     incorrect predictions
     """
-    
+   
     # TODO: get a better algorithm for selecting the first point!!!
     # TODO: get a better algorithm for selecting the next point!!!
     # TODO: when performing a scan, should we rotate the centers for a better direction?
-    #import pdb; pdb.set_trace()
-    if centers.shape[0] == 0:
-        return np.zeros((0, 3)), np.zeros((0, 3)), np.zeros((0, 3))
 
+    if len(cones) == 0:
+        return Cones()
+    
+    # convert cones to (N x 3) array
+    blue, yellow, _ = cones.to_numpy()
+    centers = np.concatenate([blue, yellow], axis=0) 
+ 
     max_angle_diff = np.pi / 2.5
 
     # NOTE: these center filtering steps should be center filtering stages
@@ -148,8 +152,6 @@ def color_cones(centers):
 
     all_centers = centers
     centers = centers[:, :2]
-
-    # pdb.set_trace()
 
     N = centers.shape[0]
 
@@ -272,7 +274,18 @@ def color_cones(centers):
 
     cone_output = np.hstack([all_centers[:, :2], color_ids])
 
-    return cone_output, all_centers, colors
+    # convert colored cones to Cones() type
+    colored_cones = Cones()
+    for i in range(cone_output.shape[0]):
+        x, y, c = cone_output[i, :]
+        z = all_centers[i, 2]
+
+        if c == 1:
+            colored_cones.add_yellow_cone(x, y, z)
+        elif c == 0:
+            colored_cones.add_blue_cone(x, y, z)
+
+    return colored_cones
 
 
 
@@ -305,7 +318,7 @@ def recolor_cones_with_svm(cones: Cones, svm_model):
     centers = centers[centers[:, 1] >= 0]
 
     # get the seed positions from the svm model
-    seed_cones, remaining_centers = seed_cones_svm(centers, svm_model, max_seed_dist=12.5)
+    seed_cones, remaining_centers = seed_cones_svm(centers, svm_model, max_seed_dist=8.5)
 
     all_centers = remaining_centers
     centers = remaining_centers[:, :2]
@@ -326,10 +339,33 @@ def recolor_cones_with_svm(cones: Cones, svm_model):
     seed_yellow_point = None if yellow_seed.shape[0] == 0 else np.array([-1, yellow_seed[0,0], yellow_seed[0,1]])
     seed_blue_point = None if blue_seed.shape[0] == 0 else np.array([-1, blue_seed[0,0], blue_seed[0,1]])
 
+    # start propagation from the closest seed
+    if seed_blue_point is None and seed_yellow_point is None:
+        return Cones()
+    elif seed_blue_point is None:
+        seed_closer_point = seed_yellow_point
+        seed_closer_color = "yellow"
+        seed_farther_point = None
+    elif seed_yellow_point is None:
+        seed_closer_point = seed_blue_point
+        seed_closer_color = "blue"
+        seed_farther_point = None
+    elif np.sum(seed_blue_point[1:] ** 2) < np.sum(seed_yellow_point[1:] ** 2):
+        seed_closer_point = seed_blue_point
+        seed_closer_color = "blue"
+        seed_farther_point = seed_yellow_point
+        seed_farther_color = "yellow"
+    else:
+        seed_closer_point = seed_yellow_point
+        seed_closer_color = "yellow"
+        seed_farther_point = seed_blue_point
+        seed_farther_color = "blue"
+
+
     # YELLOW cone path
-    if seed_yellow_point is not None:
+    if seed_closer_point is not None:
         # init path search
-        point_curr = seed_yellow_point
+        point_curr = seed_closer_point
         angle = np.pi / 2
 
         while True:
@@ -343,7 +379,7 @@ def recolor_cones_with_svm(cones: Cones, svm_model):
 
             # update color and state
             cidx = int(point_new[0])
-            colors[cidx] = "yellow"
+            colors[cidx] = seed_closer_color
 
             point_curr = point_new
             angle = angle_new
@@ -352,9 +388,9 @@ def recolor_cones_with_svm(cones: Cones, svm_model):
             centers_remaining = centers_remaining[centers_remaining[:, 0] != cidx]
 
     # BLUE cone path
-    if seed_blue_point is not None:
+    if seed_farther_point is not None:
         # init path search
-        point_curr = seed_blue_point
+        point_curr = seed_farther_point
         angle = np.pi / 2
 
         while True:
@@ -368,7 +404,7 @@ def recolor_cones_with_svm(cones: Cones, svm_model):
 
             # update color and state
             cidx = int(point_new[0])
-            colors[cidx] = "blue"
+            colors[cidx] = seed_farther_color
 
             point_curr = point_new
             angle = angle_new
@@ -382,7 +418,6 @@ def recolor_cones_with_svm(cones: Cones, svm_model):
 
     color_ids = np.array([c2id[c] for c in colors]).reshape((-1, 1))
     colors = np.array([C2RGB[c] for c in colors]) / 255
-
 
     cone_output = np.hstack([all_centers[:, :2], color_ids])
 
