@@ -32,7 +32,6 @@ class SVM():
 
         # recoloring cones
         self.prev_svm_model = None
-        self.vis = Vis2D()
         self.timer = Timer()
 
     def debug_svm(self, cones: Cones, X, y, clf):
@@ -268,10 +267,6 @@ class SVM():
 
     def cones_to_midline(self, cones: Cones):
 
-        if RECOLOR_USING_SVM:
-            print("USING SVM RECOLORING")
-            cones = self.recolor(cones)
-
         blue_cones, yellow_cones, _ = cones.to_numpy()
         if len(blue_cones) == 0 and len(yellow_cones) == 0:
             return []
@@ -340,13 +335,7 @@ class SVM():
         curr_timestep_spline = np.array(list(downsampled))
         # print(downsampled)
 
-        curr_timestep_spline = self.outlier_rejection(curr_timestep_spline)
+        # curr_timestep_spline = self.outlier_rejection(curr_timestep_spline)
         self.prev_spline = curr_timestep_spline
-
-        print("USING SVM VIS")
-        self.vis.set_cones(cones)
-        if len(curr_timestep_spline) > 0:
-            self.vis.set_points(curr_timestep_spline)
-            self.vis.update()
 
         return curr_timestep_spline
