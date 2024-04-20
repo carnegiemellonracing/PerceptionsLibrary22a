@@ -56,7 +56,7 @@ def main():
         # convert cones to SVM midline points
         t.start("\tmidline")
         midline_points = svm.cones_to_midline(cones)
-        t.start("\tmidline")
+        t.end("\tmidline")
         t.end("time")
 
         vis.set_cones(cones)
