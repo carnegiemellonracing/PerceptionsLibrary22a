@@ -127,7 +127,7 @@ class ConeState:
         return transformed_src, corr
         
     
-    def _update_state_prob(self, cones_state_arr, new_cone_arr, correspondences):
+    def _update_state(self, cones_state_arr, new_cone_arr, correspondences):
 
         # NOTE: this is where the primary update policy is implemented
         # and how merging past estimates works with merging current estimates
@@ -144,18 +144,33 @@ class ConeState:
         corr_state_cones = cones_state_arr[state_corr, :]
         corr_new_cones = new_cone_arr[new_corr, :]
 
-        # for each corr new cone, update counts with correlated state cones
-        corr_new_cones[:, 3] += corr_state_cones[:, 3]
-        corr_new_cones[:, 4] += corr_state_cones[:, 4]
+        # for each corr state cone, update it's positions and counts
+        corr_state_cones[:, :3] = corr_new_cones[:, :3]
+        corr_state_cones[:, self.YELLOW_COUNT_IDX] += corr_new_cones[:, self.YELLOW_COUNT_IDX]
+        corr_state_cones[:, self.SEEN_COUNT_IDX] += 1
+        corr_state_cones[:, self.CONSECUTIVE_NO_CORR_COUNT_IDX] = 0
 
-        # 2. add new cones not found in the correspondence set
+        # 2. update metadata old cones not found in correspondence set
+        state_uncorr_mask = np.ones(cones_state_arr.shape[0], dtype=bool)
+        state_uncorr_mask[state_corr] = False
+
+        uncorr_state_cones = cones_state_arr[state_uncorr_mask, :]
+        uncorr_state_cones[:, self.NO_CORR_COUNT_IDX] += 1
+        uncorr_state_cones[:, self.CONSECUTIVE_NO_CORR_COUNT_IDX] += 1
+
+        # 3. add new cones not found in the correspondence set
         new_uncorr_mask = np.ones(new_cone_arr.shape[0], dtype=bool)
         new_uncorr_mask[new_corr] = False
 
         uncorr_new_cones = new_cone_arr[new_uncorr_mask, :]
 
         # now merge correlated and uncorrelated new cones for updated state
-        new_state_arr = np.concatenate([corr_new_cones, uncorr_new_cones], axis=0)
+        new_state_arr = np.concatenate([corr_state_cones, uncorr_state_cones, uncorr_new_cones], axis=0)
+
+
+        # TODO: filter stale cones
+
+        
         return new_state_arr
 
 
@@ -198,7 +213,7 @@ class ConeState:
             return new_cones
 
         # create some new cones and update prior cone state
-        self.cones_state_arr = self._update_state_prob(
+        self.cones_state_arr = self._update_state(
             self.cones_state_arr,
             new_cone_pc_arr,
             corr
