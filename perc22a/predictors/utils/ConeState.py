@@ -17,6 +17,8 @@ in the existing state are added as a new cone to the state.
 
 # perc22a imports
 from perc22a.predictors.utils.cones import Cones
+from perc22a.utils.globe.MotionInfo import MotionInfo
+
 from perc22a.utils.Timer import Timer
 
 import perc22a.predictors.utils.icp as icp
@@ -61,8 +63,10 @@ class ConeState:
     #   2. if looking at side, then new cones coming in might propogate wrong color
     #   - need uncorrelated cones to at least get colors from corresponded colors
 
-    def __init__(self, max_correspondence_dist=1.25, max_iters=30):
+    def __init__(self):
+        # current state of cones with attached motion information
         self.cones_state_arr = None
+        self.state_mi = None
 
         # indices to represent the cone array
         self.YELLOW_COUNT_IDX = 3
@@ -71,8 +75,8 @@ class ConeState:
         self.CONSECUTIVE_NO_CORR_COUNT_IDX = 6
 
         # search correspondences over 1m radius
-        self.icp_max_correspondence_dist = max_correspondence_dist
-        self.icp_max_iters = max_iters 
+        self.icp_max_correspondence_dist = 1.25
+        self.icp_max_iters = 30
 
         # for debugging
         self.timer = Timer()
@@ -92,17 +96,21 @@ class ConeState:
 
         return np.concatenate([blue, yellow], axis=0)
        
-    def _icp_transform_and_corr(self, src_points, dest_points):
+    def _transform_and_corr(self, src_points, src_mi, dest_points, dest_mi):
         '''use own icp implementation that is singled threaded and pure NumPy
 
-        This function uses ICP to determine the transformation between two
-        sets of cones from their state arrays and also determines the 
-        correspondences between the two
+        This function will initially use GPS pose information stored in
+        MotionInfo objects to create an initial transformation to go from
+        source to destination points.
+
+        Then, ICP is used to fine-tune transformation between two
+        sets of points and determine the correspondences between them.
 
         Arguments:
-            - prev_cone_state_arr: state array of cones from prior timesteps
-                these cones have positions w.r.t. car at prior timestep
-            - curr_cone_state_arr: state array of cones from current timestep
+            - src_points: point array to transform to destination
+            - src_mi: MotionInfo associated with src_points
+            - dest_points: state array of cones from current timestep
+            - dest_mi: MotionInfo associated with destination points
         
         Returns:
             - transformed_prev_state: prior state of cones but with x and y
@@ -111,6 +119,13 @@ class ConeState:
                 corresponences between prev and curr cone state arrays
                 note: (K <= min(# num prev cones, # num curr cones))
         ''' 
+        assert(src_points.ndim == 2 and src_points.shape[1] == 2)
+        assert(dest_points.ndim == 2 and dest_points.shape[1] == 2)
+
+        # first transform src to destination using GPS MotionInfo as an guess
+        n_src_points = src_points.shape[0]
+        src_points_3d = np.concatenate([src_points, np.zeros((n_src_points, 1))], axis=1)
+        src_points = src_mi.model_motion_to(src_points_3d, dest_mi)[:, :2]
 
         # perform icp
         corr, T, corr_dists, iters, transformed_src = icp.icp(
@@ -198,7 +213,7 @@ class ConeState:
         return new_state_arr
 
 
-    def _state_to_cones_prob(self, cones_state_arr):
+    def _state_to_svm_cones(self, cones_state_arr):
 
         # get indices for blue and yellow cones based on predictions
         # TODO: need better tie-breaking scheme?
@@ -213,22 +228,25 @@ class ConeState:
         return Cones.from_numpy(blue_cones_arr, yellow_cones_arr, orange_cones_arr)
     
 
-    def update(self, new_cones: Cones):
+    def update(self, new_cones: Cones, new_mi: MotionInfo):
         if len(new_cones) == 0:
             # TODO: is this the best behavior, should use prior state if possible?
             return new_cones
 
         if self.cones_state_arr is None or self.cones_state_arr.shape[0] <= 1:
             self.cones_state_arr = self._cones_to_state_arr(new_cones)
+            self.state_mi = new_mi
             return new_cones
         
         # convert cones into a point cloud of cones
         new_cone_pc_arr = self._cones_to_state_arr(new_cones)
 
         # use icp to get correspondences and set cone state w.r.t curr car pos
-        self.cones_state_arr[:, :2], corr = self._icp_transform_and_corr(
-            self.cones_state_arr[:, :2], 
-            new_cone_pc_arr[:, :2]
+        self.cones_state_arr[:, :2], corr = self._transform_and_corr(
+            self.cones_state_arr[:, :2],
+            self.state_mi, 
+            new_cone_pc_arr[:, :2],
+            new_mi
         )  
         if corr is None:
             # if unable to find correspondences
@@ -237,16 +255,17 @@ class ConeState:
             # typically occurs when many cones disappear or no cones available
             return new_cones
 
-        # create some new cones and update prior cone state
+        # update the overall cone state and MotionInfo associated with it
         self.cones_state_arr = self._update_state(
             self.cones_state_arr,
             new_cone_pc_arr,
             corr
         )
+        self.state_mi = new_mi
 
         # convert existing state into a Cones object
         # print(np.round(self.cones_state_arr, 3))
-        cones = self._state_to_cones_prob(self.cones_state_arr)
+        cones = self._state_to_svm_cones(self.cones_state_arr)
 
         return cones
     
