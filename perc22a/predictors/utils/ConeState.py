@@ -121,6 +121,7 @@ class ConeState:
         )
 
         # icp.debug_correspondences(src_points, dest_points, corr)
+        # icp.debug_correspondences(transformed_src, dest_points, corr)
         
         # update the old positions of the cones using the transformation
         # useful for updating position of uncorrelated cones

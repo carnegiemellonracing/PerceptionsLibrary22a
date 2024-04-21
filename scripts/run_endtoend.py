@@ -25,10 +25,10 @@ def main():
 
     state = ConeState()
 
-    dl = DataLoader("perc22a/data/raw/three-laps-large")
+    dl = DataLoader("perc22a/data/raw/tt-4-18-fourth")
     svm = SVM()
 
-    for i in range(00, len(dl)):
+    for i in range(71, len(dl)):
 
         t.start("time")
         t.start("\tlidar")
