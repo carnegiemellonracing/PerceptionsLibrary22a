@@ -168,4 +168,5 @@ def icp(A, B, init_pose=None, max_iterations=20, tolerance=0.001, max_corr_dist=
     T,_,_ = best_fit_transform(A, transformed_A)
 
     # TODO: maybe return the transformed positions from source to target
+    # TODO: ensure that the transformed_A are not NaN!!!
     return corr, T, distances, i, transformed_A
