@@ -418,6 +418,10 @@ def predict_cones_z(
                         C predicted cone centers from the point cloud
                         represented by points
     """
+
+    if points.shape[0] == 0:
+        return np.zeros((0, 3))
+
     # only care about (X, Y, Z) coordinates of points
     # Squish all the points by a value based on the zmax and the scalar (endscal)
     # We do this so our clustering pretty much ignores the z-values and thereby
