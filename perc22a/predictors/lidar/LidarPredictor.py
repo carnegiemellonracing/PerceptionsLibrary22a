@@ -68,9 +68,9 @@ class LidarPredictor(Predictor):
 
         return points
     
-    def _centers_to_cones(self, centers):
+    def _centers_to_cones(self, centers, quat, twist):
         '''converts cone center positions to a cones object with blue cones'''
-        cones = Cones()
+        cones = Cones(quat=quat, twist=twist)
         for i in range(centers.shape[0]):
             x, y, z = centers[i, :]
             cones.add_blue_cone(x, y, z)
@@ -82,7 +82,7 @@ class LidarPredictor(Predictor):
             return curr_cones
         
         prev_cones_in_curr = self.prev_cones.transform_to_future(curr_cones) # Cones()
-        curr_cones = curr_cones.merge_cones(prev_cones_in_curr)
+        curr_cones.add_cones(prev_cones_in_curr)
         return curr_cones
     
     def predict(self, data, quat, twist) -> Cones:
@@ -163,7 +163,8 @@ class LidarPredictor(Predictor):
         if DEBUG_TIME: self.timer.end("\tcluster", msg=f"({str(num_cluster_points)} points)")
 
         # no coloring of cones, default all of them to blue
-        cones = self._centers_to_cones(cone_centers)
+        cones = self._centers_to_cones(cone_centers, quat, twist)
+        cones = self.recolor(cones)
 
         assert(cones is not None)
         self.prev_cones = cones
