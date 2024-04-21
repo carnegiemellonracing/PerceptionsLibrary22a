@@ -263,7 +263,7 @@ class SVM():
         if self.prev_svm_model == None:
             return color.color_cones(cones)
         
-        return color.recolor_cones_with_svm(cones, self.prev_svm_model)
+        return color.recolor_cones_with_svm(cones, self.prev_svm_model, self.prev_spline)
 
     def cones_to_midline(self, cones: Cones):
 

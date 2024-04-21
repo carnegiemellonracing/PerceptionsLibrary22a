@@ -1,5 +1,6 @@
 
 from enum import Enum
+import math
 import numpy as np
 import cv2
 
@@ -160,6 +161,12 @@ class Vis2D:
         self.vis.update_geometry(self.points_vis)
 
         self.points = None
+
+    def draw_vector(self, point, angle):
+        # self.image[point[0],point[1]] = [0, 0, 255]
+        self.image = cv2.arrowedLine(self.image, point.astype(int), (int(point[0]+math.cos(angle)), int(point[1]+math.sin(angle))), [0,0,255])
+        cv2.imshow(self.name, self.image)
+        pass
 
     def update(self):
         self._setup_image()

@@ -1,6 +1,8 @@
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 import perc22a.predictors.utils.lidar.visualization as vis
+from perc22a.predictors.utils.vis.Vis2D import Vis2D
 from perc22a.predictors.utils.lidar.seed import seed_cones_svm, debug_seed
 
 from perc22a.utils.Timer import Timer
@@ -287,9 +289,33 @@ def color_cones(cones: Cones):
 
     return colored_cones
 
+def get_angle_from_spline(spline):
+    # print(spline)
+    x_sum, y_sum = np.sum(spline, axis=0)
+    x_avg = x_sum/len(spline)
+    y_avg = y_sum/len(spline)
+    # print(x_avg)
+    # print(y_avg)
+
+    normalized_x = spline[:, 0] - x_avg
+    normalized_y = spline[:, 1] - y_avg
+    normalized_spline = np.dstack((normalized_x, normalized_y))[0]
+    print(normalized_x)
+    print(normalized_y)
+    print(normalized_spline)
+    vis = Vis2D()
+
+    avg_angle = 0
+    for i in range(0, len(normalized_spline)):
+        curr_x, curr_y = normalized_spline[i]
+        avg_angle += math.atan(curr_y/curr_x)
+        vis.draw_vector(normalized_spline[i], math.atan(curr_y/curr_x))
+    
+    return avg_angle/len(normalized_spline)
 
 
-def recolor_cones_with_svm(cones: Cones, svm_model):
+
+def recolor_cones_with_svm(cones: Cones, svm_model, spline):
     """
     assumes that centers is N x 3
 
@@ -312,7 +338,7 @@ def recolor_cones_with_svm(cones: Cones, svm_model):
     blue, yellow, _ = cones.to_numpy()
     centers = np.concatenate([blue, yellow], axis=0) 
 
-    max_angle_diff = np.pi / 2.5
+    max_angle_diff = get_angle_from_spline(spline)
 
     # NOTE: these center filtering steps should be center filtering stages
     centers = centers[centers[:, 1] >= 0]
