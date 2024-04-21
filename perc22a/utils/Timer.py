@@ -7,7 +7,11 @@ class Timer:
     def start(self, timer_name):
         self.data[timer_name] = [time.time(), 0]
 
-    def end(self, timer_name, msg=""):
+    def end(self, timer_name, msg="", ret=False):
         self.data[timer_name][1] = time.time()
-        print(f"{timer_name}: {(self.data[timer_name][1] - self.data[timer_name][0]) * 1000:.2f} ms {msg}")
+
+        if not ret:
+            print(f"{timer_name}: {(self.data[timer_name][1] - self.data[timer_name][0]) * 1000:.2f} ms {msg}")
+        else:
+            return round((self.data[timer_name][1] - self.data[timer_name][0]) * 1000, 3)
         
