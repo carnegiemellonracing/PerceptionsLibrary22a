@@ -452,7 +452,7 @@ def predict_cones_z(
         x_dist=x_dist,
     )
 
-    return centroids
+    return centroids.reshape((-1, 3))
 
 
 def correct_clusters(points):
