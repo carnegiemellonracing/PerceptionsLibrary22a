@@ -226,7 +226,7 @@ class ConeState:
         new_cone_pc_arr = self._cones_to_state_arr(new_cones)
 
         # use icp to get correspondences and set cone state w.r.t curr car pos
-        self.cones_state_arr[:, :2], corr = self._icp_transform_and_corr(
+        updated_state_pos, corr = self._icp_transform_and_corr(
             self.cones_state_arr[:, :2], 
             new_cone_pc_arr[:, :2]
         )  
@@ -236,6 +236,8 @@ class ConeState:
             # TODO: must determine if this is the appropriate behavior
             # typically occurs when many cones disappear or no cones available
             return new_cones
+        
+        self.cones_state_arr[:, :2] = updated_state_pos
 
         # create some new cones and update prior cone state
         self.cones_state_arr = self._update_state(
