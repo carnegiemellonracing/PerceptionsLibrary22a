@@ -19,6 +19,7 @@ from perc22a.predictors.utils.transform.transform import PoseTransformations
 
 # visualization and core lidar algorithm functions
 from perc22a.predictors.utils.vis.Vis3D import Vis3D
+from perc22a.predictors.utils.vis.Vis2D import Vis2D
 import perc22a.predictors.utils.lidar.visualization as vis
 import perc22a.predictors.utils.lidar.filter as filter
 import perc22a.predictors.utils.lidar.cluster as cluster
@@ -46,6 +47,8 @@ class LidarPredictor(Predictor):
 
         self.prev_cones = None
         self.counter = 0
+
+        self.vis_prev = Vis2D(name="lidar+prev")
 
         self.debug = debug
         if self.debug:
@@ -164,13 +167,18 @@ class LidarPredictor(Predictor):
 
         # no coloring of cones, default all of them to blue
         cones = self._centers_to_cones(cone_centers, quat, twist)
-        cones = self.recolor(cones)
+        result = self.recolor(cones.copy())
+
+        self.vis_prev.set_cones(result)
+        self.vis_prev.update()
 
         assert(cones is not None)
         self.prev_cones = cones
+        self.prev_cones.yellow_cones = self.prev_cones.blue_cones
+        self.prev_cones.blue_cones = []
 
         if DEBUG_TIME: self.timer.end("predict", msg=f"({self.num_points} points)")
-        return cones
+        return result
 
 
     def display(self):

@@ -295,4 +295,7 @@ class Cones:
     
     def copy(self):
         '''returns deep copy of current cone object as '''
-        return Cones.from_numpy(*self.to_numpy())
+        result = Cones.from_numpy(*self.to_numpy())
+        result.quat = self.quat
+        result.twist = self.twist
+        return result
