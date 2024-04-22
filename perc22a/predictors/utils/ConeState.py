@@ -243,8 +243,10 @@ class ConeState:
 
         # use icp to get correspondences and set cone state w.r.t curr car pos
         updated_state_pos, corr = self._transform_and_corr(
-            self.cones_state_arr[:, :2], 
-            new_cone_pc_arr[:, :2]
+            self.cones_state_arr[:, :2],
+            self.state_mi, 
+            new_cone_pc_arr[:, :2],
+            new_mi
         )  
         if corr is None:
             # if unable to find correspondences
