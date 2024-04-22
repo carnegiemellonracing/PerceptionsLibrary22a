@@ -5,6 +5,8 @@ import cv2
 
 from perc22a.predictors.utils.cones import Cones
 
+DARK_THEME = True
+
 
 # conversion from meters to pixels
 PIXELS_PER_M = 35
@@ -66,8 +68,8 @@ class Vis2D:
         vert_bars = np.concatenate([first_vert_bars, second_vert_bars])
 
         # draw the horizontal meter-lines with a black bar
-        self.image[horiz_bars, :, :] = 0
-        self.image[:, vert_bars, :] = 0
+        self.image[horiz_bars, :, :] = 75 if DARK_THEME else 0
+        self.image[:, vert_bars, :] = 75 if DARK_THEME else 0
 
         return
 
@@ -112,7 +114,7 @@ class Vis2D:
         return
     
     def _setup_image(self):
-        self.image = np.ones((DIMS[0], DIMS[1], 3)) * 255
+        self.image = np.ones((DIMS[0], DIMS[1], 3)) * (60 if DARK_THEME else 255)
         self._draw_grid()
         self._draw_axes()
         return
