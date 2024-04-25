@@ -156,7 +156,7 @@ class ConeState:
         fresh_state_arr = cones_state_arr[is_fresh, :]
         return fresh_state_arr
     
-    def _filter_state_window(self, cones_state_arr, n=5):
+    def _filter_state_window(self, cones_state_arr, n=1):
         '''Filters out stale cones based on criteria that cone has not bee
         consecutively seen for n timesteps
         '''
