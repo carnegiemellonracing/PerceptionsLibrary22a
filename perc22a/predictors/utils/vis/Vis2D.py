@@ -9,7 +9,7 @@ DARK_THEME = True
 
 
 # conversion from meters to pixels
-PIXELS_PER_M = 35
+PIXELS_PER_M = 25
 
 # image space
 DIMS = (np.array([720, 540]) * 1.5).astype(np.int64)
