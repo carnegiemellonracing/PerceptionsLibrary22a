@@ -19,7 +19,7 @@ def main():
     # create merger
     merger = BaseMerger(required_pipelines=[], debug=True, zed_dist_limit=10, lidar_dist_limit=10)
 
-    dl = DataLoader("perc22a/data/raw/three-laps-large")
+    dl = DataLoader("perc22a/data/raw/tt-4-18-fourth")
 
     for i in range(40, len(dl)):
         cones_zed = sp1.predict(dl[i])
