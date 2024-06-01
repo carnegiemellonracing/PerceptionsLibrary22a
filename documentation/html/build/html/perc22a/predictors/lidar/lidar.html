@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>LiDAR &#8212; Perceptions Library 22a 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=359c27e9"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Stereo Camera" href="../stereo/stereo.html" />
+    <link rel="prev" title="AggregatePredictor" href="../aggregate/AggregatePredictor.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="lidar">
+<h1>LiDAR<a class="headerlink" href="#lidar" title="Permalink to this heading">¶</a></h1>
+<section id="what-is-lidar">
+<h2>What is LiDAR?<a class="headerlink" href="#what-is-lidar" title="Permalink to this heading">¶</a></h2>
+<p>LiDAR is a remote sensing technology that measures distance by illuminating
+a target with a laser and analyzing the reflected light. LiDAR is used to
+create high-resolution maps. We use LiDAR as the primary sensor to detect
+obstacles in the environment. The LiDAR sensor we use is the <a class="reference external" href="&quot;https://www.hesaitech.com/product/at128/&quot;/">HESAI AT128 Solid State LiDAR.</a>
+The LiDAR is one of the best sensors for obstacle detection and is widely used in autonomous vehicles.</p>
+</section>
+<section id="lidar-point-cloud-conversion">
+<h2>LiDAR Point Cloud conversion<a class="headerlink" href="#lidar-point-cloud-conversion" title="Permalink to this heading">¶</a></h2>
+<p>The LiDAR sensor provides a 3D point cloud of the environment. The point
+cloud is a set of data points in space. Each point represents the distance
+from the sensor to an object in the environment. The point cloud is a 3D
+representation of the environment, where each point has an x, y, and z
+coordinate.</p>
+</section>
+<section id="our-lidar-prediction-stack">
+<h2>Our LiDAR prediction stack:<a class="headerlink" href="#our-lidar-prediction-stack" title="Permalink to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>The LiDAR sensor provides a 3D point cloud of the environment. We take in the point cloud data and then transform it to an np array.</p></li>
+<li><p>Then we take in the information and transform it to the car frame.</p></li>
+<li><p>Then we take the information and filter out the points that are on the ground. Additionally, we filter out points that are too far away.</p></li>
+<li><p>We then take the filtered points and cluster them to find the obstacles in the environment.</p></li>
+</ol>
+<img alt="../../../_images/pointcloud.png" class="align-center" src="../../../_images/pointcloud.png" />
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Perceptions Library 22a</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../data/load_data.html">Loading Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mergers/merger.html">Merging pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../aggregate/AggregatePredictor.html">AggregatePredictor</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">LiDAR</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-lidar">What is LiDAR?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lidar-point-cloud-conversion">LiDAR Point Cloud conversion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#our-lidar-prediction-stack">Our LiDAR prediction stack:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../stereo/stereo.html">Stereo Camera</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/utils.html">Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/vis/vis.html">Vis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/lidar/lidar.html">Lidar</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../svm/SVM.html">SVM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utils/utils.html">Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scripts/scripts.html">Runnable Scripts for PerceptionsLibrary22a</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../aggregate/AggregatePredictor.html" title="previous chapter">AggregatePredictor</a></li>
+      <li>Next: <a href="../stereo/stereo.html" title="next chapter">Stereo Camera</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2024, Carnegie Mellon Racing.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../../../_sources/perc22a/predictors/lidar/lidar.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

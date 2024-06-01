@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Carnegie Mellon Racing Perceptions Library for 22a &#8212; Perceptions Library 22a 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=359c27e9"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Loading Data" href="perc22a/data/load_data.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="carnegie-mellon-racing-perceptions-library-for-22a">
+<h1>Carnegie Mellon Racing Perceptions Library for 22a<a class="headerlink" href="#carnegie-mellon-racing-perceptions-library-for-22a" title="Permalink to this heading">¶</a></h1>
+<p>This library is a collection of perception algorithms for the 22a racecar for Carnegie Mellon Racing.
+Carnegie Mellon Racing is a premier student organization at Carnegie Mellon University that designs
+and builds autonomous vehicles to compete in the annual Formula Student Driverless competition. This workspace
+works in combination with the driverless workspace that can be found on the <a class="reference external" href="https://github.com/carnegiemellonracing/">Carnegie Mellon Racing GitHub</a> .</p>
+<img alt="_images/car.jpg" class="align-center" src="_images/car.jpg" />
+<section id="what-is-perceptions">
+<h2>What is Perceptions?<a class="headerlink" href="#what-is-perceptions" title="Permalink to this heading">¶</a></h2>
+<p>Perceptions is the process of interpreting sensor data to understand the environment around the car.
+This is a crucial part of the autonomous driving stack as it provides the car with the information it
+needs to make decisions. The perception stack on this car consists of a variety of sensors:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="&quot;https://www.hesaitech.com/product/at128/&quot;/">HESAI AT128 Solid State LiDAR</a></p></li>
+<li><p><a class="reference external" href="&quot;https://www.stereolabs.com/products/zed-2&quot;/">Dual ZED2 Stereo Cameras</a></p></li>
+<li><p><a class="reference external" href="&quot;https://www.movella.com/products/sensor-modules/xsens-mti-680g-rtk-gnss-ins&quot;/">MTi-680G RTK GNSS/INS GPS</a></p></li>
+</ul>
+<p>Together, these sensors provide the car with a complete view of the track and allow for an accurate understanding
+of the cones. From this information, we can run a midline algorithm to determine the best path through the cones.</p>
+<p>There are also a variety of other algorithms that are used to interpret the data from these sensors. These include
+object detection, lane detection, and cone detection. These algorithms are used to provide the car with a complete
+understanding of the environment around it. To understand the specifics of these algorithms, please refer to the
+documentation.</p>
+</section>
+<section id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this heading">¶</a></h2>
+<section id="setup">
+<h3>Setup<a class="headerlink" href="#setup" title="Permalink to this heading">¶</a></h3>
+<ol class="arabic">
+<li><p><strong>Clone the Repository:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span><span class="o">[</span>repository-link<span class="o">]</span>
+<span class="nb">cd</span><span class="w"> </span>PerceptionsLibrary22a
+</pre></div>
+</div>
+</li>
+<li><p><strong>Setup Virtual Environment:</strong> Ensure you have Python 3.8 installed,
+then create a virtual environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3.8<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>env
+<span class="nb">source</span><span class="w"> </span>env/bin/activate
+</pre></div>
+</div>
+</li>
+<li><p><strong>Install Dependencies:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</pre></div>
+</div>
+</li>
+<li><p><strong>Set PYTHONPATH:</strong> To ensure <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">perc22a</span></code> works in any script,
+add the absolute path of the <code class="docutils literal notranslate"><span class="pre">PerceptionsLibrary22a</span></code> to your
+<code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;export PYTHONPATH=\&quot;</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">:</span><span class="nv">$PYTHONPATH</span><span class="s2">\&quot;&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.zshrc<span class="w"> </span><span class="c1"># or ~/.bashrc</span>
+<span class="nb">source</span><span class="w"> </span>~/.zshrc<span class="w"> </span><span class="c1"># or ~/.bashrc</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Verify Setup:</strong> Confirm the path was correctly added by echoing the
+<code class="docutils literal notranslate"><span class="pre">$PYTHONPATH</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="nv">$PYTHONPATH</span>
+</pre></div>
+</div>
+<p>Test the setup:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>scripts/test_setup.py
+</pre></div>
+</div>
+<p>Successful output: <code class="docutils literal notranslate"><span class="pre">&quot;Running</span> <span class="pre">'import</span> <span class="pre">perc22a'</span> <span class="pre">successful&quot;</span></code>.</p>
+</li>
+</ol>
+</section>
+<section id="loading-data">
+<h3>Loading Data<a class="headerlink" href="#loading-data" title="Permalink to this heading">¶</a></h3>
+<ol class="arabic">
+<li><p><strong>Download Data:</strong> Fetch the data from <a class="reference external" href="https://drive.google.com/drive/folders/12l2DpvS4oEfl7_Noc7oUX4AcIDCfB8Zc?usp=drive_link">this Google Drive
+Link</a>
+and place the <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;.tar.gz</span></code> files in the <code class="docutils literal notranslate"><span class="pre">data/raw/</span></code> directory.
+Note: The files are large and can expand to more than 10GB when
+extracted.</p></li>
+<li><p><strong>Extract Data:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tar<span class="w"> </span>-zxvf<span class="w"> </span>data/raw/&lt;name&gt;.tar.gz
+</pre></div>
+</div>
+<p>This creates a <code class="docutils literal notranslate"><span class="pre">data/raw/&lt;name&gt;</span></code> directory containing numerous
+<code class="docutils literal notranslate"><span class="pre">instance-&lt;n&gt;.npz</span></code> files, which represent snapshots of sensor data
+during track testing.</p>
+</li>
+<li><p><strong>Use DataLoader:</strong> The <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code> class, found in
+<code class="docutils literal notranslate"><span class="pre">data/utils/dataloader.py</span></code>, provides a convenient method for data
+access.</p>
+<p>To demonstrate its use:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>scripts/load_data.py
+</pre></div>
+</div>
+<p>This displays a <code class="docutils literal notranslate"><span class="pre">cv2</span></code> window. Click on the image and press any key
+to navigate through the data. To exit, either hit <code class="docutils literal notranslate"><span class="pre">&lt;Ctrl-C&gt;</span></code> in the
+terminal and press a key in the <code class="docutils literal notranslate"><span class="pre">cv2</span></code> window or continue pressing
+keys until all images are cycled through.</p>
+</li>
+</ol>
+</section>
+</section>
+<section id="sponsors">
+<h2>Sponsors<a class="headerlink" href="#sponsors" title="Permalink to this heading">¶</a></h2>
+<p>None of this would be possible without our absolutely amazing sponsors!</p>
+<img alt="_images/sponsors.png" class="align-center" src="_images/sponsors.png" />
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/data/load_data.html">Loading Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/data/load_data.html#how-to-load-data">How to load data?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/mergers/merger.html">Merging pipelines</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/mergers/merger.html#what-is-merging-pipeliens">What is merging pipeliens?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/mergers/merger.html#merging-logic">Merging Logic</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/predictors/aggregate/AggregatePredictor.html">AggregatePredictor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/predictors/aggregate/AggregatePredictor.html#what-is-aggregatepredictor">What is AggregatePredictor?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/predictors/lidar/lidar.html">LiDAR</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/predictors/lidar/lidar.html#what-is-lidar">What is LiDAR?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/predictors/lidar/lidar.html#lidar-point-cloud-conversion">LiDAR Point Cloud conversion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/predictors/lidar/lidar.html#our-lidar-prediction-stack">Our LiDAR prediction stack:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/predictors/stereo/stereo.html">Stereo Camera</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/predictors/stereo/stereo.html#what-is-stereo-camera">What is Stereo Camera?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/predictors/stereo/stereo.html#how-does-it-work">How does it work?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/predictors/stereo/stereo.html#stereo-camera-pipeline">Stereo Camera Pipeline</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/predictors/utils/utils.html">Utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/predictors/utils/utils.html#what-is-utils">What is Utils?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/predictors/utils/utils.html#cones-py">Cones.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/predictors/utils/utils.html#conestate-py">ConeState.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/predictors/utils/utils.html#stereo-py">stereo.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/predictors/utils/utils.html#icp-py">icp.py</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/predictors/utils/vis/vis.html">Vis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/predictors/utils/vis/vis.html#what-is-vis">What is Vis?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/predictors/utils/lidar/lidar.html">Lidar</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/predictors/utils/lidar/lidar.html#what-is-in-lidar-utils">What is in Lidar utils?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/svm/SVM.html">SVM</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/svm/SVM.html#what-is-svm">What is SVM?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/svm/SVM.html#how-does-it-work">How does it work?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/utils/utils.html">Utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="perc22a/utils/utils.html#what-is-utils">What is Utils?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="perc22a/utils/utils.html#timer">1. Timer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="perc22a/utils/utils.html#conesim">2. ConeSim</a></li>
+<li class="toctree-l3"><a class="reference internal" href="perc22a/utils/utils.html#motioninfo">3. MotionInfo</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="scripts/scripts.html">Runnable Scripts for PerceptionsLibrary22a</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="scripts/scripts.html#what-are-scripts">What are scripts?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scripts/scripts.html#how-do-i-run-a-script">How do I run a script?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="scripts/scripts.html#to-run-a-script">To run a script:</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="scripts/scripts.html#what-scripts-are-available">What scripts are available?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">Perceptions Library 22a</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/data/load_data.html">Loading Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/mergers/merger.html">Merging pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/predictors/aggregate/AggregatePredictor.html">AggregatePredictor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/predictors/lidar/lidar.html">LiDAR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/predictors/stereo/stereo.html">Stereo Camera</a></li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/predictors/utils/utils.html">Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/predictors/utils/vis/vis.html">Vis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/predictors/utils/lidar/lidar.html">Lidar</a></li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/svm/SVM.html">SVM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="perc22a/utils/utils.html">Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts/scripts.html">Runnable Scripts for PerceptionsLibrary22a</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="perc22a/data/load_data.html" title="next chapter">Loading Data</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2024, Carnegie Mellon Racing.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

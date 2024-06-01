@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Runnable Scripts for PerceptionsLibrary22a &#8212; Perceptions Library 22a 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=359c27e9"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Utils" href="../perc22a/utils/utils.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="runnable-scripts-for-perceptionslibrary22a">
+<h1>Runnable Scripts for PerceptionsLibrary22a<a class="headerlink" href="#runnable-scripts-for-perceptionslibrary22a" title="Permalink to this heading">¶</a></h1>
+<section id="what-are-scripts">
+<h2>What are scripts?<a class="headerlink" href="#what-are-scripts" title="Permalink to this heading">¶</a></h2>
+<p>Scripts are small programs that can be run from the command line.
+We have developed a large variety of scripts to help us test out
+the entirty of our library.</p>
+</section>
+<section id="how-do-i-run-a-script">
+<h2>How do I run a script?<a class="headerlink" href="#how-do-i-run-a-script" title="Permalink to this heading">¶</a></h2>
+<p>Before running a script, make sure that the current version of python in the
+virtual environment is 3.8, otherwise the script may not run properly. Additionally,
+make sure all the requirements are installed properly.</p>
+<section id="to-run-a-script">
+<h3>To run a script:<a class="headerlink" href="#to-run-a-script" title="Permalink to this heading">¶</a></h3>
+<ol class="arabic">
+<li><p>Open a terminal window. Navigate to the PerceptionsLibrary22a directory.</p></li>
+<li><dl>
+<dt>Activate the python virtual environment by typing</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span><span class="w"> </span>venv/bin/activate
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Run the script by typing</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>&lt;script_name&gt;.py
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+</section>
+<section id="what-scripts-are-available">
+<h2>What scripts are available?<a class="headerlink" href="#what-scripts-are-available" title="Permalink to this heading">¶</a></h2>
+<p>This is a list of all the scripts available in the PerceptionsLibrary22a directory:</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt><strong>load_ecg_data.py</strong></dt><dd><p>This script loads the data from the data folder, and runs our LiDAR and Stereo Predictors
+on the data, then displays it to see.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>run_aggregate_predictor.py</strong></dt><dd><p>This script runs the aggregate predictor on the data in the data folder, and displays the results.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>run_both_predictors.py</strong></dt><dd><p>This script runs both the LiDAR and Stereo predictors on the data in the data folder, and displays the results.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>run_cone_merger.py</strong></dt><dd><p>This script tests the merging of information from the LiDAR and Stereo predictors. This
+is largely a test script, and is not used in the final product. Merging is done in the
+complete predictor.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>run_lidar_predictor.py</strong></dt><dd><p>This script runs the LiDAR predictor on the data in the data folder, and displays the results.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>run_stereo_predictor.py</strong></dt><dd><p>This script runs the Stereo predictor on the data in the data folder, and displays the results.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>run_threshold_predictor.py</strong></dt><dd><p>This script runs the threshold predictor on the data in the data folder, and displays the results.
+This is largely a test script, and is not used in the final product. Thresholding was a method of extracting
+color from image data, however, this was not used in the final product. We use the YOLO model instead.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>run_yolov5_predictor.py</strong></dt><dd><p>This script runs the YOLOv5 predictor on the data in the data folder, and displays the results.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>run_endtoend.py</strong></dt><dd><p>This script runs the complete predictor on the data in the data folder, and displays the results.
+This was the file used to generate the results for the final product. It will gather data across the
+entire perceptions suite and display the results.</p>
+</dd>
+</dl>
+</li>
+<li><p><strong>run_svm.py</strong>
+This script runs the SVM predictor on the data in the data folder, and displays the results.
+This is largely a test script, and is not used in the final product. SVM was a method of getting the
+midline of the road. This was used in the final product, and was implemented in the complete predictor.</p></li>
+<li><p><strong>sim_cones.py</strong>
+This script simulates the placement of cones in the data folder, and displays the results.
+This is largely a test script, and is not used in the final product. This was used to test the
+complete predictor.</p></li>
+<li><p><strong>test_logreg_idea.py</strong>
+This script tests the idea of using logistic regression for merging the LiDAR and Stereo predictors.
+This is largely a test script, and is not used in the final product. Merging is done in the complete predictor.</p></li>
+<li><p><strong>test_setup.py</strong>
+This script tests the setup of the library. It makes sure the library is set up properly.</p></li>
+<li><p><strong>test_vis2d.py</strong>
+This script tests the 2D visualization of the data in the data folder.
+This is largely a test script, and is not used in the final product. This was a method of
+creating a 2D visualization of the data. This was not used in the final product.</p></li>
+<li><p><strong>test_vis3d.py</strong>
+This script tests the 3D visualization of the data in the data folder.
+This is largely a test script, and is not used in the final product. This was used to test the
+complete predictor.</p></li>
+<li><p><strong>visualize_cones.py</strong>
+This script visualizes the cones in a 2d plot. This is largely a test script, and provided a
+view of the cones from the perception stack during the complete predictor testing.</p></li>
+<li><p><strong>load_data.py</strong>
+This script loads the data from the data folder.</p></li>
+</ol>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Perceptions Library 22a</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../perc22a/data/load_data.html">Loading Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../perc22a/svm/SVM.html">SVM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../perc22a/utils/utils.html">Utils</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Runnable Scripts for PerceptionsLibrary22a</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-are-scripts">What are scripts?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-run-a-script">How do I run a script?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#to-run-a-script">To run a script:</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#what-scripts-are-available">What scripts are available?</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../perc22a/utils/utils.html" title="previous chapter">Utils</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2024, Carnegie Mellon Racing.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="../_sources/scripts/scripts.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
