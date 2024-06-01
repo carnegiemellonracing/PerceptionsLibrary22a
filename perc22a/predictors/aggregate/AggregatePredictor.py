@@ -15,6 +15,21 @@ import perc22a.predictors.utils.lidar.visualization as vis
 import open3d as o3d
 import numpy as np
 
+"""
+AggregatePredictor.py
+
+This class is responsible for aggregating the predictions from the LidarPredictor and YOLOv5Predictor
+and transforming the cones to the same coordinate frame.
+- init: initialize the LidarPredictor and YOLOv5Predictor
+    - path: path to the sensor configuration file
+- predict: predict cones from the LidarPredictor and YOLOv5Predictor and transform them to the same coordinate frame
+    - data: input data
+- _transform_points: transform the points to the same coordinate frame
+    - points: input points
+- calc_point_cluster: calculate the point cluster
+    - data: input data
+- display: display the transformed cones
+"""
 # TODO: implement required_data function for AggregatePredictor
 
 class AggregatePredictor(Predictor):

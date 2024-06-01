@@ -1,5 +1,16 @@
 import time
 
+"""
+Timer.py
+Creates a timer class that can be used to time the execution of code
+- start: starts the timer
+    - timer_name: name of the timer
+- end: ends the timer and prints the time elapsed
+    - timer_name: name of the timer
+    - msg: message to print with the time elapsed
+    - ret: whether to return the time elapsed
+"""
+
 class Timer:
     def __init__(self):
         self.data = dict()
