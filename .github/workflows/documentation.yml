@@ -40,6 +40,7 @@ jobs:
       - name: Build HTML
         run: |
           cd documentation/html
+          echo ls
           make clean
           make html
       - name: Run ghp-import
