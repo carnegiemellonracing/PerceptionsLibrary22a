@@ -1,13 +1,6 @@
 name: Perceptions Library 22a
 
-on:
-  push:
-    branches:
-      - DocumentationBranch
-  pull_request:
-    branches:
-      - DocumentationBranch
-  workflow_dispatch:
+on: [push, pull_request, workflow_dispatch]
 
 permissions:
   contents: write
@@ -17,20 +10,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions/setup-python@v3
-
       - name: Install dependencies
         run: |
           pip install sphinx sphinx_rtd_theme myst_parser
-
-      - name: Build documentation
-        run: make html
-        working-directory: PerceptionsLibrary22a/documentation
-
+      - name: Sphinx build
+        run: |
+          sphinx-build documentation _build
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: PerceptionsLibrary22a/documentation/build/html
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: _build/
+          force_orphan: true
