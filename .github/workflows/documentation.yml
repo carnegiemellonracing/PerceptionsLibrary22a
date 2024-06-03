@@ -15,22 +15,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
+      - name: Add .nojekyll file
+        run: touch .nojekyll
       - uses: actions/setup-python@v3
-
       - name: Install dependencies
         run: |
           pip install sphinx sphinx_rtd_theme myst_parser
-
       - name: Sphinx build
         run: |
-          cd PerceptionsLibrary22a/documentation
-          sphinx-build -b html source build/html
-
+          cd documentation/html && 
+          sphinx-build source _build
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: PerceptionsLibrary22a/documentation/build/html
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: _build/
           force_orphan: true
