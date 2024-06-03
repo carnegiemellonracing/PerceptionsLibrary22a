@@ -1,13 +1,10 @@
 name: Perceptions Library 22a
 
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
   push:
     branches: [DocumentationBranch]
   pull_request:
     branches: [DocumentationBranch]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 permissions:
@@ -18,19 +15,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - uses: actions/setup-python@v3
+
       - name: Install dependencies
         run: |
           pip install sphinx sphinx_rtd_theme myst_parser
+
       - name: Sphinx build
         run: |
-          cd documentation/html && 
-          sphinx-build source _build
+          cd PerceptionsLibrary22a/documentation
+          sphinx-build -b html source build/html
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
-          publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: _build/
+          publish_branch: gh-pages
+          publish_dir: PerceptionsLibrary22a/documentation/build/html
           force_orphan: true
