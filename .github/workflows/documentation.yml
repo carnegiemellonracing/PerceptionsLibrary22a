@@ -26,11 +26,11 @@ jobs:
 
       - name: Build documentation
         run: make html
-        working-directory: PerceptionsLibrary22a/documentation/html
+        working-directory: PerceptionsLibrary22a/documentation
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: PerceptionsLibrary22a/documentation/html/_build/html
+          publish_dir: PerceptionsLibrary22a/documentation/_build/html
