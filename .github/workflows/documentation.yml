@@ -24,6 +24,10 @@ jobs:
       - name: Sphinx build
         run: |
           sphinx-build documentation/html/source documentation/html/_build
+      - name: Create .nojekyll file in run directory
+        run: touch documentation/html/.nojekyll
+      - name: Create .nojekyll file in run2 directory
+        run: touch documentation/html/source/.nojekyll
       - name: Create .nojekyll file in build directory
         run: touch documentation/html/_build/.nojekyll
       - name: Deploy to GitHub Pages
