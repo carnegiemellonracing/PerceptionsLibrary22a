@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Add .nojekyll file
+        run: touch .nojekyll
       - uses: actions/setup-python@v3
       - name: Install dependencies
         run: |
@@ -22,7 +24,7 @@ jobs:
       - name: Sphinx build
         run: |
           sphinx-build documentation/html/source documentation/html/_build
-      - name: Create .nojekyll file
+      - name: Create .nojekyll file in build directory
         run: touch documentation/html/_build/.nojekyll
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
