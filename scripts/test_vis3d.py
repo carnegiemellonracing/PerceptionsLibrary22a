@@ -36,7 +36,7 @@ def main():
     svm = SVM()
 
     while True:
-        for i in range(550, len(dl)):
+        for i in range(620, len(dl)):
             data = dl[i]
             # import pdb; pdb.set_trace()
             points = data[DataType.HESAI_POINTCLOUD]

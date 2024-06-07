@@ -191,7 +191,7 @@ def create_cylinder_vis_color(
     return cylinders
 
 def create_midline_vis_color(
-    cylinder_centers, colors=[0, 1, 0], radius=0.2, height=0.4, resolution=10
+    cylinder_centers, colors=[0, 1, 0], radius=0.1, height=0.1, resolution=10
 ):
     """
     Creates a list of Open3D LineSet meshes of cylinders whose centers
