@@ -21,7 +21,6 @@ EXTRINSIC_BIRD = np.array(
     ]
 )
 
-
 def create_axis_vis(size=1, npoints=100):
     """
     Creates an Open3D point cloud object that contains points that
@@ -67,9 +66,9 @@ def create_plane_vis(plane, xmin=-3, xmax=3, ymin=0.5, ymax=3, npoints=100):
 
     # compute colors for the plane
     colors = np.zeros((points.shape[0], 3))
-    colors[:, 0] = 105
-    colors[:, 1] = 105
-    colors[:, 2] = 179
+    colors[:, 0] = 179
+    colors[:, 1] = 134
+    colors[:, 2] = 169
     colors = colors / 255
 
     # return visualization as points on the plane
@@ -101,6 +100,97 @@ def create_point_vis(points, colors=None):
 
 
 def create_cylinder_vis(
+    cylinder_centers, colors=[0, 1, 0], radius=0.2, height=0.4, resolution=10
+):
+    """
+    Creates a list of Open3D LineSet meshes of cylinders whose centers
+    are listed by the list cylinder_centers
+
+    Inputs:
+        - cylinder_centers: (N,3) np.array of cylinder center positions
+        - color: list of length 3 of color to assign cylinders (optional)
+        - radius: radius (units???) to give cylinders (optional)
+        - height: height (units???) to give cylinders (optional)
+        - resolution: how circular to make the cylinders
+
+    Output:
+        - cylinders: list of Open3D LineSet meshes of cylinders ready for
+                     visualization with o3d.visualization.draw_geometries
+    """
+
+    n_centers = len(cylinder_centers)
+
+    # bring colors to a fixed input size
+    if n_centers > 0:
+        colors = np.array(colors)
+        if len(colors.shape) == 1:
+            colors = np.array([colors] * n_centers)
+
+    cylinders = []
+    # print(cylinder_centers)
+    # print(colors)
+    for i in range(n_centers):
+        centroid = cylinder_centers[i]
+        color = colors[i, :]
+
+        cylinder = o3d.geometry.TriangleMesh.create_cylinder(
+            radius=radius, height=height, resolution=resolution, split=1
+        )
+        cylinder = o3d.geometry.LineSet.create_from_triangle_mesh(cylinder)
+        cylinder = cylinder.translate(tuple(centroid))
+        #print(color)
+        cylinder.paint_uniform_color(color)
+        cylinders.append(cylinder)
+
+    return cylinders
+
+
+def create_cylinder_vis_color(
+    cylinder_centers, colors=[0, 1, 0], radius=0.2, height=0.4, resolution=10
+):
+    """
+    Creates a list of Open3D LineSet meshes of cylinders whose centers
+    are listed by the list cylinder_centers
+
+    Inputs:
+        - cylinder_centers: (N,3) np.array of cylinder center positions
+        - color: list of length 3 of color to assign cylinders (optional)
+        - radius: radius (units???) to give cylinders (optional)
+        - height: height (units???) to give cylinders (optional)
+        - resolution: how circular to make the cylinders
+
+    Output:
+        - cylinders: list of Open3D LineSet meshes of cylinders ready for
+                     visualization with o3d.visualization.draw_geometries
+    """
+
+    n_centers = len(cylinder_centers)
+
+    # bring colors to a fixed input size
+    if n_centers > 0:
+        colors = np.array(colors)
+        if len(colors.shape) == 1:
+            colors = np.array([colors] * n_centers)
+
+    cylinders = []
+    # print(cylinder_centers)
+    # print(colors)
+    for i in range(n_centers):
+        centroid = cylinder_centers[i]
+        color = colors[i, :]
+
+        cylinder = o3d.geometry.TriangleMesh.create_cylinder(
+            radius=radius, height=height, resolution=resolution, split=1
+        )
+        cylinder = o3d.geometry.LineSet.create_from_triangle_mesh(cylinder)
+        cylinder = cylinder.translate(tuple(centroid))
+        #print(color)
+        cylinder.paint_uniform_color(color)
+        cylinders.append(cylinder)
+
+    return cylinders
+
+def create_midline_vis_color(
     cylinder_centers, colors=[0, 1, 0], radius=0.2, height=0.4, resolution=10
 ):
     """

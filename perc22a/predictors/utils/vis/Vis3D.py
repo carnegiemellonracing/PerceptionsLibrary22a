@@ -8,7 +8,11 @@ from perc22a.predictors.utils.lidar.visualization import create_axis_vis, \
     update_visualizer_window, \
     update_visualizer_perspective, \
     create_cylinder_vis, \
-    EXTRINSIC_BEHIND
+    EXTRINSIC_BEHIND, \
+    create_cylinder_vis_color, \
+    create_midline_vis_color
+
+from enum import Enum
 
 import numpy as np
 import open3d as o3d
@@ -16,6 +20,25 @@ import open3d as o3d
 GRID_RIGHT_BOUND = 10
 GRID_FRONT_BOUND = 10
 INTERVAL = 1
+
+ORANGE = np.array([32, 131, 250])
+
+class CFG_COLORS(Enum):
+    BLUE = 1
+    YELLOW = 2
+    ORANGE = 3
+    UNKNOWN = 4
+    RED = 5
+    GREEN = 6
+
+CV2_COLORS = {
+    CFG_COLORS.BLUE: [1, 191/255, 0],
+    CFG_COLORS.YELLOW: [0, 215/255, 1],
+    CFG_COLORS.ORANGE: [0, 150/255, 1],
+    CFG_COLORS.RED: [0, 0, 1],
+    CFG_COLORS.GREEN: [0, 1, 0]
+}
+
 
 class Vis3D:
     '''
@@ -28,10 +51,12 @@ class Vis3D:
         # initialize display-able objects
         self.points = None
         self.cones = None
+        self.midline = None
 
         # initialize geometry objects to visualize
         self.axis_vis = create_axis_vis()
         self.cones_vis = []
+        self.midline_vis = []
 
         # initialize a random point cloud so that display is correct
         init_points = np.random.rand(1000, 3) * 100  
@@ -107,6 +132,10 @@ class Vis3D:
         '''sets the cones to visualize on next .display call'''
         self.cones = cones
 
+    def set_midline(self, midline: np.ndarray):
+        '''sets the midline to visualize on next .display call'''
+        self.midline = midline
+
     def _update_points(self):
         '''updates 3D visualization with latest points'''
         if self.points is None:
@@ -133,9 +162,13 @@ class Vis3D:
         cones  = self.cones.to_numpy()
         blue_cones_arr, yellow_cones_arr, orange_cones_arr = cones
 
-        blue_cylinders = create_cylinder_vis(blue_cones_arr, colors=[0, 0, 1])
-        yellow_cylinders = create_cylinder_vis(yellow_cones_arr, colors=[1, 0, 0])
-        orange_cylinders = create_cylinder_vis(orange_cones_arr, colors=[0, 1, 0])
+        yellow_color = CV2_COLORS[CFG_COLORS.YELLOW]
+        blue_color = CV2_COLORS[CFG_COLORS.BLUE]
+        orange_color = CV2_COLORS[CFG_COLORS.ORANGE]
+
+        blue_cylinders = create_cylinder_vis_color(blue_cones_arr, colors=blue_color)
+        yellow_cylinders = create_cylinder_vis_color(yellow_cones_arr, colors=yellow_color)
+        orange_cylinders = create_cylinder_vis_color(orange_cones_arr, colors=orange_color)
 
         # remove old cone geometries
         for cone_vis in self.cones_vis:
@@ -150,6 +183,29 @@ class Vis3D:
         # reset cones
         self.cones = None
 
+    def _update_midline(self):
+        '''updates 3D visualization with latest points'''
+        if self.midline is None:
+            return
+        
+        midline  = self.midline
+
+        blue_color = CV2_COLORS[CFG_COLORS.GREEN]
+
+        blue_cylinders = create_midline_vis_color(midline, colors=blue_color)
+
+        # remove old cone geometries
+        for midline_vis in self.midline_vis:
+            self.vis.remove_geometry(midline_vis, reset_bounding_box=False)
+        self.midline_vis = []
+
+        # add new cone geometries
+        self.midline_vis = blue_cylinders
+        for midline_vis in self.midline_vis:
+            self.vis.add_geometry(midline_vis, reset_bounding_box=False)
+
+        # reset cones
+        self.midline = None
 
     def update(self):
         '''updates 3D visualization with latest objects'''
@@ -157,6 +213,7 @@ class Vis3D:
         # update geometries
         self._update_points()
         self._update_cones()
+        self._update_midline()
 
         # poll events and update view
         self.vis.update_renderer()
