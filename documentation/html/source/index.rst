@@ -132,4 +132,4 @@ None of this would be possible without our absolutely amazing sponsors!
    :caption: Contents:
 
    perc22a/index
-   scripts/index
+   scripts/scripts

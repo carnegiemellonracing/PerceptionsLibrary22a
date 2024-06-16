@@ -59,3 +59,10 @@ We use the ICP algorithm to determine the transformation that aligns the previou
         </div>
       </div>
     </h1>
+
+.. toctree::
+   :maxdepth: 2
+
+   utils
+   vis/vis
+   lidar/lidar

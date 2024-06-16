@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Global Utils &#8212; Perceptions Library 22a 1.0 documentation</title>
+    <title>Predictors &#8212; Perceptions Library 22a 1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
@@ -16,8 +16,8 @@
     <script src="../../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Runnable Scripts for PerceptionsLibrary22a" href="../../scripts/scripts.html" />
-    <link rel="prev" title="SVM" href="../svm/SVM.html" />
+    <link rel="next" title="AggregatePredictor" href="aggregate/AggregatePredictor.html" />
+    <link rel="prev" title="Merging pipelines" href="../mergers/merger.html" />
    
   <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
@@ -34,39 +34,36 @@
 
           <div class="body" role="main">
             
-  <section id="global-utils">
-<h1>Global Utils<a class="headerlink" href="#global-utils" title="Permalink to this heading">¶</a></h1>
-<section id="what-are-our-global-utils">
-<h2>What are our Global Utils?<a class="headerlink" href="#what-are-our-global-utils" title="Permalink to this heading">¶</a></h2>
-<p>Utils are gerenal pieces of code we use throughout the project. They are
-not directly related to the project’s main functionality, but they
-are used to make the code more readable, maintainable and testable.</p>
-<p>There are 3 main parts to our utils.</p>
-<section id="timer">
-<h3>1. Timer<a class="headerlink" href="#timer" title="Permalink to this heading">¶</a></h3>
-<p>This file is used to time the execution of the code. The main functionality of it
-is to time the execution of the code and either return it or print the time taken to the console.
-To use this file, create a new instance of the timer object, call start with the name
-of the timer and then call end with the same name. This will return the time taken in seconds.
-If you use the ret flag on the end function, it will print the time taken in seconds onto the console.</p>
-</section>
-<section id="conesim">
-<h3>2. ConeSim<a class="headerlink" href="#conesim" title="Permalink to this heading">¶</a></h3>
-<p>The second file is the ConeSim file. This file is used to simulate the cones on a track.
-Designed for testing purposes, it allows you to publish fake cone information that changes with time
-from the cone node allowing for further testing of the pipelnine. To use this file, create a new instance
-of the ConeSim object with all the parameters you need for the cones to simulate. Then call the
-get cones function to get the cones at the current time. This will return a cones object of the cones which
-can be used in the pipeline.</p>
-</section>
-<section id="motioninfo">
-<h3>3. MotionInfo<a class="headerlink" href="#motioninfo" title="Permalink to this heading">¶</a></h3>
-<p>Lastly, there is the motion info file. This file is used to take in informaiton about the cars movement
-and predict its future position. This file is primarily used in the motion modeling code we have
-for the LiDAR pipelien. The motion modeling code allows us to accuratly color cones and update the cones positions we have
-seen in between cycles of the LiDAR. To use this file, create a new instance of the MotionInfo object with the</p>
-</section>
-</section>
+  <section id="predictors">
+<h1>Predictors<a class="headerlink" href="#predictors" title="Permalink to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="aggregate/AggregatePredictor.html">AggregatePredictor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="aggregate/AggregatePredictor.html#what-is-aggregatepredictor">What is AggregatePredictor?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="lidar/lidar.html">LiDAR</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="lidar/lidar.html#what-is-lidar">What is LiDAR?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lidar/lidar.html#lidar-point-cloud-conversion">LiDAR Point Cloud conversion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lidar/lidar.html#our-lidar-prediction-stack">Our LiDAR prediction stack:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="stereo/stereo.html">Stereo Camera</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="stereo/stereo.html#what-is-stereo-camera">What is Stereo Camera?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stereo/stereo.html#how-does-it-work">How does it work?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stereo/stereo.html#stereo-camera-pipeline">Stereo Camera Pipeline</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils/utils.html">Utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utils/utils.html#what-is-utils">What is Utils?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils/utils.html#cones-py">Cones.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils/utils.html#conestate-py">ConeState.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils/utils.html#stereo-py">stereo.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils/utils.html#icp-py">icp.py</a></li>
+</ul>
+</li>
+</ul>
+</div>
 </section>
 
 
@@ -91,9 +88,9 @@ seen in between cycles of the LiDAR. To use this file, create a new instance of 
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">perc22a</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../data/load_data.html">Loading Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../mergers/merger.html">Merging pipelines</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../predictors/index.html">Predictors</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Predictors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../svm/SVM.html">SVM</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Global Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utils/utils.html">Global Utils</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../scripts/scripts.html">Runnable Scripts for PerceptionsLibrary22a</a></li>
@@ -104,8 +101,8 @@ seen in between cycles of the LiDAR. To use this file, create a new instance of 
 <ul>
   <li><a href="../../index.html">Documentation overview</a><ul>
   <li><a href="../index.html">perc22a</a><ul>
-      <li>Previous: <a href="../svm/SVM.html" title="previous chapter">SVM</a></li>
-      <li>Next: <a href="../../scripts/scripts.html" title="next chapter">Runnable Scripts for PerceptionsLibrary22a</a></li>
+      <li>Previous: <a href="../mergers/merger.html" title="previous chapter">Merging pipelines</a></li>
+      <li>Next: <a href="aggregate/AggregatePredictor.html" title="next chapter">AggregatePredictor</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -140,7 +137,7 @@ seen in between cycles of the LiDAR. To use this file, create a new instance of 
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="../../_sources/perc22a/utils/utils.rst.txt"
+      <a href="../../_sources/perc22a/predictors/index.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

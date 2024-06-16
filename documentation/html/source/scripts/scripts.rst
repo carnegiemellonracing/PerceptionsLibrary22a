@@ -101,8 +101,3 @@ This is a list of all the scripts available in the PerceptionsLibrary22a directo
 
 17. **load_data.py**
     This script loads the data from the data folder.
-
-.. toctree::
-   :maxdepth: 2
-
-   scripts
