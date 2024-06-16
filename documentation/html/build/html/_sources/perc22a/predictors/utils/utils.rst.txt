@@ -63,6 +63,5 @@ We use the ICP algorithm to determine the transformation that aligns the previou
 .. toctree::
    :maxdepth: 2
 
-   utils
    vis/vis
    lidar/lidar
