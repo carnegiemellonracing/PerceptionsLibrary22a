@@ -1,10 +1,10 @@
-======
-Utils
-======
+============
+Global Utils
+============
 
 
-What is Utils?
----------------
+What are our Global Utils?
+--------------------------
 
 Utils are gerenal pieces of code we use throughout the project. They are 
 not directly related to the project's main functionality, but they 
