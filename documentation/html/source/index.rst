@@ -128,17 +128,8 @@ None of this would be possible without our absolutely amazing sponsors!
     :align: center
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 2
    :caption: Contents:
 
-   perc22a/data/load_data
-   perc22a/mergers/merger
-   perc22a/predictors/aggregate/AggregatePredictor
-   perc22a/predictors/lidar/lidar
-   perc22a/predictors/stereo/stereo
-   perc22a/predictors/utils/utils
-   perc22a/predictors/utils/vis/vis
-   perc22a/predictors/utils/lidar/lidar
-   perc22a/svm/SVM
-   perc22a/utils/utils
-   scripts/scripts
+   perc22a/index
+   scripts/index
