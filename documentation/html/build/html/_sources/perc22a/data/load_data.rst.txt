@@ -24,7 +24,7 @@ To load data, you can use the following code:
     <h1 align="center">
       <div>
         <div style="position: relative; padding-bottom: 0%; overflow: hidden; max-width: 100%; height: auto;">
-          <iframe width="450" height="300" src=../../documentation/scripts/coneCMR.mp4 frameborder="1" allowfullscreen></iframe>
+          <iframe width="450" height="300" src=../../../../../scripts/coneCMR.mp4 frameborder="1" allowfullscreen></iframe>
         </div>
       </div>
     </h1>

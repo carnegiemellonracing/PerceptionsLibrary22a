@@ -2,6 +2,14 @@
 
 This file contains the implementation of the perceptions predictions algorithm
 that is solely dependent on raw LiDAR point clouds.
+
+Functions:
+    - init: initialize the predictor
+    - profile_predict: profile the predict function
+    - required_data: return the required data for the predictor
+    - _transform_points: transform the points to the perceptions coordinate frame
+    - predict: predict the cones from the LiDAR point cloud
+    - display: display the transformed cones
 """
 
 import cProfile
@@ -74,6 +82,17 @@ class LidarPredictor(Predictor):
         return cones
 
     def predict(self, data) -> Cones:
+        '''
+            The predict function takes in a data parameter and returns a Cones object.
+            
+            The predict function first initializes the points from the input data and transforms them to the perception coordinate system, 
+            as well as filtering out invalid points. It then transfers the points to the origin of the car. After this, we apply a 
+            field of view filter as well as box range filter to reduce the lookahead of the LiDAR to a more manageable range. We then perform 
+            ground removal using the GraceAndConrad filter, which fits a plane to the points and extracts the ground plane values. We then 
+            downsample the filtered points using voxel downsampling, making it easier to identify the cones and work with the clusters
+            Then we predict the positions of the cones using an HDBSCAN clustering algorithm and color the cones based on their position.
+        '''
+
         if DEBUG_TIME: self.timer.start("predict")
         if DEBUG_TIME: self.timer.start("\tinit-process")
 

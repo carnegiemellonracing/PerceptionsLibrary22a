@@ -1,3 +1,12 @@
+'''
+YOLOv5Predictor
+
+Functions:
+    - required_data: returns required data for prediction
+    - predict: predicts cones using YOLOv5 and ZED stereocamera depth
+    - display: displays the predictions
+'''
+
 from typing import List
 
 # input and output datatypes for data and cones respectively
@@ -93,6 +102,11 @@ class YOLOv5Predictor(Predictor):
         return [self.img_datatype, self.xyz_datatype]
 
     def predict(self, data: DataInstance) -> Cones:
+        '''
+            The predict function takes in the left image data as well as the distance data 
+            from the ZED camera and using the YOLOv5 model, predicts the cones in the image
+            and returns the cones in the world frame
+        '''
 
         # initialize return type for cones
         cones = Cones()
@@ -120,6 +134,7 @@ class YOLOv5Predictor(Predictor):
             # depth_y = get_object_depth(box, padding=1) # removing get_object_depth because need depth map (not in DataFrame)
             # and also not as accurate of an indicator of position as the point cloud which is just some func(depth, cp)
             # where cp is the camera parameters
+            
             center_x, center_z = utils.calc_box_center(box)
             color_id = int(box[-1].item())
 

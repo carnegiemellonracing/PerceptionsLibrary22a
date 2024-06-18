@@ -2,6 +2,16 @@
 
 Class for maintaining the necessary information for transforming from GPS
 to world coordinates including the timestamp of the position
+
+Functions:
+    - __init__: initializes the MotionInfo class
+    - get_sensor_to_global: computes the rotation matrix that converts points 
+        positioned in the heading of the car into global heading
+    - get_global_to_sensor: computes the rotation matrix that converts points 
+        positioned in global heading to the heading of the car
+    - get_translation_to: computes the translation between two motion info classes
+    - model_motion_to: motion models points in frame of current motion info to 
+        frame of other MotionInfo that describes a different timestep
 '''
 
 import numpy as np

@@ -1,3 +1,10 @@
+'''
+Completely old piece of code that is not use in the project. It is a simple and extremely efficient way to identify
+color from an image with a relatively high degree of accuracy, however due to testing reasons as well as limitations
+based on weather and lighting conditions, this code was not used in the final project. Additionally, the use of YOLO
+allows for a higher degree of accuracy and a more robust system for identifying cones.
+'''
+
 import cv2
 import numpy as np
 import time

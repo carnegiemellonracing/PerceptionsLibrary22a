@@ -39,7 +39,7 @@ The stereo camera pipeline consists of the following steps:
     <h1 align="center">
       <div>
         <div style="position: relative; padding-bottom: 0%; overflow: hidden; max-width: 100%; height: auto;">
-          <iframe width="450" height="300" src=../../../documentation/stereo/yolov8.mp4 frameborder="1" allowfullscreen></iframe>
+          <iframe width="450" height="300" src=../../../../../../stereo/yolov8.mp4 frameborder="1" allowfullscreen></iframe>
         </div>
       </div>
     </h1>

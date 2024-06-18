@@ -3,6 +3,11 @@
 Defines class that represents a loadable stream of data that can be loaded
 from a folder of numpy arrays created from the `FileNode` class defined in
 the `driverless` repository.
+
+Functions:
+    __init__: initializes data loader pointing to directory
+    __len__: returns number of instances available from DataLoader
+    __getitem__: returns index'th instance of data from directory
 '''
 
 from perc22a.data.utils.DataInstance import DataInstance

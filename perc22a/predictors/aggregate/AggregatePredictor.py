@@ -77,11 +77,12 @@ class AggregatePredictor(Predictor):
         return self.transformed_lidar, self.transformed_stereo 
     
     def _transform_points(self, points):
-            points = points[:, :3]
-            points = points[:, [1, 0, 2]]
-            points[:,0] = -points[:,0]
+        # transform the points to the same coordinate frame
+        points = points[:, :3]
+        points = points[:, [1, 0, 2]]
+        points[:,0] = -points[:,0]
 
-            return points
+        return points
 
     def calc_point_cluster(self, data):
         points = self._transform_points(data["points"])
@@ -108,25 +109,26 @@ class AggregatePredictor(Predictor):
 
 
     def display(self):
-            self.Stereo.display()
+        # display the transformed cones by calling the visualizer with the transformed cones and the point clusters
+        self.Stereo.display()
 
-            lidar_color = [1, 0, 0]
-            stereo_color = [1, 0, 1]
+        lidar_color = [1, 0, 0]
+        stereo_color = [1, 0, 1]
 
-            n_lidar_cones = len(self.transformed_lidar_list)
-            n_stereo_cones = len(self.transformed_stereo_list)
+        n_lidar_cones = len(self.transformed_lidar_list)
+        n_stereo_cones = len(self.transformed_stereo_list)
 
-            lidar_list = np.array(self.transformed_lidar_list).reshape((n_lidar_cones, 3))
-            stereo_list = np.array(self.transformed_stereo_list).reshape((n_stereo_cones, 3))
+        lidar_list = np.array(self.transformed_lidar_list).reshape((n_lidar_cones, 3))
+        stereo_list = np.array(self.transformed_stereo_list).reshape((n_stereo_cones, 3))
 
-            # create color arrays
-            lidar_color_arr = np.zeros((n_lidar_cones, 3))
-            lidar_color_arr[:, [0, 1, 2]] = lidar_color
-            stereo_color_arr = np.zeros((n_stereo_cones, 3))
-            stereo_color_arr[:, [0, 1, 2]] = stereo_color
-            cone_colors = np.vstack([lidar_color_arr, stereo_color_arr])
+        # create color arrays
+        lidar_color_arr = np.zeros((n_lidar_cones, 3))
+        lidar_color_arr[:, [0, 1, 2]] = lidar_color
+        stereo_color_arr = np.zeros((n_stereo_cones, 3))
+        stereo_color_arr[:, [0, 1, 2]] = stereo_color
+        cone_colors = np.vstack([lidar_color_arr, stereo_color_arr])
 
-            # create cone array
-            cones = np.vstack([lidar_list, stereo_list])
-            
-            vis.update_visualizer_window(None, points=self.points_cluster, pred_cones=cones, colors_cones=cone_colors)
+        # create cone array
+        cones = np.vstack([lidar_list, stereo_list])
+        
+        vis.update_visualizer_window(None, points=self.points_cluster, pred_cones=cones, colors_cones=cone_colors)

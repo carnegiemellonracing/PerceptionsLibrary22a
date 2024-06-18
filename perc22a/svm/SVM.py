@@ -1,4 +1,25 @@
+'''
+SVM class that takes in cones and outputs a spline
 
+Functions:
+    - __init__: initializes the SVM class
+    - debug_svm: plots the SVM decision boundary
+    - debug_points: plots the points in the spline
+    - debug_pred: prints the prediction of the SVM
+    - augment_dataset: duplicates a dataset by multiplier and adds random noise to points
+    - supplement_cones: adds cones around origin to ground an SVM classifier
+    - augment_cones: duplicates the cones by some multiplier and adds Gaussian noise with some variance
+    - augment_dataset_circle: for each sample in X, adds additional points on circle of specified radius
+    - augment_cones_circle: for each cone in ones, adds additional cones of same color on circle around cone with specified radius
+    - cones_to_xy: converts cones to a dataset representation (X, y) where y is vector of 0/1 labels where 0 corresponds to blue and 1 corresponds to yellow
+    - get_spline_start_idx: gets index of point with lowest y-axis value in points
+    - get_closest_point_idx: gets index of point in points closest to curr_point and returns the dist
+    - sort_boundary_points: sorts boundary points by starting from the lowest point and iteratively takes closest point from iteration's current point
+    - pad_array: pads an array with a specified padding
+    - outlier_rejection: rejects outliers in the spline
+    - recolor: recolors the cones
+    - cones_to_midline: converts cones to midline using SVM classifier
+'''
 from perc22a.predictors.utils.cones import Cones
 from perc22a.utils.Timer import Timer
 from perc22a.predictors.utils.vis.Vis2D import Vis2D

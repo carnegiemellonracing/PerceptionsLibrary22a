@@ -1,8 +1,34 @@
-'''Base Merger
+'''
+Base Merger: Merges cones from different pipelines
 
-sufficient() -> true iff non-zero number of cones have been added 
-    and required pipelines are obtained
-merge() -> returns all cones added since last reset() (doesn't remove dups)
+Classes:
+    custom_cone: custom class to store cone information
+        - __init__ : initializes custom cone object
+            - xPos (float): x position of cone
+            - yPos (float): y position of cone
+            - zPos (float): z position of cone
+            - color (str): color of cone
+            - pipeline (PipelineType): pipeline cone came from
+        - __repr__ : returns string representation of custom cone
+        - __str__ : returns string representation of custom cone
+    BaseMerger: class to merge cones from different pipelines
+        - __init__ : initializes BaseMerger object
+            - required_pipelines (List[PipelineType]): list of required pipelines
+            - zed_dist_limit (float): distance limit for ZED cones
+            - lidar_dist_limit (float): distance limit for LIDAR cones
+            - debug (bool): debug flag
+        - reset : resets all tracking information for sufficiency
+        - add : adds cones to BaseMerger object
+            - cones (Cones): cones to add
+            - pipeline (PipelineType): pipeline cones came from
+        - sufficient : returns true iff non-zero number of cones have been added 
+            and required pipelines are obtained
+        - dist : returns distance between two cones
+        - _naive_merge : merges all cones from all pipelines
+        - merge : returns all cones added since last reset() (doesn't remove dups)
+            - Goes through the entire cone list, trusting color values from cameras and position information form LIDAR
+        - display : displays merged cones if debug flag is set
+
 '''
 
 from perc22a.mergers.MergerInterface import Merger
@@ -96,6 +122,7 @@ class BaseMerger(Merger):
         self.pipeline_cones[PipelineType.ZED2_PIPELINE].filter(self.zed_filter)
         self.pipeline_cones[PipelineType.LIDAR].filter(self.lidar_filter)
 
+        # merge all cones from all pipelines sorted by color
         all_cones = []
         for  p, cones in self.pipeline_cones.items():
             for cone in cones.blue_cones:
@@ -108,11 +135,14 @@ class BaseMerger(Merger):
         merged_cones = []
         for i in all_cones:
             duplicateCones = [i]
+
+            # find all cones that are close enough to the current cone indicating they are most likely the same cone
             for j in all_cones:
                 if i != j and self.dist(i, j)  < MAX_MERGE_DISTANCE:
                     duplicateCones.append(j)
 
             # TODO: could speed up this computation for computing cone distances 
+            # Evaluates the most likely cone position based on the average of all the cones and color
             xPos = 0
             yPos = 0
             hasLidar = False
@@ -129,11 +159,13 @@ class BaseMerger(Merger):
                     yPos += d.y
                     color = d.color
             
+            # if there is a lidar cone, use that as the final cone position
             if hasLidar: finalCone = custom_cone(lidarX, lidarY, 0, color, PipelineType.LIDAR)
             else: finalCone = custom_cone(xPos/len(duplicateCones), yPos/len(duplicateCones), 0, color, PipelineType.ZED2_PIPELINE)
 
             merged_cones.append(finalCone) 
 
+        # convert custom cones to Cones() object
         result_cones = Cones()
         for cone in merged_cones:
             if cone.color == "blue":
@@ -150,64 +182,3 @@ class BaseMerger(Merger):
         if self.debug:
             self.vis.set_cones(self.merge())
             self.vis.update()
-
-
-# sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)
-
-# X (n, 2), ... np.sqrt(X @ X.T)
-
-# '''Base Merger
-
-# sufficient() -> true iff non-zero number of cones have been added 
-#     and required pipelines are obtained
-# merge() -> returns all cones added since last reset() (doesn't remove dups)
-# '''
-
-# from perc22a.mergers.MergerInterface import Merger
-# from perc22a.predictors.utils.cones import Cones
-# from perc22a.mergers.PipelineType import PipelineType
-
-# from types import List
-
-# class BaseMerger(Merger):
-
-#     def __init__(self, required_pipelines: List[PipelineType] = []):
-#         self.required_pipelines_set = set(required_pipelines)
-
-#         self.reset() 
-
-#         return
-
-#     def reset(self):
-#         self.total_cones = 0
-#         self.pipeline_cones = {p: Cones() for p in PipelineType}
-#         self.seen_pipelines_set = set()
-
-#         return
-
-#     def add(self, cones: Cones, pipeline: PipelineType):
-#         self.total_cones += len(cones)
-#         self.pipeline_cones[pipeline].add_cones(cones)
-#         self.seen_pipelines_set.add(pipeline)
-
-#         return
-
-#     def sufficient(self) -> bool:
-#         non_zero_cones = len(self.pipeline_cones) > 0
-#         seen_required_cones = self.required_pipelines_set.issubset(self.seen_pipelines_set)
-#         return non_zero_cones and seen_required_cones
-
-#     def merge(self) -> Cones:
-#         # TODO: implement height zero-ing and distance limiting on ZED pipelines
-#         # TODO: do duplication removal
-
-#         all_cones = Cones()
-#         for p, cones in self.pipeline_cones.items():
-#             all_cones.add_cones(cones)
-
-#         return all_cones
-    
-
-# # sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)
-
-# # X (n, 2), ... np.sqrt(X @ X.T)

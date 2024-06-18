@@ -1,7 +1,14 @@
 '''DataInstance.py
 
 Contains class-representation of an instance of data that perceptions algos
-can use to perform prediction on 
+can use to perform prediction on
+
+Functions:
+    have_all_data: returns true if all required_types are set in DataInstance
+    __getitem__: get a specific portion of the data
+    __setitem__: set a specific data type
+    save: save the data as a numpy file at the appropriate path
+    load: load the data from a numpy file created with DataInstance.save
 '''
 
 from perc22a.data.utils.DataType import DataType

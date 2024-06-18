@@ -2,6 +2,14 @@
 
 This file contains the implementation of the perceptions predictions algorithm
 that is solely dependent on raw LiDAR point clouds.
+
+Functions:
+    - init: initialize the predictor
+    - profile_predict: profile the predict function
+    - required_data: return the required data for the predictor
+    - _transform_points: transform the points to the perceptions coordinate frame
+    - predict: predict the cones from the LiDAR point cloud
+    - display: display the transformed cones
 """
 
 import cProfile
@@ -35,13 +43,14 @@ import numpy as np
 from typing import List
 
 class FMSLidarPredictor(Predictor):
-    def __init__(self):
-        # self.window = vis.init_visualizer_window()
+    def __init__(self, use_old_vis=True):
+        # initialize the predictor with the sensor name, transformer, and timer and based on a flag for visualization
+
         self.sensor_name = "lidar"
         self.transformer = PoseTransformations()
         self.timer = Timer()
+        self.use_old_vis = use_old_vis
 
-        self.use_old_vis = True
         if self.use_old_vis:
             self.window = vis.init_visualizer_window()
         else:
@@ -50,6 +59,9 @@ class FMSLidarPredictor(Predictor):
         return
 
     def profile_predict(self, data):
+        # profile the predict function
+            # Profiling is a method of measuring the performance of a program.
+
         profiler = cProfile.Profile()
         profiler.enable()
         cones = self.predict(data)
@@ -60,6 +72,8 @@ class FMSLidarPredictor(Predictor):
         return [DataType.HESAI_POINTCLOUD]
 
     def _transform_points(self, points):
+        # transform the points to the perceptions coordinate frame
+
         points = points[:, :3]
         points = points[:, [1, 0, 2]]
         points[:, 0] = -points[:, 0]
@@ -67,6 +81,17 @@ class FMSLidarPredictor(Predictor):
         return points
 
     def predict(self, data) -> Cones:
+        '''
+            The predict function takes in a data parameter and returns a Cones object.
+            
+            The predict function first initializes the points from the input data and transforms them to the perception coordinate system, 
+            as well as filtering out invalid points. It then transfers the points to the origin of the car. After this, we apply a 
+            field of view filter as well as box range filter to reduce the lookahead of the LiDAR to a more manageable range. We then perform 
+            ground removal using the GraceAndConrad filter, which fits a plane to the points and extracts the ground plane values. We then 
+            downsample the filtered points using voxel downsampling, making it easier to identify the cones and work with the clusters
+            Then we predict the positions of the cones using an HDBSCAN clustering algorithm and color the cones based on their position.
+        '''
+
         if DEBUG_TIME: self.timer.start("predict")
         if DEBUG_TIME: self.timer.start("\tinit-process")
 

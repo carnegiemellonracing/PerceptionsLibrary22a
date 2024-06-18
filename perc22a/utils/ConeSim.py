@@ -1,3 +1,16 @@
+'''
+ConeSim
+
+This class is used to simulate the motion of cones in a 2D plane. The cones are arranged in rows, 
+with each row having a blue and yellow cone. The cones oscillate in the x-direction with a sinusoidal motion. 
+The cones are also subject to gaussian noise.
+
+Functions:
+   - __init__: constructor for ConeSim
+   - _add_noise: adds gaussian noise to an array
+   - get_cones: returns the current positions of the cones
+'''
+
 from perc22a.predictors.utils.vis.Vis2D import Vis2D
 from perc22a.predictors.utils.cones import Cones
 

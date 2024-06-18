@@ -62,6 +62,14 @@ def get_object_depth(depth_map, box, padding=2):
 
 
 def get_world_coords(coords):
+    '''
+    Calculates the world coordinates of the center of the bounding box
+    Args:
+        coords: 2D array of coordinates
+    Returns:
+        world_x, world_y, world_z - world coordinates of the center of the bounding box
+    '''
+
     world_xs, world_ys, world_zs = (
         coords[:, :, 0].reshape(-1),
         coords[:, :, 1].reshape(-1),
@@ -99,6 +107,16 @@ class CFG_COLORS(Enum):
 
 
 def get_cone_color(left_frame, box, padding=2):
+    '''
+    Returns the color of the cone in the bounding box
+    Args:
+        left_frame: left frame of stereo image
+        box: bounding box of the cone
+        padding: padding around the center of the bounding box
+    Returns:
+        color: color of the cone in the bounding box
+    '''
+
     # return config.COLORS.BLUE
     center_x, center_y = calc_box_center(box)
     min_x = max(center_x - padding, 0)

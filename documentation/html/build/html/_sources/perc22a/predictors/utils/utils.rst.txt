@@ -52,13 +52,7 @@ We use the ICP algorithm to determine the transformation that aligns the previou
 
 .. raw:: html
 
-    <h1 align="center">
-      <div>
-        <div style="position: relative; padding-bottom: 0%; overflow: hidden; max-width: 100%; height: auto;">
-          <iframe width="450" height="300" src="https://www.youtube.com/watch?v=uzOCS_gdZuM" frameborder="1" allowfullscreen></iframe>
-        </div>
-      </div>
-    </h1>
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/uzOCS_gdZuM?si=FhWTrdJ1VJ6Iqb06" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 .. toctree::
    :maxdepth: 2

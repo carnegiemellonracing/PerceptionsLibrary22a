@@ -1,4 +1,21 @@
+'''
+SVM utility functions for cones to midline conversion
 
+Functions:
+    - debug_svm: plots SVM decision boundary and support vectors
+    - debug_points: plots points in 2D space
+    - debug_pred: prints prediction matrix
+    - augment_dataset: duplicates a dataset by multiplier and adds random noise to points
+    - supplement_cones: adds cones around origin to ground an SVM classifier
+    - augment_cones: duplicates the cones by some multiplier and adds Gaussian noise with some varaince
+    - augment_dataset_circle: for each sample in X, adds additional points on circle of specified radius
+    - augment_cones_circle: for each cone in ones, adds additional cones of same color on circle around cone with specified radius, separated by degrees
+    - cones_to_xy: Converts cones to a dataset representation (X, y) where y is vector of 0/1 labels where 0 corresponds to blue and 1 corresponds to yellow
+    - get_spline_start_idx: gets index of point with lowest y-axis value in points
+    - get_closest_point_idx: gets index of point in points closest to curr_point and returns the dist
+    - sort_boundary_points: sorts boundary points by starting from the lowest point and iteratively takes closest point from iteration's current point
+    - cones_to_midline: converts cones to midline using SVM classifier
+'''
 from perc22a.predictors.utils.cones import Cones
 from perc22a.utils.Timer import Timer
 

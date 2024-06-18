@@ -1,6 +1,12 @@
 '''factory.py
 
 Functions for constructing mergers with specific properties
+
+Functions:
+    create_any_merger: simple merger that requires a single pipeline
+    create_lidar_merger: simple merger that requires the LiDAR pipeline
+    create_zed_merger: simple merger that requires cones from both ZEDs
+    create_all_merger: simple merger that requires cones from all pipelines
 '''
 
 from perc22a.mergers.BaseMerger import BaseMerger
