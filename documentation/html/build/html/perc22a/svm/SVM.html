@@ -1,50 +1,102 @@
-
 <!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SVM &mdash; Perceptions Library 22a 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
-    <title>SVM &#8212; Perceptions Library 22a 1.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=359c27e9"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Global Utils" href="../utils/utils.html" />
-    <link rel="prev" title="Lidar" href="../predictors/utils/lidar/lidar.html" />
-   
-  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+    <link rel="prev" title="LiDAR Utils" href="../predictors/utils/lidar/lidar.html" /> 
+</head>
 
-  </head><body>
-  
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2880B9" >
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
           
+          
+          <a href="../../index.html" class="icon icon-home">
+            Perceptions Library 22a
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Source Code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../data/load_data.html">Loading Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mergers/merger.html">Merging pipelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../predictors/index.html">Predictors</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">SVM</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#what-is-svm">What is SVM?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-does-it-work">How does it work?</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../utils/utils.html">Global Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../scripts/scripts.html">Scripts</a></li>
+</ul>
 
-          <div class="body" role="main">
-            
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2880B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Perceptions Library 22a</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Source Code</a></li>
+      <li class="breadcrumb-item active">SVM</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/perc22a/svm/SVM.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <section id="svm">
-<h1>SVM<a class="headerlink" href="#svm" title="Permalink to this heading">¶</a></h1>
+<h1>SVM<a class="headerlink" href="#svm" title="Permalink to this heading"></a></h1>
 <section id="what-is-svm">
-<h2>What is SVM?<a class="headerlink" href="#what-is-svm" title="Permalink to this heading">¶</a></h2>
+<h2>What is SVM?<a class="headerlink" href="#what-is-svm" title="Permalink to this heading"></a></h2>
 <p>Support Vector Machines (SVMs) are a powerful supervised learning algorithm used for classification or for regression.
 SVMs are a discriminative classifier: that is, they draw a boundary between clusters of data. We use SVMs to find the
 midline that best divides the blue and yellow cones from the Perceptions pipeline. This midline is the SVM decision boundary.
 We use this midline as the reference line for the lane center, and the primary input to the Control pipeline.</p>
 </section>
 <section id="how-does-it-work">
-<h2>How does it work?<a class="headerlink" href="#how-does-it-work" title="Permalink to this heading">¶</a></h2>
+<h2>How does it work?<a class="headerlink" href="#how-does-it-work" title="Permalink to this heading"></a></h2>
 <p>The SVM algorithm takes in the cones class, which contains the x and y coordinates of 2 types of cones, the blue and yellow cones (it also takes in
 orange cones, but for the purposes of the current SVM, they are not a primary concern). The SVM algorithm then fits a line to the data, which is the
 SVM decision boundary. This line is then used as the reference line for the lane center.</p>
@@ -54,86 +106,45 @@ Also maybe pictures or diagrams? Idk just a thought</p>
 </section>
 
 
+           </div>
           </div>
-          
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../predictors/utils/lidar/lidar.html" class="btn btn-neutral float-left" title="LiDAR Utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../utils/utils.html" class="btn btn-neutral float-right" title="Global Utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Carnegie Mellon Racing.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../../index.html">Perceptions Library 22a</a></h1>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-XXXXXXX-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
+      gtag('config', 'UA-XXXXXXX-1', {
+          'anonymize_ip': false,
+      });
+    </script> 
 
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../data/load_data.html">Loading Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../mergers/merger.html">Merging pipelines</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../predictors/aggregate/AggregatePredictor.html">AggregatePredictor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../predictors/lidar/lidar.html">LiDAR</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../predictors/stereo/stereo.html">Stereo Camera</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../predictors/utils/utils.html">Utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../predictors/utils/vis/vis.html">Vis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../predictors/utils/lidar/lidar.html">Lidar</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">SVM</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#what-is-svm">What is SVM?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#how-does-it-work">How does it work?</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../utils/utils.html">Global Utils</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../scripts/scripts.html">Runnable Scripts for PerceptionsLibrary22a</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../../index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="../predictors/utils/lidar/lidar.html" title="previous chapter">Lidar</a></li>
-      <li>Next: <a href="../utils/utils.html" title="next chapter">Global Utils</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2024, Carnegie Mellon Racing.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="../../_sources/perc22a/svm/SVM.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
-
-    
-
-    
-  </body>
+</body>
 </html>
