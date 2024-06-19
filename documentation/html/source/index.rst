@@ -12,7 +12,7 @@ Carnegie Mellon Racing is a premier student organization at Carnegie Mellon Univ
 and builds autonomous vehicles to compete in the annual Formula Student Driverless competition. This workspace
 works in combination with the driverless workspace that can be found on the `Carnegie Mellon Racing GitHub <https://github.com/carnegiemellonracing/>`_ .
 
-.. image :: ../../index_images/car.jpg
+.. figure :: ../../index_images/car.jpg
     :align: center
 
 What is Perceptions?
