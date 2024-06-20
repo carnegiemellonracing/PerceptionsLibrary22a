@@ -15,15 +15,15 @@ works in combination with the driverless workspace that can be found on the `Car
 .. image :: ../../index_images/car.jpg
     :align: center
 
-What is Perceptions?
-====================
+What is Perceptions? 
+==========================
 Perceptions is the process of interpreting sensor data to understand the environment around the car. 
 This is a crucial part of the autonomous driving stack as it provides the car with the information it 
 needs to make decisions. The perception stack on this car consists of a variety of sensors:
 
-- `HESAI AT128 Solid State LiDAR <"https://www.hesaitech.com/product/at128/"/>`_
-- `Dual ZED2 Stereo Cameras <"https://www.stereolabs.com/products/zed-2"/>`_
-- `MTi-680G RTK GNSS/INS GPS <"https://www.movella.com/products/sensor-modules/xsens-mti-680g-rtk-gnss-ins"/>`_
+- `HESAI AT128 Solid State LiDAR <https://www.hesaitech.com/product/at128/>`_
+- `Dual ZED2 Stereo Cameras <https://www.stereolabs.com/products/zed-2>`_
+- `MTi-680G RTK GNSS/INS GPS <https://www.movella.com/products/sensor-modules/xsens-mti-680g-rtk-gnss-ins>`_
 
 Together, these sensors provide the car with a complete view of the track and allow for an accurate understanding
 of the cones. From this information, we can run a midline algorithm to determine the best path through the cones.
