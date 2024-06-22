@@ -118,15 +118,6 @@ Loading Data
    terminal and press a key in the ``cv2`` window or continue pressing
    keys until all images are cycled through.
 
-
-Sponsors
-========
-
-None of this would be possible without our absolutely amazing sponsors!
-
-.. image :: ../../index_images/sponsors.png
-    :align: center
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
