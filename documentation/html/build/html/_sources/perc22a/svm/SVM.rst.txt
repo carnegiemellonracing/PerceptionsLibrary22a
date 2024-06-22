@@ -28,3 +28,6 @@ all of the cones in the mesh frame as a better center line for the car.
 
 Additionally, we also provide 2 base cones behind the cars original location to provide the SVM with an understanding of color and distance.
 After we get the decision boundaries from the SVM, we then use the decision boundaries to improve coloring for our LiDAR algorithm.
+
+.. image :: ../../../../utils/svm.png
+    :align: center
