@@ -23,7 +23,7 @@ To run a script:
 2. Activate the python virtual environment by typing 
     .. code:: bash 
         
-        source venv/bin/activate
+        source venv/bin/activate 
 3. Run the script by typing
     .. code:: bash 
         
@@ -69,35 +69,43 @@ This is a list of all the scripts available in the PerceptionsLibrary22a directo
     entire perceptions suite and display the results.
 
 10. **run_svm.py**
+
     This script runs the SVM predictor on the data in the data folder, and displays the results.
     This is largely a test script, and is not used in the final product. SVM was a method of getting the 
     midline of the road. This was used in the final product, and was implemented in the complete predictor.
 
 11. **sim_cones.py**
+
     This script simulates the placement of cones in the data folder, and displays the results.
     This is largely a test script, and is not used in the final product. This was used to test the 
     complete predictor.
 
 12. **test_logreg_idea.py**
+
     This script tests the idea of using logistic regression for merging the LiDAR and Stereo predictors.
     This is largely a test script, and is not used in the final product. Merging is done in the complete predictor.
 
 13. **test_setup.py**
+
     This script tests the setup of the library. It makes sure the library is set up properly.
 
 14. **test_vis2d.py**
+
     This script tests the 2D visualization of the data in the data folder.
     This is largely a test script, and is not used in the final product. This was a method of 
     creating a 2D visualization of the data. This was not used in the final product.
 
 15. **test_vis3d.py**
+
     This script tests the 3D visualization of the data in the data folder.
     This is largely a test script, and is not used in the final product. This was used to test the 
     complete predictor.
 
 16. **visualize_cones.py**
+
     This script visualizes the cones in a 2d plot. This is largely a test script, and provided a 
     view of the cones from the perception stack during the complete predictor testing.
 
 17. **load_data.py**
+
     This script loads the data from the data folder.
