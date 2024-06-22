@@ -2,7 +2,7 @@
 Merging pipelines
 =================
 
-What is merging pipeliens?
+What is merging pipelines?
 ----------------------------
 
 Merging pipelines is a process of combining two or more pipelines into a single

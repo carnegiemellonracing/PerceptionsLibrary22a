@@ -10,12 +10,12 @@ Carnegie Mellon Racing Perceptions Library for 22a
 This library is a collection of perception algorithms for the 22a racecar for Carnegie Mellon Racing.
 Carnegie Mellon Racing is a premier student organization at Carnegie Mellon University that designs 
 and builds autonomous vehicles to compete in the annual Formula Student Driverless competition. This workspace
-works in combination with the driverless workspace that can be found on the `Carnegie Mellon Racing GitHub <https://github.com/carnegie mellonracing/>`_ .
+works in combination with the driverless workspace that can be found on the `Carnegie Mellon Racing GitHub <https://github.com/carnegiemellonracing/>`_ .
 
-.. image :: ../../index_images/car.jpg
+.. figure :: ../../index_images/car.jpg
     :align: center
 
-\n\nWhat is Perceptions? 
+What is Perceptions? 
 ==========================
 Perceptions is the process of interpreting sensor data to understand the environment around the car. 
 This is a crucial part of the autonomous driving stack as it provides the car with the information it 
@@ -117,15 +117,6 @@ Loading Data
    to navigate through the data. To exit, either hit ``<Ctrl-C>`` in the
    terminal and press a key in the ``cv2`` window or continue pressing
    keys until all images are cycled through.
-
-
-Sponsors
-========
-
-None of this would be possible without our absolutely amazing sponsors!
-
-.. image :: ../../index_images/sponsors.png
-    :align: center
 
 .. toctree::
    :maxdepth: 2

@@ -35,5 +35,5 @@ can be used in the pipeline.
 
 Lastly, there is the motion info file. This file is used to take in informaiton about the cars movement
 and predict its future position. This file is primarily used in the motion modeling code we have
-for the LiDAR pipelien. The motion modeling code allows us to accuratly color cones and update the cones positions we have 
+for the LiDAR pipeline. The motion modeling code allows us to accuratly color cones and update the cones positions we have 
 seen in between cycles of the LiDAR. To use this file, create a new instance of the MotionInfo object with the 
