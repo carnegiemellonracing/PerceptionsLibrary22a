@@ -1,5 +1,5 @@
-Vis
-===
+Visualization Utils
+===================
 
 What is Vis?
 ------------

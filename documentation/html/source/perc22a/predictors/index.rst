@@ -8,3 +8,6 @@ Predictors
    lidar/lidar
    stereo/stereo
    utils/utils
+   utils/lidar/lidar
+   utils/vis/vis
+   
