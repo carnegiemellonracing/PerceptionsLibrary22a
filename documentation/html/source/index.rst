@@ -40,6 +40,12 @@ object detection, lane detection, and cone detection. These algorithms are used 
 understanding of the environment around it. To understand the specifics of these algorithms, please refer to the
 documentation.
 
+This documentation is a guide to the perception algorithms which follows the same structure as the Perceptions Library Github repository.
+The documentation is divided into two main sections: the perception algorithms and the scripts that are used to run the algorithms. 
+The perception algorithms section provides a detailed explanation of the algorithms used in the perception stack. The scripts section
+provides a detailed explanation of the scripts that are used to run the perception algorithms. For further details about the perception
+algorithms, please refer to the github, which has detailed inline comments for each function.
+
 Getting Started
 ===============
 
