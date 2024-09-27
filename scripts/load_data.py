@@ -11,9 +11,9 @@ import cv2
 
 def main():
     window = vis.init_visualizer_window()
-    dl = DataLoader("perc22a/data/raw/12-02-ecg-track-test")
+    dl = DataLoader("/home/chip/Documents/driverless-packages/PerceptionsLibrary22a/perc22a/data/raw/track-testing-09-29")
 
-    i = 745
+    i = 50
     print(i)
     data = dl[i]
     img = data[DataType.ZED_LEFT_COLOR]
