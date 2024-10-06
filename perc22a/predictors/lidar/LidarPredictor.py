@@ -110,6 +110,8 @@ class LidarPredictor(Predictor):
             SMART_GROUND_FILTER_SLICE_BINS, 
             SMART_GROUND_FILTER_HEIGHT_THRESHOLD
         )
+
+        if (points_filtered_ground == []): return []
        
         if DEBUG_TIME: self.timer.end("\t\tground-removal")
         if DEBUG_TIME: self.timer.start("\t\tnaive-plane-fit")
