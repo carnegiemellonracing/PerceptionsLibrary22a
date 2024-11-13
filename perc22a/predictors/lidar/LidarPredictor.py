@@ -148,6 +148,15 @@ class LidarPredictor(Predictor):
         # TODO: is this correct?
         cone_centers = cluster.correct_clusters(cone_centers)
 
+        #Identify Larger Cones
+        cluster_sizes = cluster.get_cluster_size(points_cluster_subset, cone_centers, threshold_distance=CLUSTER_THRESHOLD_DISTANCE)
+        large_cones = cluster.identify_large_cones(cluster_sizes, size_threshold=CLUSTER_SIZE_THRESHOLD, height_threshold=CLUSTER_HEIGHT_THRESHOLD)
+
+        # for i, size in enumerate(cluster_sizes):
+        #     print(f"Cluster {i}: Radius = {size['radius']:.2f}, Height = {size['height']:.2f}")
+        #     if i in large_cones:
+        #         print(f"Cluster {i} is a large cone (start/end cone)")
+
         if DEBUG_TIME: self.timer.end("\tcluster", msg=f"({str(num_cluster_points)} points)")
 
         # no coloring of cones, default all of them to blue

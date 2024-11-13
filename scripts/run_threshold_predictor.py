@@ -5,7 +5,7 @@ from perc22a.data.utils.dataloader import DataLoader
 
 def main():
     tp = ThresholdPredictor()
-    dl = DataLoader("perc22a/data/raw/track-testing-09-29")
+    dl = DataLoader("perc22a/data/raw/tt-09-29")
 
     for i in range(len(dl)):
         cones = tp.predict(dl[i])

@@ -12,7 +12,7 @@ import threading
 
 def main():
 
-    dl = DataLoader("perc22a/data/raw/track-testing-09-29")
+    dl = DataLoader("perc22a/data/raw/hybrid-2-3")
     yp = YOLOv5Predictor(camera="zed")
     vis = Vis3D()
 

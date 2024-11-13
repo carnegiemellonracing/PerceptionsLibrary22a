@@ -458,7 +458,55 @@ def predict_cones_z(
 
     return centroids.reshape((-1, 3))
 
-
 def correct_clusters(points):
     points[:, :2] = points[:, :2] + CORRECTION
     return points
+
+def get_cluster_size(points, cone_centers, threshold_distance):
+    """
+    Computes the size (radius and height) for each detected cone cluster.
+    
+    Args:
+        points: The point cloud after filtering and voxel downsampling. Shape (N, 3).
+        cone_centers: The centers of the detected cone clusters. Shape (M, 3), where M is the number of clusters.
+    
+    Returns:
+        List: A list of dictionaries with the 'radius' and 'height' for each cluster.
+    """
+    cluster_sizes = []
+    
+    for center in cone_centers:
+        distances = np.linalg.norm(points[:, :3] - center, axis=1)
+        
+        cluster_points = points[distances < threshold_distance]
+        max_distance = np.max(distances[distances < threshold_distance])
+        
+        cluster_heights = cluster_points[:, 2]
+        height = np.max(cluster_heights) - np.min(cluster_heights)
+    
+        cluster_sizes.append({
+            'radius': max_distance,
+            'height': height
+        })
+    
+    return cluster_sizes
+
+def identify_large_cones(cluster_sizes, size_threshold, height_threshold):
+    """
+    Identifies larger cones based on their size and height.
+    
+    Args:
+        cluster_sizes: A list of dictionaries containing size information (radius, height) for each cluster.
+        size_threshold: The threshold radius to classify as a large cone.
+        height_threshold: The threshold height to classify as a large cone.
+    
+    Returns:
+        List: A list of indices corresponding to the larger cones (start/end cones).
+    """
+    large_cones = []
+    
+    for i, size in enumerate(cluster_sizes):
+        if size['radius'] > size_threshold or size['height'] > height_threshold:
+            large_cones.append(i)
+    
+    return large_cones
