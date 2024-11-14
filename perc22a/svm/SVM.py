@@ -2,6 +2,7 @@
 from perc22a.predictors.utils.cones import Cones
 from perc22a.utils.Timer import Timer
 from perc22a.predictors.utils.vis.Vis2D import Vis2D
+from perc22a.svm.SVM_CUDA import SVC_CUDA
 
 import perc22a.predictors.utils.lidar.color as color
 
@@ -277,8 +278,12 @@ class SVM():
 
         X, y = self.cones_to_xy(aug_cones)
 
-        model = svm.SVC(kernel='poly', degree=3, C=10, coef0=1.0)
-        model.fit(X, y)
+        # model = svm.SVC(kernel='poly', degree=3, C=10, coef0=1.0)
+        # model.fit(X, y)
+        model = SVC_CUDA()
+        model.fit(X, y, 64, 0.01, 1, 0.01)
+
+        
         self.prev_svm_model = model
 
         if DEBUG_SVM:
@@ -293,6 +298,7 @@ class SVM():
 
         svm_input = np.c_[xx.ravel(), yy.ravel()]
 
+        print("SVMP INPUT SHAPE:", svm_input.shape)
         Z = model.predict(svm_input)
         Z = Z.reshape(xx.shape)
 
