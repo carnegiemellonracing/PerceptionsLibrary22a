@@ -267,16 +267,16 @@ class SVM():
         return color.recolor_cones_with_svm(cones, self.prev_svm_model)
 
     def cones_to_midline(self, cones: Cones):
-
+        
         blue_cones, yellow_cones, _ = cones.to_numpy()
         if len(blue_cones) == 0 and len(yellow_cones) == 0:
             return []
-        
+        print("CONES_TO_MIDLINE BEFORE AUGMENT",len(blue_cones), len(yellow_cones))
         # augment dataset to make it better for SVM training  
         self.supplement_cones(cones)
         aug_cones = self.augment_cones_circle(cones, deg=10, radius=1.2) 
-
         X, y = self.cones_to_xy(aug_cones)
+        print("CONES_TO_MIDLINE AFTER AUGMENT",X.shape, y.shape)
 
         # model = svm.SVC(kernel='poly', degree=3, C=10, coef0=1.0)
         # model.fit(X, y)
@@ -295,7 +295,6 @@ class SVM():
         y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
         xx, yy = np.meshgrid(np.arange(x_min, x_max, step),
                             np.arange(y_min, y_max, step))
-
         svm_input = np.c_[xx.ravel(), yy.ravel()]
 
         print("SVMP INPUT SHAPE:", svm_input.shape)

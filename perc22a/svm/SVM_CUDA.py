@@ -46,6 +46,11 @@ class SVC_CUDA:
         #Return accumulated loss
         return loss
     
+    def convertLabels(self, Y_CUDA):
+        zero_idxs = Y_CUDA == 0
+        Y_CUDA[zero_idxs] = -1
+        return Y_CUDA
+    
 
     #Fit function
     #bs -> batch size, lr -> learning rate, n_epochs (number of epochs),
@@ -55,8 +60,7 @@ class SVC_CUDA:
         #Convert to torch tensor -> thanks to our device setting in the constructor,
         #this will move all respective data to the GPU 
         X_CUDA = torch.tensor(X_data, dtype = torch.float)
-        Y_CUDA = torch.tensor(Y_data, dtype = torch.float)
-        print(X_CUDA)
+        Y_CUDA = self.convertLabels(torch.tensor(Y_data, dtype = torch.float))
 
         #Number of features and samples
         nFeat = X_CUDA.shape[1]
@@ -68,7 +72,6 @@ class SVC_CUDA:
         #Recreate x and y with shuffled rows
         X_CUDA = X_CUDA[get_rand]
         Y_CUDA = Y_CUDA[get_rand]
-        print(Y_CUDA)
 
         #Initialze weights and biases to values close to zero
         #Initialize with normal distribution w/mean 0 and variance 1
@@ -78,7 +81,6 @@ class SVC_CUDA:
 
         print("WEIGHTS SHAPE", weights.shape)
         print("BIASES: SHAPE", bias.shape)
-
 
         #Store losses
         losses = []
@@ -104,13 +106,9 @@ class SVC_CUDA:
                     #then by definition, the predictions (when clipped in the range 
                     # -1 and 1) and labels were both identical
                     #If not, compute gradient
-                    print(X_CUDA[sample_idx].shape)
-                    print("DOT PRODUCT SHAPE:", torch.dot(X_CUDA[sample_idx], weights))
                     prod = torch.dot(X_CUDA[sample_idx], weights)
-                    print("PROD SHAPE:", prod.shape)
                     pred_label_product = Y_CUDA[sample_idx] * prod
                     
-
                     #So, only manipulate the gradients iff pred_label_product !> 1
                     if pred_label_product <= 1:
 
@@ -142,7 +140,10 @@ class SVC_CUDA:
         #Move to cuda
         X_CUDA = torch.tensor(X_data, dtype = torch.float)
         #Predict
-        return torch.sign(torch.matmul(X_CUDA, torch.reshape(self.weights, (2, 1))) + self.bias).cpu().detach().numpy()
+        pred = torch.matmul(X_CUDA, torch.reshape(self.weights, (2, 1)))
+        print("SHAPE OF PREDICTIONS:", pred.shape)
+        print("PREDICTIONS:", pred)
+        return torch.squeeze(torch.sign(pred + self.bias)).cpu().detach().numpy()
 
     #Polynomial kernel
     def poly(self, X_data, Y_data):
