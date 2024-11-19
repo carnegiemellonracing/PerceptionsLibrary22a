@@ -141,7 +141,7 @@ class LidarPredictor(Predictor):
         num_cluster_points = points_cluster_subset.shape[0] 
         cone_centers = cluster.predict_cones_z(
             points_cluster_subset,
-            ground_planevals,
+            # ground_planevals,
             height_threshold=MAX_CLUSTER_HEIGHT_THRESHOLD,
         )
 

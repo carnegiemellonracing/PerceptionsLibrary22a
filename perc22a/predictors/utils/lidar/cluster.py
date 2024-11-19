@@ -209,7 +209,7 @@ def get_centroids(points, labels, probs=None, filter_distant=False, dist_thresho
 def get_centroids_z(
     points,
     labels,
-    ground_planevals,
+    # ground_planevals,
     probs=None,
     filter_distant=True,
     dist_threshold=0.2,
@@ -309,13 +309,13 @@ def get_centroids_z(
             # max_cluster_z = cluster_points[:, 2].max(axis=0)
 
             # find point heights based on projection from the ground plane
-            point_heights = (
-                ground_planevals[0] * cluster_points[:, 0]
-                + ground_planevals[1] * cluster_points[:, 1]
-                + ground_planevals[2] * cluster_points[:, 2]
-                - ground_planevals[3]
-            )
-            max_cluster_z = point_heights.max()
+            # point_heights = (
+            #     ground_planevals[0] * cluster_points[:, 0]
+            #     + ground_planevals[1] * cluster_points[:, 1]
+            #     + ground_planevals[2] * cluster_points[:, 2]
+            #     - ground_planevals[3]
+            # )
+            max_cluster_z = 0 # point_heights.max()
             # print("hello")
             #print(dist_threshold)
             # print("bello")
@@ -383,7 +383,7 @@ def get_centroids_z(
 
 def predict_cones_z(
     points,
-    ground_planevals,
+    # ground_planevals,
     scalar=1,
     dist_threshold=0.6,
     x_threshold_scale=0.15,
@@ -446,7 +446,7 @@ def predict_cones_z(
     centroids = get_centroids_z(
         points,
         labels,
-        ground_planevals,
+        # ground_planevals,
         probs,
         dist_threshold=dist_threshold,
         x_threshold_scale=x_threshold_scale,
