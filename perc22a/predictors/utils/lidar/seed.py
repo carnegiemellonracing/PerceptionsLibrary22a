@@ -104,6 +104,7 @@ def seed_cones_svm(cones_pos, svm_model, max_seed_dist=10):
     taking closest blue and closest yellow within reasonable distance'''
 
     # predict the colors of all cones
+    # cones_pos are the observed cones
     pred_labels = svm_model.predict(cones_pos[:, :2])
     blue_cones_pos = cones_pos[np.where(pred_labels == BLUE_LABEL)]
     yellow_cones_pos = cones_pos[np.where(pred_labels == YELLOW_LABEL)]
