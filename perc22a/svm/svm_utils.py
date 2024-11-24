@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn.inspection import DecisionBoundaryDisplay
+from SVC_CUDA import SVC_CUDA
 
 DEBUG_SVM = False
 DEBUG_PRED = False
@@ -213,7 +214,10 @@ def cones_to_midline(cones: Cones):
 
     X, y = cones_to_xy(cones)
 
-    model = svm.SVC(kernel='poly', degree=3, C=10, coef0=1.0)
+    # model = svm.SVC(kernel='poly', degree=3, C=10, coef0=1.0)
+    # model.fit(X, y)
+
+    model = SVC_CUDA()
     model.fit(X, y)
 
     if DEBUG_SVM:
