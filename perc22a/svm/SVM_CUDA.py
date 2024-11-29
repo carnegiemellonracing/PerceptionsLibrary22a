@@ -31,14 +31,14 @@ class SVC_CUDA:
     """
 
     #Constructor -> take kernel and acceptable error E
-    def __init__(self, err : float = 1, kernel : str = "polynomial", degree: int = 3, coeff : float = 1) -> None:
+    def __init__(self, err : float = 1, kernel : str = "polynomial", degree: int = 3, coeff : float = 2.5) -> None:
         
         #Set all torch tensors to be placed on the available GPU
         torch.cuda.set_device(0)
         torch.cuda.get_device_name()
         print(torch.cuda.get_device_name())
 
-        #Set error and kernel + degree
+        #Set error and kernel + degreef
         self.err = err
         self.kernel = kernel
         self.degree = degree
