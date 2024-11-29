@@ -281,7 +281,7 @@ class SVM():
         # model = svm.SVC(kernel='poly', degree=3, C=10, coef0=1.0)
         # model.fit(X, y)
         model = SVC_CUDA()
-        model.fit(X, y, 64, 0.001, 1)
+        model.fit(X, y, 64, 0.001, 0.001, 1)
 
         
         self.prev_svm_model = model

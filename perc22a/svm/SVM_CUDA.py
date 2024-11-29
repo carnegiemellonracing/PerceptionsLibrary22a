@@ -21,7 +21,7 @@ class SVC_CUDA:
     degree (int) - degree of the polynomial decision boundary the SVM will learn.
     coeff - coefficient of the polynomial decision boundary we learn. Another hyperparameter.
 
-    METHODS:
+    METHODS:    
     __init__(err, kernel, degree, float): constructor
     poly(X1 : torch.Tensor, X2 : torch.Tensor) -> (X1 matmul X2.T + coeff)^degree (torch.Tensor): computes polynomial kernel. For SVMS, X1 = X2 means we're 
                                                                                                   computing the symmetric gram matrix (polynomial similarity between every)
@@ -66,14 +66,17 @@ class SVC_CUDA:
     #Fit function
     #bs -> batch size, lr -> learning rate, n_epochs (number of epochs),
     #and init_epsilon (range around where tensor should be initialized)
-    def fit(self, X_data, Y_data, bs, lr, n_epochs):
+    def fit(self, X_data, Y_data, bs, alpha_lr, bias_lr, n_epochs):
 
         #Convert to torch tensor -> thanks to our device setting in the constructor,
         #this will move all respective data to the GPU 
-        
         X_CUDA = torch.tensor(X_data, dtype = torch.float)
+
         #Normalize X_CUDA to have zero mean and unit variance
-        X_CUDA = (X_CUDA - torch.mean(X_CUDA, dim = 0)) / torch.std(X_CUDA, dim = 0)
+        #Save to use during prediction
+        self.x_mean = torch.mean(X_CUDA, dim = 0)
+        self.x_std = torch.std(X_CUDA, dim = 0)
+        X_CUDA = (X_CUDA - self.x_mean) / self.x_std
         #Replace all 0 labels with -1
         Y_CUDA = self.convertLabels(torch.tensor(Y_data, dtype = torch.float))
 
@@ -106,35 +109,60 @@ class SVC_CUDA:
             #Execute each batch
             for batch_start_idx in range(0, nSamples, bs):
 
-                #Iterate through batch samples
-                for sample_idx in range(batch_start_idx, batch_start_idx + bs):
+                #End of batch
+                batch_end_idx = min(batch_start_idx + bs, nSamples)
+                #Alpha for this batch
+                batch_alpha = self.alpha[batch_start_idx:batch_end_idx]
+                #Kernel for this batch
+                batch_kernel = kernelMat[batch_start_idx:batch_end_idx]
+                #Labels for this batch
+                batch_labels = Y_CUDA[batch_start_idx : batch_end_idx]
 
-                    #Could be a case where batch_start_idx is already at the end
-                    #of the total number of samples
-                    if (sample_idx >= nSamples): break
+                #Get batch predictions
+                batch_preds = torch.sum(self.alpha * Y_CUDA * batch_kernel, dim = 1) + self.bias
 
-                    #Get prediction of SVM via prediction function
-                    pred = torch.sum(self.alpha * Y_CUDA * kernelMat[sample_idx]) + self.bias
+                #Update based on misclassified (byproduct of KKT condition checking)
+                incorrectSamples = batch_labels * batch_preds <= 1
+                #Update alpha and biases
+                batch_alpha[incorrectSamples] += alpha_lr * self.err * (1 - batch_labels[incorrectSamples] * batch_preds[incorrectSamples])
+                self.bias -= bias_lr * torch.sum(batch_labels[incorrectSamples])
 
-                    #Check if Karush-Kuhn-Tucker conditions met (series of first derivative tests)
-                    #Determine if the sample is classified correctly
-                    #If prediction x actual label (labels are -1 or 1) > 1,
-                    #then by definition, the predictions (when clipped in the range 
-                    # -1 and 1) and labels were both identical
+                # #End batch
+                # batch_end_idx = min(batch_start_idx + bs, nSamples)
 
-                    if Y_CUDA[sample_idx] * pred <= 1:
+                # #Iterate through batch samples
+                # for sample_idx in range(batch_start_idx, batch_start_idx + bs):
+
+                #     #Could be a case where batch_start_idx is already at the end
+                #     #of the total number of samples
+                #     if (sample_idx >= nSamples): break
+
+                #     #Get prediction of SVM via prediction function
+                #     pred = torch.sum(self.alpha * Y_CUDA * kernelMat[sample_idx]) + self.bias
+
+                #     #Check if Karush-Kuhn-Tucker conditions met (series of first derivative tests)
+                #     #Determine if the sample is classified correctly
+                #     #If prediction x actual label (labels are -1 or 1) > 1,
+                #     #then by definition, the predictions (when clipped in the range 
+                #     # -1 and 1) and labels were both identical
+
+                #     if Y_CUDA[sample_idx] * pred <= 1:
                         
-                        self.alpha[sample_idx] += torch.squeeze(lr * self.err * (1 - Y_CUDA[sample_idx] * pred))
-                        self.bias -= Y_CUDA[sample_idx] * lr * self.err
+                #         self.alpha[sample_idx] += torch.squeeze(alpha_lr * self.err * (1 - Y_CUDA[sample_idx] * pred))
+                #         self.bias -= Y_CUDA[sample_idx] * bias_lr * self.err
 
-            #Compute Hingie loss
-            loss = 0.0
-            for i in range(nSamples - 1):
-                pred = torch.sum(self.alpha * Y_CUDA * kernelMat[i]) + self.bias
-                loss += max(0, 1 - Y_CUDA[i] * pred)
+            #Compute Hinge loss for this epoch
+            predictions = torch.sum(self.alpha * Y_CUDA * kernelMat, dim=1) + self.bias
+            hinge_loss = torch.mean(torch.clamp(1 - Y_CUDA * predictions, min=0))
+            losses.append(hinge_loss.item())
             
-            #Store loss
-            losses.append(loss.item())
+            # loss = 0.0
+            # for i in range(nSamples - 1):
+            #     pred = torch.sum(self.alpha * Y_CUDA * kernelMat[i]) + self.bias
+            #     loss += max(0, 1 - Y_CUDA[i] * pred)
+            
+            # #Store loss
+            # losses.append(loss.item())
 
         #Return alpha (weights), bias, losses
         return self.alpha, self.bias, losses
@@ -145,7 +173,7 @@ class SVC_CUDA:
         #Move to CUDA
         X_CUDA = torch.tensor(X_data, dtype = torch.float)
         #Normalize X_CUDA
-        X_CUDA = (X_CUDA - torch.mean(X_CUDA, dim = 0)) / torch.std(X_CUDA, dim = 0)
+        X_CUDA = (X_CUDA - self.x_mean) / self.x_std
 
         #Get kernel matrix
         kernelMat = self.poly(X_CUDA, self.X_train)
