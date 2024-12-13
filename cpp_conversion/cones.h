@@ -6,13 +6,15 @@
 #include <functional>
 #include <numbers>
 
+typedef std::vector<std::vector<double>> vectorRow;
+
 class Cones {
 private:
-    std::vector<std::vector<double>> blue_cones;
-    std::vector<std::vector<double>> yellow_cones;
-    std::vector<std::vector<double>> orange_cones;
+    vectorRow blue_cones;
+    vectorRow yellow_cones;
+    vectorRow orange_cones;
 
-    std::string reprCones(const std::vector<std::vector<double>>& cones) const;
+    std::string reprCones(const vectorRow& cones) const;
 
 public:
     Cones() = default;
@@ -22,6 +24,9 @@ public:
     void addOrangeCone(double x, double y, double z);
 
     void addCones(const Cones& other);
+
+    const vectorRow& getBlueCones() const;
+    const vectorRow& getYellowCones() const;
 
     void map(const std::function<std::vector<double>(const std::vector<double>&)>& mapper);
 
@@ -33,20 +38,20 @@ public:
 
     Cones copy() const;
 
-    std::vector<std::vector<double>> augmentDatasetCircle(std::vector<std::vector<double>> X, int deg, int radius);
+    vectorRow augmentDatasetCircle(vectorRow X, int deg, int radius);
     Cones augmentConesCircle(const Cones& cones, int deg = 20, double radius = 2.0);
 
     struct ConeData {
-        std::vector<std::vector<double>> blue_cones;
-        std::vector<std::vector<double>> yellow_cones;
-        std::vector<std::vector<double>> orange_cones;
+        vectorRow blue_cones;
+        vectorRow yellow_cones;
+        vectorRow orange_cones;
     };
 
     ConeData toStruct() const;
 
     Cones fromStruct(const ConeData& data);
 
-    std::pair<std::vector<std::vector<double>>, std::vector<double>> conesToXY(const Cones& cones);
+    std::pair<vectorRow, std::vector<double>> conesToXY(const Cones& cones);
 };
 
 #endif
