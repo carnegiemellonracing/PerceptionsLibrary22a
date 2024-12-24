@@ -1,10 +1,11 @@
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <vector>
 #include <string>
 #include <sstream>
 #include <algorithm>
-#include <cmath>
 #include <numeric>
 #include <limits>
 #include <cassert>
@@ -12,12 +13,12 @@
 
 #include "cones.h"
 
-typedef std::vector<std::pair<double, double>> pointsVector;
-typedef std::vector<std::vector<double>> vectorRow;
+
+typedef std::vector<std::pair<double, double>> conesList;
 
 /* takes a vector of points and the current point,
    returns the index of the closest point and the distance between that point and the current point */ 
-std::pair<size_t, double> getClosestPointIdx(const pointsVector& points, const std::pair<double, double>& curr_point) {
+std::pair<size_t, double> getClosestPointIdx(const conesList& points, const std::pair<double, double>& curr_point) {
     assert(!points.empty());
 
     size_t closest_idx = 0;
@@ -39,7 +40,7 @@ std::pair<size_t, double> getClosestPointIdx(const pointsVector& points, const s
 }
 
 // takes a vector of points and returns the index of the spline starting index
-size_t getSplineStartIdx(pointsVector& points) {
+size_t getSplineStartIdx(conesList& points) {
     // gets index of point with lowest y-axis value in points
 
     // first find minimum points
@@ -73,17 +74,17 @@ size_t getSplineStartIdx(pointsVector& points) {
 }
 
 // takes a vector of points and sorts them based on a spline
-pointsVector sortBoundaryPoints(pointsVector points, double max_spline_length=17.5) {
+conesList sortBoundaryPoints(conesList points, double max_spline_length=17.5) {
     // initialize spline length and sorted points
     double spline_length = 0;
-    pointsVector sorted_points;
+    conesList sorted_points;
 
     // start from the lowest point along the y-axis
     size_t idx = getSplineStartIdx(points);
     std::pair<double, double> curr_point = points[idx];
 
     // remove the element at idx
-    pointsVector rem_points = points;
+    conesList rem_points = points;
     rem_points.erase(rem_points.begin() + idx);
 
     // add current point to sorted points
@@ -110,7 +111,7 @@ pointsVector sortBoundaryPoints(pointsVector points, double max_spline_length=17
 }
 
 // create a 2D mesh grid from a feature matrix (X[0] and X[1] are coordinates, X comes from conesToXY)
-std::pair<vectorRow, vectorRow> createMeshGrid(const vectorRow& X) {
+std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> createMeshGrid(const std::vector<std::vector<double>>& X) {
     double x_min = X[0][0], x_max = X[0][0];
     double y_min = X[0][1], y_max = X[0][1];
 
@@ -136,7 +137,7 @@ std::pair<vectorRow, vectorRow> createMeshGrid(const vectorRow& X) {
     }
 
     // create the meshgrid
-    vectorRow xx, yy;
+    std::vector<std::vector<double>> xx, yy;
     for (double y : y_range) {
         std::vector<double> x_row;
         std::vector<double> y_row;
@@ -152,12 +153,12 @@ std::pair<vectorRow, vectorRow> createMeshGrid(const vectorRow& X) {
 }
 
 // flatten the mesh grid into a vector of points, XY is output of createMeshGrid
-vectorRow flattenMesh(const std::pair<vectorRow, vectorRow>& XY) {
-    vectorRow xx = XY.first;
-    vectorRow yy = XY.second;
+std::vector<std::vector<double>> flattenMesh(const std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>>& XY) {
+    std::vector<std::vector<double>> xx = XY.first;
+    std::vector<std::vector<double>> yy = XY.second;
 
     // flatten xx, yy
-    vectorRow svm_input;
+    std::vector<std::vector<double>> svm_input;
     for (size_t i = 0; i < xx.size(); ++i) {
         for (size_t j = 0; j < xx[i].size(); ++j) {
             svm_input.push_back({xx[i][j], yy[i][j]});
@@ -169,8 +170,8 @@ vectorRow flattenMesh(const std::pair<vectorRow, vectorRow>& XY) {
 
 /* reshape the svm_output (array) into a 2D grid of points, svm_output comes from SVM prediction
    and xx is first part of XY pair, XY comes from createMeshGrid */ 
-vectorRow reshapeOutput(const std::vector<double>& svm_output, vectorRow xx) {
-    vectorRow Z;
+std::vector<std::vector<double>> reshapeOutput(const std::vector<double>& svm_output, std::vector<std::vector<double>> xx) {
+    std::vector<std::vector<double>> Z;
     size_t rows = xx.size();
     size_t cols = xx[0].size();
     for (size_t i = 0; i < rows; ++i) {
@@ -183,11 +184,11 @@ vectorRow reshapeOutput(const std::vector<double>& svm_output, vectorRow xx) {
 /* take the reshaped svm_output and generate a vector of boundary points, 
    xx and yy represent coordinates from meshgrid, Z is svm_output
 */ 
-pointsVector boundaryDetection(const vectorRow& Z, const vectorRow& xx, const vectorRow& yy) {
+conesList boundaryDetection(const std::vector<std::vector<double>>& Z, const std::vector<std::vector<double>>& xx, const std::vector<std::vector<double>>& yy) {
     size_t rows = xx.size();
     size_t cols = xx[0].size();
     
-    pointsVector boundary_points;
+    conesList boundary_points;
     
     // extract the top left (Z_TL), bottom right (Z_BR), and central region (Z_C)
     for (size_t i = 0; i < rows - 1; ++i) {
@@ -207,8 +208,8 @@ pointsVector boundaryDetection(const vectorRow& Z, const vectorRow& xx, const ve
 }
 
 // downsample the boundary points 
-pointsVector downsamplePoints(const pointsVector& boundary_points) {
-    pointsVector downsampled;
+conesList downsamplePoints(const conesList& boundary_points) {
+    conesList downsampled;
     double accumulated_dist = 0.0;
 
     for (size_t i = 1; i < boundary_points.size(); ++i) {
@@ -231,13 +232,13 @@ pointsVector downsamplePoints(const pointsVector& boundary_points) {
 }
 
 
-pointsVector cones_to_midline(Cones cones) {
+conesList cones_to_midline(Cones cones) {
     // check if there are no blue or yellow cones
     const auto& blue_cones = cones.getBlueCones();
     const auto& yellow_cones = cones.getYellowCones();
 
     if (blue_cones.empty() && yellow_cones.empty()) {
-        return pointsVector(); 
+        return conesList(); 
     }
 
     // augment dataset to make it better for SVM training
@@ -245,15 +246,9 @@ pointsVector cones_to_midline(Cones cones) {
     cones = cones.augmentConesCircle(cones, 10, 1.2);
 
     // acquire the feature matrix and label vector
-    std::pair<vectorRow, std::vector<double>> xy = cones.conesToXY(cones);
-    vectorRow X = xy.first;
+    std::pair<std::vector<std::vector<double>>, std::vector<double>> xy = cones.conesToXY(cones);
+    std::vector<std::vector<double>> X = xy.first;
     std::vector<double> y = xy.second;
-
-    // print statements for debugging
-    std::cout << "Printing training labels:\n";
-    for (size_t i = 0; i < y.size(); ++i) {
-        std::cout << "Sample " << i << ": X=(" << X[i][0] << ", " << X[i][1] << "), y=" << y[i] << "\n";
-    }
 
     // prepare SVM data
     svm_problem prob;
@@ -273,14 +268,14 @@ pointsVector cones_to_midline(Cones cones) {
         prob.x[i][X[i].size()].index = -1; // End marker
     }
 
-    /* this section of code used to SVM parameters to match scikit-learn parameters
-    // code acquired from stack and chat */
+    /* this section of code used to SVM parameters to match scikit-learn parameters */
     // first, compute mean of all elements in X 
     double sum_all = 0.0;
+
     int N = static_cast<int>(X.size());
     if (N == 0 || X[0].empty()) {
         std::cerr << "No training data available for SVM.\n";
-        return pointsVector();
+        return conesList();
     }
     int d = static_cast<int>(X[0].size());
 
@@ -304,10 +299,6 @@ pointsVector cones_to_midline(Cones cones) {
     // calculate gamma_scale to match scikit-learn
     double gamma_scale = 1.0 / (d * var_all);
 
-    // print statements for debugging
-    std::cout << "Number of samples: " << N << ", Dimensions: " << d << "\n";
-    std::cout << "mean_all: " << mean_all << ", var_all: " << var_all << ", gamma_scale: " << gamma_scale << "\n";
-
     // set up svm
     svm_parameter param;
     memset(&param, 0, sizeof(param));
@@ -318,7 +309,7 @@ pointsVector cones_to_midline(Cones cones) {
     param.coef0 = 1.0;     
     param.gamma = gamma_scale;
     param.cache_size = 200; 
-    param.eps = 1e-3;
+    param.eps = 0.001;
     param.shrinking = 1;
     param.probability = 0;
     param.nr_weight = 0;
@@ -334,20 +325,13 @@ pointsVector cones_to_midline(Cones cones) {
     // train the SVM model
     svm_model* model = svm_train(&prob, &param);
 
-    // free allocated memory 
-    for (int i = 0; i < prob.l; ++i) {
-        delete[] prob.x[i];
-    }
-    delete[] prob.x;
-    delete[] prob.y;
-
     // create meshgrid
-    std::pair<vectorRow, vectorRow> XY = createMeshGrid(X);
-    vectorRow xx = XY.first;
-    vectorRow yy = XY.second;
+    std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> XY = createMeshGrid(X);
+    std::vector<std::vector<double>> xx = XY.first;
+    std::vector<std::vector<double>> yy = XY.second;
 
     // flatten xx, yy 
-    vectorRow svm_input = flattenMesh(XY);
+    std::vector<std::vector<double>> svm_input = flattenMesh(XY);
 
     // predict using the SVM Model
     std::vector<double> svm_output;
@@ -362,76 +346,140 @@ pointsVector cones_to_midline(Cones cones) {
         delete[] node;
     }
 
-    // print statements for debugging
-    std::cout << "Some predicted values:\n";
-    for (size_t i = 0; i < svm_output.size(); ++i) {
-        std::cout << svm_output[i] << " ";
-    }
-    std::cout << "\n";
-
     // reshape Z to match the shape of xx and yy
-    vectorRow Z = reshapeOutput(svm_output, xx);
+    std::vector<std::vector<double>> Z = reshapeOutput(svm_output, xx);
 
     // boundary detection
-    pointsVector boundary_points = boundaryDetection(Z, xx, yy);
+    conesList boundary_points = boundaryDetection(Z, xx, yy);
 
     // sort boundary points 
     if (boundary_points.empty()) {
         std::cerr << "No boundary points found. Returning empty vector.\n";
-        return pointsVector();
+        return conesList();
     }
 
     boundary_points = sortBoundaryPoints(boundary_points);
 
     // downsample boundary points
-    pointsVector downsampled = downsamplePoints(boundary_points);
+    conesList downsampled = downsamplePoints(boundary_points);
 
-    // TODO: decide whether to free the model or not
+    // free allocated memory
+    for (int i = 0; i < prob.l; ++i) {
+        delete[] prob.x[i];
+    }
+    delete[] prob.x;
+    delete[] prob.y;
+
     svm_free_and_destroy_model(&model);
 
     return downsampled;
 }
 
+double ator(int a){
+    return (double) a * M_PI / 180.0;
+}
+
+// feet to m
+double ftom(int a){
+    return (double) a * 0.3048;
+}
+
+// testing cones to midline on squidward track
 int main() {
-    // Example input data for testing
-    std::vector<std::vector<double>> X = {
-        {1.0, 2.0},
-        {3.0, 4.0},
-        {5.0, 6.0},
-        {7.0, 8.0}
+    std::vector<std::vector<double>> blue_list = {
+        {-4, 0},
+        {-4, 2},
+        {-4, 4},
+        {-4, 6},
+        {-4, 8},
+        {-4, 10},
+        {-4, 12},
+        {-4, 14},
+        {-4, 16},
+        {-4, 18},
+        {-4, 20},
+        {-4, 22},
+        {-4 - 2 + 2 * cos(ator(30)), 22 + 2 * sin(ator(30))},
+        {-4 - 2 + 2 * cos(ator(60)), 22 + 2 * sin(ator(60))},
+        {-6, 24},
+        {-8, 24},
+        {-10, 24},
+        {-12, 24},
+        {-14, 24},
+        {-14 + 2 * cos(ator(120)), 24 - 2 + 2 * sin(ator(120))},
+        {-14 + 2 * cos(ator(150)), 24 - 2 + 2 * sin(ator(150))},
+        {-16, 22},
+        {-16 + ftom(4), 20},
+        {-16 + ftom(6), 18},
+        {-16 + ftom(2), 16},
+        {-16 - ftom(2), 14},
+        {-16 - ftom(6), 12},
+        {-16 - ftom(4), 10},
+        {-16, 8},
+        {-16, 6},
+        {-16, 4},
+        {-16 + 2 - 2 * cos(ator(30)), 4 - 2 * sin(ator(30))},
+        {-16 + 2 - 2 * cos(ator(60)), 4 - 2 * sin(ator(90))},
+        {-14, 2},
+        {-12, 2},
+        {-10, 2},
+        {-8, 2},
+        {-6, 2},
+        {-4, 2}
     };
 
-    std::cout << "Testing createMeshGrid...\n";
-    auto meshGrid = createMeshGrid(X);
-    const auto& xx = meshGrid.first;
-    const auto& yy = meshGrid.second;
-    std::cout << "Meshgrid created with sizes: xx=" << xx.size() << ", yy=" << yy.size() << "\n";
 
-    std::cout << "Testing flattenMesh...\n";
-    auto svm_input = flattenMesh(meshGrid);
-    std::cout << "Flattened mesh size: " << svm_input.size() << "\n";
+    std::vector<std::vector<double>> yellow_list = {
+        {0, 0},
+        {0, 2},
+        {0, 4},
+        {0, 6},
+        {0, 8},
+        {0, 10},
+        {0, 12},
+        {0, 14},
+        {0, 16},
+        {0, 18},
+        {0, 20},
+        {0, 22},
+        {0 - 6 + 6 * cos(ator(30)), 22 + 6 * sin(ator(30))},
+        {0 - 6 + 6 * cos(ator(60)), 22 + 6 * sin(ator(60))},
+        {-6, 28},
+        {-8, 28},
+        {-10, 28},
+        {-12, 28},
+        {-14, 28},
+        {-14 + 6 * cos(ator(120)), 28 - 6 + 6 * sin(ator(120))},
+        {-14 + 6 * cos(ator(150)), 28 - 6 + 6 * sin(ator(150))},
+        {-20, 22},
+        {-20 + ftom(4), 20},
+        {-20 + ftom(6), 18},
+        {-20 + ftom(2), 16},
+        {-20 - ftom(2), 14},
+        {-20 - ftom(6), 12},
+        {-20 - ftom(4), 10},
+        {-20, 8},
+        {-20, 6},
+        {-20, 4},
+        {-16 + 2 - 6 * cos(ator(30)), 4 - 6 * sin(ator(30))},
+        {-16 + 2 - 6 * cos(ator(60)), 4 - 6 * sin(ator(90))},
+        {-14, -2},
+        {-12, -2},
+        {-10, -2},
+        {-8, -2},
+        {-6, -2},
+        {-4, -2}
+    };
 
-    std::vector<double> svm_output(svm_input.size(), 1.0); // Dummy SVM output
-    std::cout << "Testing reshapeOutput...\n";
-    auto Z = reshapeOutput(svm_output, xx);
-    std::cout << "Reshaped Z has rows: " << Z.size() << " and cols: " << Z[0].size() << "\n";
+    Cones conesList2;
+    conesList2.addMultipleBlue(blue_list);
+    conesList2.addMultipleYellow(yellow_list);
+    std::vector<std::pair<double, double>> overallAns = cones_to_midline(conesList2);
 
-    std::cout << "Testing boundary with sizes: xx=" << xx.size() << ", yy=" << yy.size() << "Z=" << Z.size() << "\n";
-    std::cout << "Testing boundaryDetection...\n";
-    auto boundary_points = boundaryDetection(Z, xx, yy);
-    std::cout << "Detected boundary points: " << boundary_points.size() << "\n";
+    std::cout << "overall midline: " << std::endl;
 
-    std::cout << "Testing sortBoundaryPoints...\n";
-    auto sorted_boundary = sortBoundaryPoints(boundary_points);
-    std::cout << "Sorted boundary points: " << sorted_boundary.size() << "\n";
-
-    std::cout << "Testing downsamplePoints...\n";
-    auto downsampled_points = downsamplePoints(sorted_boundary);
-    std::cout << "Downsampled points: " << downsampled_points.size() << "\n";
-
-    std::cout << "Downsampled points:\n";
-    for (const auto& point : downsampled_points) {
-        std::cout << "x: " << point.first << ", y: " << point.second << "\n";
+    for (const auto& p : overallAns) {
+        std::cout << "(" << p.first << ", " << p.second << ")," << std::endl;
     }
 
     return 0;
