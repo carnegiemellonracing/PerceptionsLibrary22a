@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -8,9 +10,7 @@
 
 #include "cones.h"
 
-typedef std::vector<std::vector<double>> vectorRow;
-
-std::string Cones::reprCones(const vectorRow& cones) const {
+std::string Cones::reprCones(const std::vector<std::vector<double>>& cones) const {
     if (cones.empty()) {
         return "\tNo cones\n";
     }
@@ -34,6 +34,14 @@ void Cones::addYellowCone(double x, double y, double z) {
 
 void Cones::addOrangeCone(double x, double y, double z) {
     orange_cones.push_back({x, y, z});
+}
+
+void Cones::addMultipleBlue(std::vector<std::vector<double>> blue_list) {
+    blue_cones.insert(blue_cones.end(), blue_list.begin(), blue_list.end());
+}
+
+void Cones::addMultipleYellow(std::vector<std::vector<double>> yellow_list) {
+    yellow_cones.insert(yellow_cones.end(), yellow_list.begin(), yellow_list.end());
 }
 
 void Cones::addCones(const Cones& other) {
@@ -86,7 +94,8 @@ Cones Cones::copy() const {
 }
 
 /* TODO: This code comes from python using from numpy and to numpy
- * Use Eigen3 library for any vectors or matrix operations
+   Use Eigen3 library for any vectors or matrix operations
+   Decide whether this function is necessary
  */
 Cones::ConeData Cones::toStruct() const {
     ConeData data;
@@ -97,23 +106,23 @@ Cones::ConeData Cones::toStruct() const {
 }
 
 // add circles around the original cones
-vectorRow Cones::augmentDatasetCircle(vectorRow X, int deg, int radius) {
-    double radian = deg * (std::numbers::pi) / 180;
+std::vector<std::vector<double>> Cones::augmentDatasetCircle(std::vector<std::vector<double>> &X, int deg, double radius) {
+    double radian = deg * (M_PI) / 180;
 
     // build vector of all the angles
     std::vector<double> angles;
-    for (double angle = 0; angle < 2 * std::numbers::pi; angle += radian) {
+    for (double angle = 0; angle < 2 * M_PI; angle += radian) {
         angles.push_back(angle);
     }
 
     int N = X.size();
 
     int num_angles = angles.size();
-    vectorRow X_extra;
+    std::vector<std::vector<double>> X_extra;
 
-    /* Keep this structure instead of double for loops 
+    /* Keep this structure instead of two nested for-loops 
      * In case the code is too slow, it's easier to perform vectorization 
-     * from this code than with the double for loops
+     * from this code than with the double for-loops
      */
 
     // copies X num_angles times to rotate all of the points around a circle
@@ -122,19 +131,21 @@ vectorRow Cones::augmentDatasetCircle(vectorRow X, int deg, int radius) {
     }
 
     std::vector<double> repeated_angles(num_angles * N);
-    for (double angle : angles) {
-        for (int j = 0; j < N; ++j) {
-            repeated_angles[j] = angle;
+    for (size_t i = 0; i < num_angles; ++i) {
+        for (size_t j = 0; j < N; ++j) {
+            repeated_angles[i * N + j] = angles[i];
         }
     }
 
     // rotate each point around the circle
-    radius = static_cast<double>(radius);
-    for (size_t i = 0; i < X_extra.size(); ++i) {
-        
-        X_extra[i][0] += radius * std::cos(repeated_angles[i]); 
-        X_extra[i][1] += radius * std::sin(repeated_angles[i]); 
+    for (size_t i = 0; i < num_angles; ++i) {
+        for (size_t j = 0; j < N; ++j) {
+            size_t index = i * N + j;
+            X_extra[index][0] = X[j][0] + radius * std::cos(repeated_angles[index]);
+            X_extra[index][1] = X[j][1] + radius * std::sin(repeated_angles[index]);
+        }
     }
+
 
     // add the original cones back to the dataset
     X.insert(X.end(), X_extra.begin(), X_extra.end());
@@ -160,10 +171,10 @@ Cones Cones::fromStruct(const ConeData& data) {
 }
 
 // Augment the cones dataset by adding circles around each cone
-Cones Cones::augmentConesCircle(const Cones& cones, int deg, double radius) {
-    vectorRow blue = augmentDatasetCircle(cones.blue_cones, deg, radius);
-    vectorRow yellow = augmentDatasetCircle(cones.yellow_cones, deg, radius);
-    vectorRow orange = augmentDatasetCircle(cones.orange_cones, deg, radius);
+Cones Cones::augmentConesCircle(Cones& cones, int deg, double radius) {
+    std::vector<std::vector<double>> blue = augmentDatasetCircle(cones.blue_cones, deg, radius);
+    std::vector<std::vector<double>> yellow = augmentDatasetCircle(cones.yellow_cones, deg, radius);
+    std::vector<std::vector<double>> orange = augmentDatasetCircle(cones.orange_cones, deg, radius);
 
     Cones newCones;
     for (const std::vector<double>& cone : blue) {
@@ -180,9 +191,9 @@ Cones Cones::augmentConesCircle(const Cones& cones, int deg, double radius) {
 }
 
 // builds feature matrix and label vertex
-std::pair<vectorRow, std::vector<double>> Cones::conesToXY(const Cones& cones) {
-    vectorRow blue_cones = cones.blue_cones;
-    vectorRow yellow_cones = cones.yellow_cones;
+std::pair<std::vector<std::vector<double>>, std::vector<double>> Cones::conesToXY(const Cones& cones) {
+    std::vector<std::vector<double>> blue_cones = cones.blue_cones;
+    std::vector<std::vector<double>> yellow_cones = cones.yellow_cones;
 
     // assigns blue cones a label of 0
     for (std::vector<double>& cone : blue_cones) {
@@ -199,7 +210,7 @@ std::pair<vectorRow, std::vector<double>> Cones::conesToXY(const Cones& cones) {
     }
 
     // combines the cones dataset into one vector
-    vectorRow combined_data;
+    std::vector<std::vector<double>> combined_data;
     combined_data.insert(combined_data.end(), blue_cones.begin(), blue_cones.end());
     combined_data.insert(combined_data.end(), yellow_cones.begin(), yellow_cones.end());
 
@@ -216,3 +227,5 @@ std::pair<vectorRow, std::vector<double>> Cones::conesToXY(const Cones& cones) {
 
     return {X, y};
 }
+
+
