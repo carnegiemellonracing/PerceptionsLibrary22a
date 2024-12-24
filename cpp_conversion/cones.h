@@ -6,15 +6,13 @@
 #include <functional>
 #include <numbers>
 
-typedef std::vector<std::vector<double>> vectorRow;
-
 class Cones {
 private:
-    vectorRow blue_cones;
-    vectorRow yellow_cones;
-    vectorRow orange_cones;
+    std::vector<std::vector<double>> blue_cones;
+    std::vector<std::vector<double>> yellow_cones;
+    std::vector<std::vector<double>> orange_cones;
 
-    std::string reprCones(const vectorRow& cones) const;
+    std::string reprCones(const std::vector<std::vector<double>>& cones) const;
 
 public:
     Cones() = default;
@@ -23,10 +21,13 @@ public:
     void addYellowCone(double x, double y, double z);
     void addOrangeCone(double x, double y, double z);
 
+    void addMultipleBlue(std::vector<std::vector<double>> blue_list);
+    void addMultipleYellow(std::vector<std::vector<double>> yellow_list);
+
     void addCones(const Cones& other);
 
-    const vectorRow& getBlueCones() const;
-    const vectorRow& getYellowCones() const;
+    const std::vector<std::vector<double>>& getBlueCones() const;
+    const std::vector<std::vector<double>>& getYellowCones() const;
 
     void map(const std::function<std::vector<double>(const std::vector<double>&)>& mapper);
 
@@ -38,20 +39,20 @@ public:
 
     Cones copy() const;
 
-    vectorRow augmentDatasetCircle(vectorRow X, int deg, int radius);
-    Cones augmentConesCircle(const Cones& cones, int deg = 20, double radius = 2.0);
+    std::vector<std::vector<double>> augmentDatasetCircle(std::vector<std::vector<double>> &X, int deg, double radius);
+    Cones augmentConesCircle(Cones& cones, int deg = 20, double radius = 2.0);
 
     struct ConeData {
-        vectorRow blue_cones;
-        vectorRow yellow_cones;
-        vectorRow orange_cones;
+        std::vector<std::vector<double>> blue_cones;
+        std::vector<std::vector<double>> yellow_cones;
+        std::vector<std::vector<double>> orange_cones;
     };
 
     ConeData toStruct() const;
 
     Cones fromStruct(const ConeData& data);
 
-    std::pair<vectorRow, std::vector<double>> conesToXY(const Cones& cones);
+    std::pair<std::vector<std::vector<double>>, std::vector<double>> conesToXY(const Cones& cones);
 };
 
 #endif
