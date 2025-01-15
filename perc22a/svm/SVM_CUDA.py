@@ -1,6 +1,7 @@
 #Import libraries
 import numpy as np
 import torch
+import time
 
 #SVM class
 class SVC_CUDA:
@@ -68,6 +69,9 @@ class SVC_CUDA:
     #and init_epsilon (range around where tensor should be initialized)
     def fit(self, X_data, Y_data, bs, alpha_lr, bias_lr, n_epochs):
 
+        #time the fit method
+        startTime = time.time()
+
         #Convert to torch tensor -> thanks to our device setting in the constructor,
         #this will move all respective data to the GPU 
         X_CUDA = torch.tensor(X_data, dtype = torch.float)
@@ -105,6 +109,8 @@ class SVC_CUDA:
 
         #Begin gradient descent
         for epoch_idx in range(n_epochs):
+
+            epochStart = time.time()
 
             #Execute each batch
             for batch_start_idx in range(0, nSamples, bs):
@@ -155,6 +161,10 @@ class SVC_CUDA:
             predictions = torch.sum(self.alpha * Y_CUDA * kernelMat, dim=1) + self.bias
             hinge_loss = torch.mean(torch.clamp(1 - Y_CUDA * predictions, min=0))
             losses.append(hinge_loss.item())
+
+            epochEnd = time.time()
+            epochElapsed = epochEnd - epochStart
+            print("TOTAL EPOCH TIME:", epochElapsed)
             
             # loss = 0.0
             # for i in range(nSamples - 1):
@@ -164,11 +174,19 @@ class SVC_CUDA:
             # #Store loss
             # losses.append(loss.item())
 
+        endTime = time.time()
+
+        elapsedTime = endTime - startTime
+        print("TOTAL FIT METHOD TIME:", elapsedTime)
+
         #Return alpha (weights), bias, losses
         return self.alpha, self.bias, losses
 
     #Prediction function
     def predict(self, X_data):
+
+        #For timing
+        startPredictTime = time.time()
 
         #Move to CUDA
         X_CUDA = torch.tensor(X_data, dtype = torch.float)
@@ -188,4 +206,10 @@ class SVC_CUDA:
         signedMatrix[signedMatrix == -1] = 0 
 
         #Move result to cpu, detach from gradient tree, convert to numpy
-        return torch.squeeze(signedMatrix).cpu().detach().numpy()
+        res = torch.squeeze(signedMatrix).cpu().detach().numpy()
+        
+        endPredictTime = time.time()
+        totalPredTime = endPredictTime - startPredictTime
+        print("TIME FOR PREDICT METHOD:", totalPredTime)
+
+        return res
