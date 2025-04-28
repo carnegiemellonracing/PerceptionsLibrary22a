@@ -273,3 +273,104 @@ class ConeState:
     
     def get_svm_cones(self):
         return None
+    
+    def reorder_cones(self, cones: Cones):
+        '''Reorders svm cones based on their distance to the car and direction of previous cones'''
+        blue, yellow = cones.blue_cones, cones.yellow_cones
+        
+        # Initialize seen arrays
+        seen_blue = np.zeros(len(blue), dtype=bool)
+        seen_yellow = np.zeros(len(yellow), dtype=bool)
+        
+        # Initialize ordered arrays
+        ordered_blue = []
+        ordered_yellow = []
+        
+        # Find closest blue and yellow cones to start
+        if len(blue) > 0:
+            closest_blue_idx = np.argmin([np.linalg.norm(cone[:2]) for cone in blue])
+            ordered_blue.append(blue[closest_blue_idx])
+            seen_blue[closest_blue_idx] = True
+            
+        if len(yellow) > 0:
+            closest_yellow_idx = np.argmin([np.linalg.norm(cone[:2]) for cone in yellow])
+            ordered_yellow.append(yellow[closest_yellow_idx])
+            seen_yellow[closest_yellow_idx] = True
+            
+        # Find next cone in direction
+        def find_next_cone(cones, seen, prev_cones):
+            if len(prev_cones) < 2 or np.all(seen):
+                return None
+                
+            # Get direction vector from last two cones
+            dir_vec = prev_cones[-1][:2] - prev_cones[-2][:2]
+            dir_vec = dir_vec / np.linalg.norm(dir_vec)
+            
+            # Find closest unseen cone in direction of previous cones
+            min_dist = float('inf')
+            next_idx = None
+            
+            for i, cone in enumerate(cones):
+                if not seen[i]:
+                    vec = cone[:2] - prev_cones[-1][:2]
+                    dist = np.linalg.norm(vec)
+                    
+                    proj = np.dot(vec, dir_vec)
+                    
+                    if proj > 0:
+                        score = dist / (1 + proj)
+                        if score < min_dist:
+                            min_dist = score
+                            next_idx = i
+                            
+            return next_idx
+            
+        while not np.all(seen_blue) and len(ordered_blue) >= 2:
+            next_idx = find_next_cone(blue, seen_blue, ordered_blue)
+            if next_idx is None:
+                break
+            ordered_blue.append(blue[next_idx])
+            seen_blue[next_idx] = True
+            
+        while not np.all(seen_yellow) and len(ordered_yellow) >= 2:
+            next_idx = find_next_cone(yellow, seen_yellow, ordered_yellow)
+            if next_idx is None:
+                break
+            ordered_yellow.append(yellow[next_idx])
+            seen_yellow[next_idx] = True
+            
+        ordered_blue = np.array(ordered_blue) if ordered_blue else np.zeros((0, 3))
+        ordered_yellow = np.array(ordered_yellow) if ordered_yellow else np.zeros((0, 3))
+        
+        return Cones.from_numpy(ordered_blue, ordered_yellow, np.zeros((0, 3)))
+        
+        
+if __name__ == "__main__":
+    print("Reordering cones")
+    cones = Cones()
+    cones.add_blue_cone(5, 0, 0)
+    cones.add_blue_cone(2, 0, 0)
+    cones.add_blue_cone(8, 0, 0)
+    cones.add_blue_cone(0, 0, 0)
+    cones.add_blue_cone(10, 0, 0)
+    cones.add_blue_cone(3, 0, 0)
+    cones.add_blue_cone(7, 0, 0)
+    cones.add_blue_cone(1, 0, 0)
+    cones.add_blue_cone(4, 0, 0)
+    cones.add_blue_cone(9, 0, 0)
+    cones.add_blue_cone(6, 0, 0)
+    
+    cones.add_yellow_cone(8, 1, 0)
+    cones.add_yellow_cone(3, 1, 0)
+    cones.add_yellow_cone(10, 1, 0)
+    cones.add_yellow_cone(1, 1, 0)
+    cones.add_yellow_cone(6, 1, 0)
+    cones.add_yellow_cone(4, 1, 0)
+    cones.add_yellow_cone(9, 1, 0)
+    cones.add_yellow_cone(2, 1, 0)
+    cones.add_yellow_cone(7, 1, 0)
+    cones.add_yellow_cone(5, 1, 0)
+    
+    cones = cones.reorder_cones()
+    print(cones)
+    
